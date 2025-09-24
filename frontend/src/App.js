@@ -2178,6 +2178,7 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
       {showCalculator && (
         <PriceCalculatorModal
           onClose={() => setShowCalculator(false)}
+          headers={headers}
         />
       )}
 
