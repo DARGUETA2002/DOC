@@ -1721,6 +1721,201 @@ async def poblar_datos_ejemplo(token: str = Depends(verify_token)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error poblando datos: {str(e)}")
 
+@api_router.post("/debug/expandir-cie10-masivo")
+async def expandir_cie10_masivo(token: str = Depends(verify_token)):
+    """🧬 Expandir enormemente la base de códigos CIE-10 con investigación pediátrica"""
+    
+    # CÓDIGOS CIE-10 MASIVOS PARA PEDIATRÍA - BASADO EN INVESTIGACIÓN 2024
+    codigos_nuevos = [
+        # ===== ENFERMEDADES INFECCIOSAS AVANZADAS =====
+        {"codigo": "A15.0", "descripcion": "Tuberculosis del pulmón confirmada microscópicamente", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A15.3", "descripcion": "Tuberculosis del pulmón confirmada por medios no especificados", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A40.0", "descripcion": "Septicemia por estreptococo grupo A", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A40.1", "descripcion": "Septicemia por estreptococo grupo B", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A41.0", "descripcion": "Septicemia por Staphylococcus aureus", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A41.1", "descripcion": "Septicemia por otros estafilococos especificados", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A41.9", "descripcion": "Septicemia no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A49.9", "descripcion": "Infección bacteriana no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B00.0", "descripcion": "Eczema herpético", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B00.1", "descripcion": "Dermatitis vesicular por virus herpes", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B02.9", "descripcion": "Herpes zóster sin complicaciones", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B05.9", "descripcion": "Sarampión sin complicaciones", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B06.9", "descripcion": "Rubéola sin complicaciones", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B26.9", "descripcion": "Parotiditis sin complicaciones", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B34.9", "descripcion": "Infección viral no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B35.0", "descripcion": "Tiña de la barba y cuero cabelludo", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B35.4", "descripcion": "Tiña del cuerpo", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B35.9", "descripcion": "Dermatofitosis no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B37.2", "descripcion": "Candidiasis de piel y uñas", "categoria": "Enfermedades de la piel"},
+        {"codigo": "B37.9", "descripcion": "Candidiasis no especificada", "categoria": "Enfermedades infecciosas"},
+        
+        # ===== ENFERMEDADES DE LA SANGRE =====
+        {"codigo": "D50.0", "descripcion": "Anemia ferropénica por pérdida crónica de sangre", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D50.9", "descripcion": "Anemia ferropénica no especificada", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D51.0", "descripcion": "Anemia por deficiencia de vitamina B12", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D52.9", "descripcion": "Anemia por deficiencia de folatos", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D56.0", "descripcion": "Talasemia alfa", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D56.1", "descripcion": "Talasemia beta", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D57.0", "descripcion": "Anemia drepanocítica con crisis", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D57.1", "descripcion": "Anemia drepanocítica sin crisis", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D68.0", "descripcion": "Enfermedad de von Willebrand", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D69.3", "descripcion": "Púrpura trombocitopénica idiopática", "categoria": "Enfermedades de la sangre"},
+        
+        # ===== TRASTORNOS ENDOCRINOS Y METABÓLICOS =====
+        {"codigo": "E03.0", "descripcion": "Hipotiroidismo congénito con bocio difuso", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E03.1", "descripcion": "Hipotiroidismo congénito sin bocio", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E10.1", "descripcion": "Diabetes mellitus tipo 1 con cetoacidosis", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E10.9", "descripcion": "Diabetes mellitus tipo 1 sin complicaciones", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E16.1", "descripcion": "Otras hipoglucemias", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E25.0", "descripcion": "Trastornos adrenogenitales congénitos", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E34.3", "descripcion": "Talla baja no clasificada", "categoria": "Trastornos endocrinos"},
+        {"codigo": "E40", "descripcion": "Kwashiorkor", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E41", "descripcion": "Marasmo nutricional", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E43", "descripcion": "Desnutrición proteico-energética grave", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E44.0", "descripcion": "Desnutrición proteico-energética moderada", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E44.1", "descripcion": "Desnutrición proteico-energética leve", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E46", "descripcion": "Desnutrición proteico-energética no especificada", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E50.0", "descripcion": "Deficiencia de vitamina A con xerosis conjuntival", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E54", "descripcion": "Deficiencia de ácido ascórbico (escorbuto)", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E55.0", "descripcion": "Raquitismo activo", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E61.1", "descripcion": "Deficiencia de hierro", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E66.01", "descripcion": "Obesidad debida a exceso de calorías", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E86.0", "descripcion": "Deshidratación", "categoria": "Trastornos del equilibrio hídrico"},
+        {"codigo": "E87.1", "descripcion": "Hiposmolalidad e hiponatremia", "categoria": "Trastornos electrolíticos"},
+        
+        # ===== TRASTORNOS MENTALES DEL DESARROLLO =====
+        {"codigo": "F80.0", "descripcion": "Trastorno específico de la pronunciación", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F80.1", "descripcion": "Trastorno de la expresión del lenguaje", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F80.2", "descripcion": "Trastorno de la comprensión del lenguaje", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F81.1", "descripcion": "Trastorno específico de la ortografía", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F82", "descripcion": "Trastorno específico del desarrollo psicomotor", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F83", "descripcion": "Trastorno específico mixto del desarrollo", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F88", "descripcion": "Otros trastornos del desarrollo psicológico", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F89", "descripcion": "Trastorno del desarrollo psicológico no especificado", "categoria": "Trastornos del desarrollo"},
+        {"codigo": "F92.0", "descripcion": "Trastorno depresivo de conducta", "categoria": "Trastornos mentales"},
+        {"codigo": "F92.8", "descripcion": "Otros trastornos mixtos de conducta y emociones", "categoria": "Trastornos mentales"},
+        {"codigo": "F93.1", "descripcion": "Trastorno de ansiedad fóbica de la infancia", "categoria": "Trastornos mentales"},
+        {"codigo": "F93.2", "descripcion": "Trastorno de ansiedad social de la infancia", "categoria": "Trastornos mentales"},
+        {"codigo": "F98.0", "descripcion": "Enuresis no orgánica", "categoria": "Trastornos del comportamiento"},
+        {"codigo": "F98.1", "descripcion": "Encopresis no orgánica", "categoria": "Trastornos del comportamiento"},
+        
+        # ===== ENFERMEDADES NEUROLÓGICAS =====
+        {"codigo": "G40.0", "descripcion": "Epilepsia y síndromes epilépticos idiopáticos", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G40.3", "descripcion": "Epilepsia generalizada idiopática", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G40.9", "descripcion": "Epilepsia no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G80.0", "descripcion": "Parálisis cerebral espástica cuadripléjica", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G80.1", "descripcion": "Parálisis cerebral espástica dipléjica", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G80.2", "descripcion": "Parálisis cerebral espástica hemipléjica", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G93.1", "descripcion": "Lesión cerebral anóxica no clasificada", "categoria": "Enfermedades neurológicas"},
+        
+        # ===== ENFERMEDADES DEL OJO Y OÍDO =====
+        {"codigo": "H10.0", "descripcion": "Conjuntivitis mucopurulenta", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H10.1", "descripcion": "Conjuntivitis atópica aguda", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H52.0", "descripcion": "Hipermetropía", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H52.1", "descripcion": "Miopía", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H52.2", "descripcion": "Astigmatismo", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H65.0", "descripcion": "Otitis media serosa aguda", "categoria": "Enfermedades del oído"},
+        {"codigo": "H65.2", "descripcion": "Otitis media serosa crónica", "categoria": "Enfermedades del oído"},
+        {"codigo": "H66.0", "descripcion": "Otitis media supurativa aguda", "categoria": "Enfermedades del oído"},
+        {"codigo": "H66.1", "descripcion": "Otitis media supurativa crónica", "categoria": "Enfermedades del oído"},
+        {"codigo": "H90.3", "descripcion": "Pérdida auditiva neurosensorial bilateral", "categoria": "Enfermedades del oído"},
+        
+        # ===== ENFERMEDADES RESPIRATORIAS ESPECÍFICAS =====
+        {"codigo": "J02.0", "descripcion": "Faringitis estreptocócica", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J03.0", "descripcion": "Amigdalitis estreptocócica", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J03.9", "descripcion": "Amigdalitis aguda no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J04.0", "descripcion": "Laringitis aguda", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J06.9", "descripcion": "Infección aguda de vías respiratorias superiores", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J12.9", "descripcion": "Neumonía viral no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J13", "descripcion": "Neumonía debida a Streptococcus pneumoniae", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J15.9", "descripcion": "Neumonía bacteriana no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J18.9", "descripcion": "Neumonía no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J20.9", "descripcion": "Bronquitis aguda no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J44.0", "descripcion": "Enfermedad pulmonar obstructiva crónica con exacerbación aguda", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J44.1", "descripcion": "Enfermedad pulmonar obstructiva crónica no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J45.0", "descripcion": "Asma predominantemente alérgica", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J45.1", "descripcion": "Asma no alérgica", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J45.8", "descripcion": "Asma mixta", "categoria": "Enfermedades respiratorias"},
+        
+        # ===== ENFERMEDADES GASTROINTESTINALES =====
+        {"codigo": "K29.0", "descripcion": "Gastritis hemorrágica aguda", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K35.9", "descripcion": "Apendicitis aguda no especificada", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K40.9", "descripcion": "Hernia inguinal unilateral sin obstrucción ni gangrena", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K42.9", "descripcion": "Hernia umbilical sin obstrucción ni gangrena", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K59.0", "descripcion": "Estreñimiento", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K59.1", "descripcion": "Diarrea funcional", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K76.1", "descripcion": "Congestión hepática crónica pasiva", "categoria": "Enfermedades gastrointestinales"},
+        
+        # ===== ENFERMEDADES DE LA PIEL =====
+        {"codigo": "L20.0", "descripcion": "Dermatitis atópica del lactante", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L20.8", "descripcion": "Otras dermatitis atópicas", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L21.0", "descripcion": "Dermatitis seborreica del cuero cabelludo", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L21.1", "descripcion": "Dermatitis seborreica infantil", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L23.9", "descripcion": "Dermatitis alérgica de contacto por causa no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L30.9", "descripcion": "Dermatitis no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L50.9", "descripcion": "Urticaria no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L70.0", "descripcion": "Acné vulgar", "categoria": "Enfermedades de la piel"},
+        
+        # ===== ENFERMEDADES GENITOURINARIAS =====
+        {"codigo": "N30.0", "descripcion": "Cistitis aguda", "categoria": "Enfermedades urogenitales"},
+        {"codigo": "N39.0", "descripcion": "Infección de vías urinarias sitio no especificado", "categoria": "Enfermedades urogenitales"},
+        {"codigo": "N43.3", "descripcion": "Hidrocele no especificado", "categoria": "Enfermedades urogenitales"},
+        {"codigo": "N47", "descripcion": "Hipertrofia del prepucio, fimosis y parafimosis", "categoria": "Enfermedades urogenitales"},
+        
+        # ===== MALFORMACIONES CONGÉNITAS =====
+        {"codigo": "Q02", "descripcion": "Microcefalia", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q03.9", "descripcion": "Hidrocefalia congénita no especificada", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q05.9", "descripcion": "Espina bífida no especificada", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q20.0", "descripcion": "Tronco arterial común", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q21.0", "descripcion": "Defecto del tabique ventricular", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q21.1", "descripcion": "Defecto del tabique auricular", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q22.0", "descripcion": "Atresia de válvula pulmonar", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q23.0", "descripcion": "Estenosis congénita de válvula aórtica", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q25.0", "descripcion": "Conducto arterioso permeable", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q35.9", "descripcion": "Fisura del paladar no especificada", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q36.9", "descripcion": "Labio leporino no especificado", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q53.9", "descripcion": "Testículo no descendido no especificado", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q79.0", "descripcion": "Hernia diafragmática congénita", "categoria": "Malformaciones congénitas"},
+        
+        # ===== AFECCIONES PERINATALES =====
+        {"codigo": "P07.0", "descripcion": "Peso extremadamente bajo al nacer", "categoria": "Afecciones perinatales"},
+        {"codigo": "P07.1", "descripcion": "Otros pesos bajos al nacer", "categoria": "Afecciones perinatales"},
+        {"codigo": "P22.1", "descripcion": "Taquipnea transitoria del recién nacido", "categoria": "Afecciones perinatales"},
+        {"codigo": "P28.2", "descripcion": "Apnea del recién nacido", "categoria": "Afecciones perinatales"},
+        {"codigo": "P36.9", "descripcion": "Septicemia bacteriana del recién nacido", "categoria": "Afecciones perinatales"},
+        {"codigo": "P39.9", "descripcion": "Infección específica del período perinatal", "categoria": "Afecciones perinatales"},
+        {"codigo": "P55.0", "descripcion": "Isoinmunización Rh del feto y recién nacido", "categoria": "Afecciones perinatales"},
+        {"codigo": "P59.9", "descripcion": "Ictericia neonatal no especificada", "categoria": "Afecciones perinatales"},
+        {"codigo": "P81.9", "descripcion": "Trastorno de la regulación térmica del recién nacido", "categoria": "Afecciones perinatales"},
+        
+        # ===== FACTORES QUE INFLUYEN EN EL ESTADO DE SALUD =====
+        {"codigo": "Z00.1", "descripcion": "Examen de rutina del lactante o niño", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z03.3", "descripcion": "Observación por sospecha de trastorno del sistema nervioso", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z11.9", "descripcion": "Examen especial de detección de trastorno no especificado", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z23", "descripcion": "Necesidad de inmunización contra enfermedad bacteriana única", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z25", "descripcion": "Necesidad de inmunización contra otras enfermedades virales únicas", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z68.52", "descripcion": "IMC pediátrico en percentil 85-94 para sobrepeso", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z68.53", "descripcion": "IMC pediátrico en percentil 95-97 para obesidad", "categoria": "Factores que influyen en el estado de salud"},
+        {"codigo": "Z87.891", "descripcion": "Historia personal de alergia a medicamentos", "categoria": "Factores que influyen en el estado de salud"}
+    ]
+    
+    # Insertar códigos nuevos
+    contador = 0
+    for codigo in codigos_nuevos:
+        # Verificar si ya existe
+        existente = await db.cie10_codes.find_one({"codigo": codigo["codigo"]})
+        if not existente:
+            codigo['capitulo'] = obtener_capitulo_cie10(codigo['codigo'])
+            await db.cie10_codes.insert_one(codigo)
+            contador += 1
+    
+    return {
+        "mensaje": f"✅ Base de códigos CIE-10 expandida exitosamente",
+        "codigos_agregados": contador,
+        "total_categorias": len(set([c["categoria"] for c in codigos_nuevos])),
+        "categorias_agregadas": list(set([c["categoria"] for c in codigos_nuevos]))
+    }
+
 # NEW: Sales Management Endpoints
 @api_router.post("/ventas", response_model=Venta)
 async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token)):
