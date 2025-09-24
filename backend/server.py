@@ -1460,6 +1460,57 @@ async def actualizar_estado_cita(cita_id: str, estado: EstadoCita, token: str = 
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     return {"mensaje": "Estado de cita actualizado exitosamente"}
 
+@api_router.post("/citas/crear-rapida", response_model=CitaMedica)
+async def crear_cita_rapida(cita_data: Dict, token: str = Depends(verify_token)):
+    """⚡ Crear cita médica rápida con datos predeterminados"""
+    
+    # Extraer datos requeridos
+    paciente_id = cita_data.get("paciente_id")
+    dias_adelante = cita_data.get("dias_adelante", 7)
+    motivo = cita_data.get("motivo", "Seguimiento médico")
+    doctor = cita_data.get("doctor", "Dr. Usuario")
+    
+    if not paciente_id:
+        raise HTTPException(status_code=400, detail="paciente_id es requerido")
+    
+    # Verificar que el paciente existe
+    paciente = await db.pacientes.find_one({"id": paciente_id})
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+    
+    # Calcular fecha y hora
+    fecha_cita = datetime.now() + timedelta(days=dias_adelante)
+    # Programar a las 9:00 AM
+    fecha_cita = fecha_cita.replace(hour=9, minute=0, second=0, microsecond=0)
+    
+    # Crear objeto cita
+    nueva_cita = CitaMedica(
+        paciente_id=paciente_id,
+        paciente_nombre=paciente["nombre_completo"],
+        fecha_hora=fecha_cita,
+        motivo=motivo,
+        doctor=doctor,
+        estado="Programada",
+        notas=f"Cita rápida creada automáticamente para {fecha_cita.strftime('%Y-%m-%d %H:%M')}"
+    )
+    
+    # Guardar en base de datos
+    cita_dict = prepare_for_mongo(nueva_cita.model_dump())
+    await db.citas.insert_one(cita_dict)
+    
+    # Actualizar historial del paciente
+    await db.pacientes.update_one(
+        {"id": paciente_id},
+        {"$push": {"historial_citas": {
+            "fecha": fecha_cita.isoformat(),
+            "motivo": motivo,
+            "doctor": doctor,
+            "tipo": "Cita Rápida"
+        }}}
+    )
+    
+    return nueva_cita
+
 # NEW: Sales Management Endpoints
 @api_router.post("/ventas", response_model=Venta)
 async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token)):
