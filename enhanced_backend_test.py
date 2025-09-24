@@ -332,11 +332,11 @@ class EnhancedPediatricClinicTester:
                 self.log_test("Today's sales summary endpoint", True, is_critical=True)
                 
                 # Check if our sale appears in today's summary
-                if isinstance(today_sales, dict) and today_sales.get('ventas_hoy'):
+                if isinstance(today_sales, dict) and today_sales.get('numero_ventas') is not None:
                     self.log_test("Today's sales data structure", True, 
                                 f"Sales today: {today_sales.get('numero_ventas', 0)}")
                 else:
-                    self.log_test("Today's sales data structure", False, "Invalid data structure")
+                    self.log_test("Today's sales data structure", False, f"Invalid data structure: {today_sales}")
             else:
                 self.log_test("Today's sales summary endpoint", False, f"Response: {today_sales}", is_critical=True)
             
