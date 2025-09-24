@@ -3607,7 +3607,7 @@ const MedicationCard = ({ medicamento, headers, setMedicamentos, setShowRestockM
 };
 
 // NEW: Price Calculator Modal Component
-const PriceCalculatorModal = ({ onClose }) => {
+const PriceCalculatorModal = ({ onClose, headers }) => {
   const [formData, setFormData] = useState({
     costo_unitario: '',
     escala_compra: 'sin_escala',
