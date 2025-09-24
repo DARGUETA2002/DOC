@@ -268,8 +268,8 @@ class NewFeaturesAPITester:
         else:
             self.log_test("Monthly Sales Report endpoint", False, f"Response: {monthly_response}")
         
-        # Test AI financial recommendations
-        success, ai_response = self.make_request('GET', 'reportes/recomendaciones-ia')
+        # Test AI financial recommendations with required parameters
+        success, ai_response = self.make_request('GET', f'reportes/recomendaciones-ia?mes={current_date.month}&ano={current_date.year}')
         if success:
             self.log_test("AI Financial Recommendations endpoint", True, "AI recommendations generated")
             
