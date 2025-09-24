@@ -11,7 +11,7 @@ from datetime import datetime, date
 from typing import Dict, Any
 
 class EnhancedPediatricClinicTester:
-    def __init__(self, base_url="https://healthchild-hub.preview.emergentagent.com"):
+    def __init__(self, base_url="https://pedimed-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
