@@ -221,16 +221,24 @@ class PediatricClinicAPITester:
             self.log_test("Create patient", False, f"Response: {response}")
 
     def test_medication_management(self):
-        """Test medication/pharmacy endpoints"""
+        """Test medication/pharmacy endpoints with new pricing system"""
         print("\n💊 Testing Medication Management...")
         
-        # Create test medication
+        # Create test medication with new fields
         medication_data = {
             "nombre": "Paracetamol Pediátrico",
             "descripcion": "Analgésico y antipirético para niños",
+            "codigo_barras": "7501234567890",
             "stock": 50,
-            "precio": 25.50,
+            "stock_minimo": 10,
+            "costo_base": 15.00,
+            "escala_compra": "10+2",
+            "descuento_aplicable": 5.0,
+            "impuesto": 15.0,
             "categoria": "Analgésicos",
+            "lote": "LOT2024001",
+            "fecha_vencimiento": "2025-12-31",
+            "proveedor": "Farmacéutica Nacional",
             "indicaciones": "Fiebre y dolor leve a moderado",
             "contraindicaciones": "Hipersensibilidad al paracetamol",
             "dosis_pediatrica": "10-15 mg/kg cada 6-8 horas"
