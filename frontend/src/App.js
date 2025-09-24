@@ -318,7 +318,7 @@ const Dashboard = ({ token, role, onLogout }) => {
 };
 
 // Dashboard View Component
-const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarmacia }) => {
+const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarmacia, setActiveView }) => {
   const totalPacientes = pacientes.length;
   const pacientesEsteAno = pacientes.filter(p => 
     new Date(p.created_at).getFullYear() === new Date().getFullYear()
