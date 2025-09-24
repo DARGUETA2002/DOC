@@ -201,6 +201,66 @@
         -agent: "testing"
         -comment: "TESTED: Login with code '1970' working. CIE-10 endpoints functional. Patient CRUD operations working. All core functionality verified and stable."
 
+  - task: "Enhanced CIE-10 with AI Classification"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/cie10/clasificar with AI-powered classification working perfectly. GPT-4o integration functional with emergent LLM key. Successfully classified 'Diarrea y gastroenteritis de presunto origen infeccioso' to A09.9. Fallback to rule-based system working. Confidence levels and chapter classification included."
+
+  - task: "Fixed Pricing Calculator with 25% margin guarantee"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/medicamentos/calcular-precios-detallado working perfectly. 25% margin guarantee verified with test scenario (costo: 100, impuesto: 15%, escala: 10+3, descuento: 10%). Scale calculations accurate: 10+3=13 units, 5+1=6 units, 20+5=25 units. All pricing formulas correct."
+
+  - task: "Sales System"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: Complete sales system working. POST /api/ventas creates sales with automatic calculations. /api/ventas/hoy provides today's sales summary. /api/ventas/balance-diario shows daily balance with totals, costs, and profit calculations. All endpoints functional."
+
+  - task: "Enhanced Pharmacy Alerts with 4-week warnings"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/medicamentos/alertas working with 4-week expiration warnings. Alert categorization by type (stock_bajo, vencimiento_cercano) functional. Priority levels (alta, media, baja) correctly assigned. Test medication with 20-day expiry properly detected in alerts."
+
+  - task: "Medication Updates (PUT endpoint)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: PUT /api/medicamentos/{id} working for editing existing medications. Name, stock, cost updates applied correctly. Price recalculation triggered automatically on updates. All medication fields updatable."
+
 ## frontend:
   - task: "Calendar expansion to two weeks"
     implemented: true
