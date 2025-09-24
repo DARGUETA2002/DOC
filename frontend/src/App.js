@@ -1152,22 +1152,22 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
               </div>
             </div>
 
-            {/* Clasificación CIE-10 */}
+            {/* 🆕 NUEVA: Clasificación CIE-10 con Múltiples Códigos */}
             <div className="border-l-4 border-purple-500 pl-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Clasificación CIE-10</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔬 Clasificación CIE-10 (Múltiples Diagnósticos)</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 🆕 NUEVA: Búsqueda y selección de códigos CIE-10 */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Código CIE-10
+                    🔍 Buscar y Agregar Códigos CIE-10
                   </label>
                   <input
                     type="text"
-                    name="codigo_cie10"
-                    value={formData.codigo_cie10}
-                    onChange={handleInputChange}
-                    placeholder="Escriba para buscar código CIE-10..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={currentCIE10Search}
+                    onChange={(e) => handleCIE10Search(e.target.value)}
+                    placeholder="Escriba código o descripción..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   
                   {showCIE10List && filteredCIE10.length > 0 && (
@@ -1176,8 +1176,8 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
                         <button
                           key={code.id}
                           type="button"
-                          onClick={() => selectCIE10Code(code)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-100"
+                          onClick={() => addCIE10Code(code)}
+                          className="w-full text-left px-3 py-2 hover:bg-purple-50 border-b border-gray-100"
                         >
                           <div className="font-medium text-sm">{code.codigo}</div>
                           <div className="text-xs text-gray-600">{code.descripcion}</div>
@@ -1204,6 +1204,54 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
                   </select>
                 </div>
               </div>
+
+              {/* 🆕 NUEVA: Lista de códigos CIE-10 seleccionados */}
+              {selectedCIE10Codes.length > 0 && (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-gray-700 mb-2">📋 Diagnósticos CIE-10 Seleccionados:</div>
+                  <div className="space-y-2">
+                    {selectedCIE10Codes.map((code, index) => (
+                      <div
+                        key={code.codigo}
+                        className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-purple-900">{code.codigo}</div>
+                          <div className="text-xs text-purple-700">{code.descripcion}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCIE10Code(code.codigo)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    💡 Puede agregar múltiples diagnósticos CIE-10 para el mismo paciente
+                  </div>
+                </div>
+              )}
+
+              {/* Compatibilidad: Campo individual CIE-10 (oculto si hay múltiples) */}
+              {selectedCIE10Codes.length === 0 && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código CIE-10 Principal (Compatibilidad)
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo_cie10"
+                    value={formData.codigo_cie10}
+                    onChange={handleInputChange}
+                    placeholder="Use la búsqueda anterior para agregar códigos..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    readOnly
+                  />
+                </div>
+              )}
             </div>
 
             {/* Información Adicional */}
