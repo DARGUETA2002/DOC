@@ -159,11 +159,28 @@ const Dashboard = ({ token, role, onLogout }) => {
       setCodigosCIE10(cie10Res.data);
       setCitas(citasRes.data);
       setVentasHoy(ventasHoyRes.data);
-      setAlertasFarmacia(alertasRes.data);
+      setAlertasFarmacia(alertasRes.data.alertas || alertasRes.data || []);
     } catch (error) {
       console.error('Error loading initial data:', error);
     }
     setLoading(false);
+  };
+
+  // 🔄 FUNCIÓN NUEVA: Refrescar datos del dashboard automáticamente
+  const refreshDashboardData = async () => {
+    try {
+      const [ventasHoyRes, alertasRes, citasRes] = await Promise.all([
+        axios.get(`${API}/ventas/hoy`, { headers }),
+        axios.get(`${API}/medicamentos/alertas`, { headers }),
+        axios.get(`${API}/citas/dos-semanas`, { headers })
+      ]);
+      
+      setVentasHoy(ventasHoyRes.data);
+      setAlertasFarmacia(alertasRes.data.alertas || alertasRes.data || []);
+      setCitas(citasRes.data);
+    } catch (error) {
+      console.error('Error refreshing dashboard data:', error);
+    }
   };
 
   const MenuItem = ({ icon: Icon, label, view, active, onClick }) => (
