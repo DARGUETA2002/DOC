@@ -301,7 +301,7 @@ class PediatricClinicAPITester:
                 self.log_test("General medication search", False, f"Response: {search_results}")
             
             # Test update stock
-            success, stock_response = self.make_request('PUT', f'medicamentos/{medication_id}/stock', {"nuevo_stock": 45})
+            success, stock_response = self.make_request('PUT', f'medicamentos/{medication_id}/stock?nuevo_stock=45')
             self.log_test("Update medication stock", success,
                          f"Response: {stock_response}" if not success else "")
             
