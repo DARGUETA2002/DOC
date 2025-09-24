@@ -528,8 +528,8 @@ class PediatricClinicAPITester:
             self.log_test("Create test patient for appointments", False, f"Response: {patient_response}")
 
     def test_pharmacy_alerts_system(self):
-        """Test pharmacy stock and expiration alerts"""
-        print("\n⚠️ Testing Pharmacy Alerts System...")
+        """Test enhanced pharmacy alerts system"""
+        print("\n⚠️ Testing Enhanced Pharmacy Alerts System...")
         
         # Create medication with low stock
         low_stock_med = {
@@ -538,7 +538,7 @@ class PediatricClinicAPITester:
             "codigo_barras": "7501234567891",
             "stock": 3,
             "stock_minimo": 10,
-            "costo_base": 18.00,
+            "costo_unitario": 18.00,  # Correct field name
             "categoria": "Antiinflamatorios",
             "lote": "LOT2024002",
             "fecha_vencimiento": "2024-03-15",  # Soon to expire
@@ -548,6 +548,34 @@ class PediatricClinicAPITester:
         success, med_response = self.make_request('POST', 'medicamentos', low_stock_med)
         if success and med_response.get('id'):
             med_id = med_response['id']
+            
+            # Test comprehensive alerts endpoint
+            success, alerts_response = self.make_request('GET', 'medicamentos/alertas')
+            if success and alerts_response.get('alertas'):
+                self.log_test("Comprehensive alerts endpoint", True, 
+                            f"Total alerts: {alerts_response.get('total_alertas', 0)}")
+                
+                # Check alert structure
+                if alerts_response.get('alertas_por_tipo'):
+                    stock_alerts = alerts_response['alertas_por_tipo'].get('stock_bajo', 0)
+                    expiry_alerts = alerts_response['alertas_por_tipo'].get('vencimiento_cercano', 0)
+                    self.log_test("Alert categorization", True, 
+                                f"Stock alerts: {stock_alerts}, Expiry alerts: {expiry_alerts}")
+                else:
+                    self.log_test("Alert categorization", False, "No alert categorization found")
+                
+                # Verify alert details
+                alerts = alerts_response.get('alertas', [])
+                if alerts:
+                    first_alert = alerts[0]
+                    required_alert_fields = ['tipo', 'medicamento_id', 'medicamento_nombre', 'mensaje', 'prioridad']
+                    has_all_fields = all(field in first_alert for field in required_alert_fields)
+                    self.log_test("Alert structure completeness", has_all_fields, 
+                                f"Alert fields: {list(first_alert.keys())}")
+                else:
+                    self.log_test("Alert structure completeness", False, "No alerts generated")
+            else:
+                self.log_test("Comprehensive alerts endpoint", False, f"Response: {alerts_response}")
             
             # Test low stock alert
             success, low_stock_response = self.make_request('GET', 'medicamentos/stock-bajo')
