@@ -418,9 +418,9 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setActiveView('sales')}>
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">🛒 Top Productos Vendidos Hoy</h2>
+            <h2 className="text-lg font-semibold text-gray-900">🛒 Top Productos Vendidos Hoy (Click para ver ventas)</h2>
           </div>
           <div className="p-6">
             <div className="space-y-4">
