@@ -1718,7 +1718,7 @@ Por favor intente nuevamente o use "Nueva Cita" en su lugar.`);
 };
 
 // 🆕 NUEVO: Modal de Citas de Hoy Component
-const TodayAppointmentsModal = ({ onClose, citasHoy, pacientes }) => {
+const TodayAppointmentsModal = ({ onClose, citasHoy, pacientes, onViewPatient }) => {
   const getPatientName = (pacienteId) => {
     const patient = pacientes.find(p => p.id === pacienteId);
     return patient ? patient.nombre_completo : 'Paciente no encontrado';
