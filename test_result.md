@@ -203,52 +203,52 @@
 
 ## frontend:
   - task: "Calendar expansion to two weeks"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-        -working: false
+        -working: true
         -agent: "main"
-        -comment: "Currently shows 1 week, need to expand to 2 weeks display"
+        -comment: "Two-week calendar implemented with Semana 1 & 2 views, enhanced navigation"
 
   - task: "Quick-add appointment button"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-        -working: false
+        -working: true
         -agent: "main"
-        -comment: "Need to add quick-add functionality after consultations"
+        -comment: "Green 'Cita Rápida' button added with modal for 1,3,7,14,30 day scheduling"
 
   - task: "Pharmacy stock integration in treatment"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-        -working: false
+        -working: true
         -agent: "main"
-        -comment: "Need to integrate pharmacy stock filtering in treatment section"
+        -comment: "Medication search and selection integrated in patient treatment section"
 
   - task: "Enhanced UI/UX design"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.css"
     stuck_count: 0
     priority: "medium"
     needs_retesting: true
     status_history:
-        -working: false
+        -working: true
         -agent: "main"
-        -comment: "Need to improve colors, icons, and visual appeal"
+        -comment: "Modern glassmorphism design, gradients, enhanced colors and icons added"
 
 ## metadata:
   created_by: "main_agent"
