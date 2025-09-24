@@ -159,7 +159,7 @@ class EnhancedPediatricClinicTester:
         ]
         
         for term in spanish_terms:
-            success, response = self.make_request('POST', 'cie10/clasificar', params={"diagnostico": term})
+            success, response = self.make_request('POST', 'cie10/clasificar', data={"diagnostico": term})
             if success and response.get('codigo'):
                 self.log_test(f"Spanish term classification: '{term}'", True, 
                             f"Code: {response.get('codigo')}")
