@@ -1939,6 +1939,524 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
   );
 };
 
+// Quick Sale Modal Component
+const QuickSaleModal = ({ onClose, medicamentos, setMedicamentos, headers }) => {
+  const [formData, setFormData] = useState({
+    medicamento_id: '',
+    cliente_nombre: '',
+    precio_venta: '',
+    descuento_aplicado: 0,
+    cantidad: 1
+  });
+  const [selectedMedicamento, setSelectedMedicamento] = useState(null);
+  const [medicationSearch, setMedicationSearch] = useState('');
+  const [showMedicationList, setShowMedicationList] = useState(false);
+
+  const availableMedicamentos = medicamentos.filter(med => med.stock > 0);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const searchMedications = (searchTerm) => {
+    setMedicationSearch(searchTerm);
+    if (searchTerm.length > 1) {
+      setShowMedicationList(true);
+    } else {
+      setShowMedicationList(false);
+    }
+  };
+
+  const selectMedicamento = (med) => {
+    setSelectedMedicamento(med);
+    setFormData(prev => ({
+      ...prev,
+      medicamento_id: med.id,
+      precio_venta: med.precio_publico || ''
+    }));
+    setMedicationSearch(med.nombre);
+    setShowMedicationList(false);
+  };
+
+  const calculateTotal = () => {
+    const subtotal = (parseFloat(formData.precio_venta) || 0) * formData.cantidad;
+    const descuento = subtotal * (formData.descuento_aplicado / 100);
+    return subtotal - descuento;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.medicamento_id || !formData.cliente_nombre || !formData.precio_venta) {
+      alert('❌ Por favor complete todos los campos requeridos');
+      return;
+    }
+
+    if (formData.cantidad > selectedMedicamento?.stock) {
+      alert(`❌ Stock insuficiente. Disponible: ${selectedMedicamento?.stock}`);
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API}/ventas/venta-rapida`, {
+        medicamento_id: formData.medicamento_id,
+        cliente_nombre: formData.cliente_nombre,
+        precio_venta: parseFloat(formData.precio_venta),
+        descuento_aplicado: parseFloat(formData.descuento_aplicado),
+        cantidad: parseInt(formData.cantidad),
+        vendedor: "Farmacia"
+      }, { headers });
+
+      if (response.data.success) {
+        alert(`✅ ${response.data.mensaje}\nTotal: ${formatCurrency(response.data.total)}\nStock restante: ${response.data.stock_restante}`);
+        
+        // Actualizar lista de medicamentos
+        setMedicamentos(prev => prev.map(med => 
+          med.id === formData.medicamento_id 
+            ? { ...med, stock: response.data.stock_restante }
+            : med
+        ));
+        
+        onClose();
+      }
+    } catch (error) {
+      alert('❌ Error al procesar venta: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const filteredMedicamentos = availableMedicamentos.filter(med => 
+    med.nombre.toLowerCase().includes(medicationSearch.toLowerCase())
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <DollarSign className="h-6 w-6 text-orange-600 mr-3" />
+            <h2 className="text-xl font-bold text-gray-900">⚡ Venta Rápida</h2>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Búsqueda de Medicamento */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                💊 Producto a Vender *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={medicationSearch}
+                  onChange={(e) => searchMedications(e.target.value)}
+                  onFocus={() => setShowMedicationList(medicationSearch.length > 1)}
+                  placeholder="Buscar producto..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+                <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+              </div>
+
+              {/* Lista de medicamentos */}
+              {showMedicationList && filteredMedicamentos.length > 0 && (
+                <div className="mt-2 border border-gray-200 rounded-md bg-white shadow-lg max-h-32 overflow-y-auto">
+                  {filteredMedicamentos.slice(0, 6).map((med) => (
+                    <div
+                      key={med.id}
+                      onClick={() => selectMedicamento(med)}
+                      className="p-2 hover:bg-orange-50 cursor-pointer border-b border-gray-100"
+                    >
+                      <div className="text-sm font-medium text-gray-900">{med.nombre}</div>
+                      <div className="text-xs text-gray-500">
+                        Stock: {med.stock} | Precio: {formatCurrency(med.precio_publico)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Cliente */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                👤 Nombre del Cliente *
+              </label>
+              <input
+                type="text"
+                name="cliente_nombre"
+                value={formData.cliente_nombre}
+                onChange={handleInputChange}
+                placeholder="Nombre completo del cliente"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required
+              />
+            </div>
+
+            {/* Cantidad y Precio */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📦 Cantidad
+                </label>
+                <input
+                  type="number"
+                  name="cantidad"
+                  min="1"
+                  max={selectedMedicamento?.stock || 1}
+                  value={formData.cantidad}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+                {selectedMedicamento && (
+                  <p className="text-xs text-gray-500 mt-1">Stock: {selectedMedicamento.stock}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  💰 Precio Unitario *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="precio_venta"
+                  value={formData.precio_venta}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Descuento */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🏷️ Descuento (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="50"
+                name="descuento_aplicado"
+                value={formData.descuento_aplicado}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            {/* Total */}
+            <div className="bg-orange-50 p-3 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">💵 Total a Cobrar:</span>
+                <span className="text-lg font-bold text-orange-600">
+                  {formatCurrency(calculateTotal())}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors flex items-center"
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                Procesar Venta
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Restock Modal Component
+const RestockModal = ({ onClose, medicamentos, setMedicamentos, headers }) => {
+  const [formData, setFormData] = useState({
+    nombre_producto: '',
+    nuevo_lote: '',
+    fecha_vencimiento: '',
+    stock_inicial: '',
+    costo_unitario: '',
+    impuesto: 0,
+    escala_compra: 'sin_escala'
+  });
+  const [detectionResult, setDetectionResult] = useState(null);
+  const [isDetecting, setIsDetecting] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const detectRestock = async () => {
+    if (!formData.nombre_producto) {
+      alert('❌ Ingrese el nombre del producto');
+      return;
+    }
+
+    setIsDetecting(true);
+    try {
+      const response = await axios.post(`${API}/medicamentos/detectar-restock`, {
+        nombre_producto: formData.nombre_producto,
+        nuevo_lote: formData.nuevo_lote,
+        fecha_vencimiento: formData.fecha_vencimiento,
+        stock_inicial: parseInt(formData.stock_inicial) || 0,
+        costo_unitario: parseFloat(formData.costo_unitario) || 0,
+        impuesto: parseFloat(formData.impuesto) || 0,
+        escala_compra: formData.escala_compra
+      }, { headers });
+
+      setDetectionResult(response.data);
+      
+      if (response.data.es_restock && response.data.sugerencia?.mantener) {
+        // Pre-cargar datos del producto existente
+        const mantener = response.data.sugerencia.mantener;
+        setFormData(prev => ({
+          ...prev,
+          ...mantener
+        }));
+      }
+    } catch (error) {
+      alert('❌ Error en detección: ' + (error.response?.data?.detail || error.message));
+    }
+    setIsDetecting(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!detectionResult) {
+      alert('❌ Primero ejecute la detección inteligente');
+      return;
+    }
+
+    try {
+      if (detectionResult.es_restock) {
+        // Aplicar restock a producto existente
+        const response = await axios.put(
+          `${API}/medicamentos/${detectionResult.producto_existente.id}/restock`,
+          {
+            nombre_producto: formData.nombre_producto,
+            nuevo_lote: formData.nuevo_lote,
+            fecha_vencimiento: formData.fecha_vencimiento,
+            stock_inicial: parseInt(formData.stock_inicial),
+            costo_unitario: parseFloat(formData.costo_unitario),
+            impuesto: parseFloat(formData.impuesto),
+            escala_compra: formData.escala_compra
+          },
+          { headers }
+        );
+
+        alert(`✅ ${response.data.mensaje}\nNuevo stock: ${response.data.nuevo_stock}`);
+        
+        // Actualizar lista de medicamentos
+        const updatedMedicamento = await axios.get(`${API}/medicamentos`, { headers });
+        setMedicamentos(updatedMedicamento.data);
+        
+      } else {
+        // Redirigir a crear producto nuevo
+        alert('💡 Producto nuevo detectado. Por favor use el botón "Nuevo Producto" para crearlo.');
+      }
+      
+      onClose();
+    } catch (error) {
+      alert('❌ Error al aplicar restock: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <BarChart3 className="h-6 w-6 text-blue-600 mr-3" />
+            <h2 className="text-xl font-bold text-gray-900">🔄 Restock Inteligente</h2>
+          </div>
+          
+          <div className="bg-blue-50 p-3 rounded-lg mb-4">
+            <p className="text-sm text-blue-700">
+              🧠 El sistema detectará automáticamente si es un restock de un producto existente y pre-cargará los datos.
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Nombre del Producto */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📦 Nombre del Producto *
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  name="nombre_producto"
+                  value={formData.nombre_producto}
+                  onChange={handleInputChange}
+                  placeholder="Ej: Acetaminofén 500mg"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={detectRestock}
+                  disabled={isDetecting}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isDetecting ? '🔍' : '🧠'}
+                </button>
+              </div>
+            </div>
+
+            {/* Resultado de Detección */}
+            {detectionResult && (
+              <div className={`p-3 rounded-lg border-l-4 ${
+                detectionResult.es_restock ? 'bg-green-50 border-green-400' : 'bg-orange-50 border-orange-400'
+              }`}>
+                <p className={`text-sm font-medium ${
+                  detectionResult.es_restock ? 'text-green-800' : 'text-orange-800'
+                }`}>
+                  {detectionResult.mensaje}
+                </p>
+                {detectionResult.es_restock && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Confianza: {detectionResult.confianza} | Producto: {detectionResult.producto_existente?.nombre}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Campos de Inventario */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🏷️ Nuevo Lote *
+                </label>
+                <input
+                  type="text"
+                  name="nuevo_lote"
+                  value={formData.nuevo_lote}
+                  onChange={handleInputChange}
+                  placeholder="LOT2024001"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📅 Fecha Vencimiento *
+                </label>
+                <input
+                  type="date"
+                  name="fecha_vencimiento"
+                  value={formData.fecha_vencimiento}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📦 Stock Inicial *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  name="stock_inicial"
+                  value={formData.stock_inicial}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  💰 Costo Unitario *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="costo_unitario"
+                  value={formData.costo_unitario}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🏛️ Impuesto (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  name="impuesto"
+                  value={formData.impuesto}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📊 Escala de Compra
+                </label>
+                <select
+                  name="escala_compra"
+                  value={formData.escala_compra}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="sin_escala">Sin escala</option>
+                  <option value="10+3">10+3</option>
+                  <option value="5+1">5+1</option>
+                  <option value="20+5">20+5</option>
+                  <option value="12+2">12+2</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!detectionResult}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                {detectionResult?.es_restock ? 'Aplicar Restock' : 'Crear Nuevo'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Sales View Component
 const SalesView = ({ medicamentos, pacientes, headers }) => {
   const [ventas, setVentas] = useState([]);
