@@ -869,21 +869,30 @@ async def search_cie10(query: str, token: str = Depends(verify_token)):
 
 @api_router.post("/cie10/clasificar")
 async def clasificar_diagnostico_inteligente(diagnostico: str, token: str = Depends(verify_token)):
-    """Clasificación inteligente y expandida de diagnósticos según CIE-10"""
-    codigo_sugerido = clasificar_cie10_inteligente(diagnostico)
+    """🧠 Clasificación inteligente con IA de diagnósticos según CIE-10"""
     
-    if codigo_sugerido:
-        cie10_code = await db.cie10_codes.find_one({"codigo": codigo_sugerido})
-        if cie10_code:
-            return {
-                "codigo": codigo_sugerido,
-                "descripcion": cie10_code["descripcion"],
-                "capitulo": obtener_capitulo_cie10(codigo_sugerido),
-                "sugerencia": True,
-                "confianza": "alta"  # Nivel de confianza en la sugerencia
-            }
+    # Usar nueva clasificación con IA
+    resultado_ai = await clasificar_cie10_inteligente_con_ai(diagnostico)
     
-    # Si no encuentra coincidencia exacta, buscar similares
+    if resultado_ai["codigo"]:
+        # Buscar información completa en la base de datos
+        cie10_code = await db.cie10_codes.find_one({"codigo": resultado_ai["codigo"]})
+        
+        descripcion_final = resultado_ai.get("descripcion", "")
+        if cie10_code and not descripcion_final:
+            descripcion_final = cie10_code["descripcion"]
+        
+        return {
+            "codigo": resultado_ai["codigo"],
+            "descripcion": descripcion_final,
+            "capitulo": obtener_capitulo_cie10(resultado_ai["codigo"]),
+            "sugerencia": True,
+            "confianza": resultado_ai["confianza"],
+            "metodo": resultado_ai.get("metodo", "ai"),
+            "mensaje": f"✅ Clasificación automática {'con IA' if resultado_ai.get('metodo') == 'ai' else 'por reglas'}"
+        }
+    
+    # Si no encuentra con IA, buscar similares en base de datos
     palabras = diagnostico.lower().split()
     for palabra in palabras:
         if len(palabra) > 4:
@@ -898,7 +907,9 @@ async def clasificar_diagnostico_inteligente(diagnostico: str, token: str = Depe
                     "capitulo": obtener_capitulo_cie10(codes[0]["codigo"]),
                     "sugerencia": True,
                     "confianza": "media",
-                    "alternativas": [{"codigo": c["codigo"], "descripcion": c["descripcion"]} for c in codes[1:4]]
+                    "metodo": "busqueda_similar",
+                    "alternativas": [{"codigo": c["codigo"], "descripcion": c["descripcion"]} for c in codes[1:4]],
+                    "mensaje": "📚 Encontrado por búsqueda similar en base de datos"
                 }
     
     return {
@@ -907,7 +918,8 @@ async def clasificar_diagnostico_inteligente(diagnostico: str, token: str = Depe
         "capitulo": None,
         "sugerencia": False,
         "confianza": "baja",
-        "mensaje": "No se encontró clasificación automática. Busque manualmente en la base CIE-10."
+        "metodo": "ninguno",
+        "mensaje": "❌ No se encontró clasificación automática. Busque manualmente en la base CIE-10."
     }
 
 @api_router.post("/pacientes", response_model=Paciente)
