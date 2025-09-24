@@ -1472,6 +1472,98 @@ const AppointmentModal = ({ onClose, pacientes, headers, setCitas }) => {
   );
 };
 
+// NEW: Quick Appointment Modal Component
+const QuickAppointmentModal = ({ onClose, pacientes, onCreateQuick }) => {
+  const [selectedPatient, setSelectedPatient] = useState('');
+  const [diasAdelante, setDiasAdelante] = useState(7);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedPatient) {
+      alert('Por favor seleccione un paciente');
+      return;
+    }
+    onCreateQuick(selectedPatient, diasAdelante);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <Clock className="h-6 w-6 text-green-600 mr-3" />
+            <h2 className="text-xl font-bold text-gray-900">⚡ Cita Rápida</h2>
+          </div>
+          
+          <div className="bg-green-50 p-3 rounded-lg mb-4">
+            <p className="text-sm text-green-700">
+              💡 Crea una cita automática a las 9:00 AM del día seleccionado con motivo "Seguimiento médico"
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                👤 Paciente *
+              </label>
+              <select
+                required
+                value={selectedPatient}
+                onChange={(e) => setSelectedPatient(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="">Seleccionar paciente</option>
+                {pacientes.map(paciente => (
+                  <option key={paciente.id} value={paciente.id}>
+                    {paciente.nombre_completo} - {paciente.edad} años
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📅 Programar para dentro de:
+              </label>
+              <select
+                value={diasAdelante}
+                onChange={(e) => setDiasAdelante(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value={1}>1 día (mañana)</option>
+                <option value={3}>3 días</option>
+                <option value={7}>1 semana</option>
+                <option value={14}>2 semanas</option>
+                <option value={30}>1 mes</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Fecha programada: {new Date(Date.now() + diasAdelante * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')} a las 9:00 AM
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Crear Cita Rápida
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ENHANCED: Pharmacy View Component with Complex Pricing
 const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
   const [showModal, setShowModal] = useState(false);
