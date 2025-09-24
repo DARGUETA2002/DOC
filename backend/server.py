@@ -2267,8 +2267,8 @@ async def generar_reporte_anual_excel(ano: int, token: str = Depends(verify_toke
             ws[f"A{row}"].fill = month_fill
             
             ventas = reporte_mes['resumen']['total_ventas']
-            productos = reporte_mes['resumen']['productos_vendidos']
-            transacciones = reporte_mes['resumen']['numero_ventas']
+            productos = reporte_mes['resumen']['productos_diferentes_vendidos']
+            transacciones = reporte_mes['resumen']['numero_transacciones']
             utilidad = reporte_mes['resumen']['utilidad_bruta']
             costos = reporte_mes['resumen']['total_costos']
             
