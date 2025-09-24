@@ -711,16 +711,20 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
     if (name === 'diagnostico_clinico' && value.length > 3) {
       classifyDiagnosis(value);
     }
+  };
 
-    // Filter CIE-10 codes when typing
-    if (name === 'codigo_cie10' && value.length > 0) {
+  // 🆕 NUEVA FUNCIÓN: Manejo de búsqueda CIE-10
+  const handleCIE10Search = (value) => {
+    setCurrentCIE10Search(value);
+    
+    if (value.length > 0) {
       const filtered = codigosCIE10.filter(code =>
         code.codigo.toLowerCase().includes(value.toLowerCase()) ||
         code.descripcion.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredCIE10(filtered.slice(0, 10));
       setShowCIE10List(true);
-    } else if (name === 'codigo_cie10') {
+    } else {
       setShowCIE10List(false);
     }
   };
