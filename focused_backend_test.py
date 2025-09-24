@@ -208,7 +208,9 @@ class FocusedAPITester:
             # Test different day ranges
             day_ranges = [1, 3, 7, 14, 30]
             for days in day_ranges:
+                # Note: CitaRapida model expects paciente_id in body even though it's in path
                 quick_data = {
+                    "paciente_id": patient_id,  # Required by the model
                     "motivo": f"Quick appointment for {days} days ahead",
                     "doctor": "Dr. Quick",
                     "dias_adelante": days
