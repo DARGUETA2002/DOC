@@ -145,17 +145,21 @@ const Dashboard = ({ token, role, onLogout }) => {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [pacientesRes, medicamentosRes, cie10Res, citasRes] = await Promise.all([
+      const [pacientesRes, medicamentosRes, cie10Res, citasRes, ventasHoyRes, alertasRes] = await Promise.all([
         axios.get(`${API}/pacientes`, { headers }),
         axios.get(`${API}/medicamentos`, { headers }),
         axios.get(`${API}/cie10`, { headers }),
-        axios.get(`${API}/citas/dos-semanas`, { headers })  // Updated to use two-week endpoint
+        axios.get(`${API}/citas/dos-semanas`, { headers }),
+        axios.get(`${API}/ventas/hoy`, { headers }),
+        axios.get(`${API}/medicamentos/alertas`, { headers })
       ]);
       
       setPacientes(pacientesRes.data);
       setMedicamentos(medicamentosRes.data);
       setCodigosCIE10(cie10Res.data);
       setCitas(citasRes.data);
+      setVentasHoy(ventasHoyRes.data);
+      setAlertasFarmacia(alertasRes.data);
     } catch (error) {
       console.error('Error loading initial data:', error);
     }
