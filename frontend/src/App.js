@@ -1976,10 +1976,10 @@ const MedicationCard = ({ medicamento, headers, setMedicamentos }) => {
 // NEW: Price Calculator Modal Component
 const PriceCalculatorModal = ({ onClose }) => {
   const [formData, setFormData] = useState({
-    costo_base: '',
+    costo_unitario: '',
     escala_compra: 'sin_escala',
     descuento: '0',
-    impuesto: '15'
+    impuesto: '0'
   });
   
   const [resultado, setResultado] = useState(null);
