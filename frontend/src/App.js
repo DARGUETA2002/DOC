@@ -316,7 +316,7 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
       
-      {/* Stats Cards */}
+      {/* Enhanced Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
@@ -333,7 +333,20 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
-              <CalendarDays className="h-8 w-8 text-green-600" />
+              <DollarSign className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">💰 Ventas Hoy</p>
+              <p className="text-xl font-bold text-gray-900">{ventasHoy?.productos_vendidos_hoy || 0}</p>
+              <p className="text-xs text-gray-500">{formatCurrency(ventasHoy?.total_ingresos || 0)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <CalendarDays className="h-8 w-8 text-purple-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Citas Hoy</p>
@@ -344,24 +357,13 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
         
         <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <TrendingUp className="h-8 w-8 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pacientes Este Año</p>
-              <p className="text-2xl font-bold text-gray-900">{pacientesEsteAno}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Medicamentos Bajo Stock</p>
-              <p className="text-2xl font-bold text-gray-900">{medicamentosBajoStock}</p>
+              <p className="text-sm font-medium text-gray-600">🚨 Alertas Activas</p>
+              <p className="text-2xl font-bold text-gray-900">{alertasFarmacia?.length || 0}</p>
+              <p className="text-xs text-gray-500">Stock + Vencimientos</p>
             </div>
           </div>
         </div>
