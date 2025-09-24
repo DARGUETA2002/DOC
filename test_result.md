@@ -401,13 +401,10 @@
   run_ui: false
 
 ## test_plan:
-  current_focus:
-    - "Calendar expansion to two weeks"
-    - "Quick-add appointment button"
-    - "Pharmacy stock integration in treatment"
+  current_focus: []
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "completed"
 
   - task: "Quick Sale System (Venta Rápida)"
     implemented: true
