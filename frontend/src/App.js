@@ -1859,6 +1859,490 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
   );
 };
 
+// Sales View Component
+const SalesView = ({ medicamentos, pacientes, headers }) => {
+  const [ventas, setVentas] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('today');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadVentas();
+  }, [selectedPeriod]);
+
+  const loadVentas = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/ventas?periodo=${selectedPeriod}`, { headers });
+      setVentas(response.data);
+    } catch (error) {
+      console.error('Error loading sales:', error);
+    }
+    setLoading(false);
+  };
+
+  const filteredVentas = ventas.filter(venta => 
+    venta.paciente_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    venta.medicamentos?.some(med => med.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const totalVentas = ventas.reduce((sum, venta) => sum + venta.total, 0);
+  const ventasHoy = ventas.filter(v => 
+    new Date(v.fecha_venta).toDateString() === new Date().toDateString()
+  ).length;
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">💰 Gestión de Ventas</h1>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Venta
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Ventas</p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalVentas)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <BarChart3 className="h-8 w-8 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Ventas Hoy</p>
+              <p className="text-2xl font-bold text-gray-900">{ventasHoy}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <TrendingUp className="h-8 w-8 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Transacciones</p>
+              <p className="text-2xl font-bold text-gray-900">{ventas.length}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar por paciente o medicamento..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+          </div>
+          <div>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              <option value="today">Hoy</option>
+              <option value="week">Esta Semana</option>
+              <option value="month">Este Mes</option>
+              <option value="all">Todas</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Sales List */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fecha
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Paciente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Medicamentos
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                    Cargando ventas...
+                  </td>
+                </tr>
+              ) : filteredVentas.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                    No se encontraron ventas
+                  </td>
+                </tr>
+              ) : (
+                filteredVentas.map((venta) => (
+                  <tr key={venta.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDateTime(venta.fecha_venta)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {venta.paciente_nombre || 'Venta directa'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {venta.medicamentos?.map(med => med.nombre).join(', ') || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {formatCurrency(venta.total)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        venta.estado === 'completada' ? 'bg-green-100 text-green-800' :
+                        venta.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {venta.estado || 'completada'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* New Sale Modal */}
+      {showModal && (
+        <SaleModal
+          onClose={() => setShowModal(false)}
+          medicamentos={medicamentos}
+          pacientes={pacientes}
+          headers={headers}
+          setVentas={setVentas}
+        />
+      )}
+    </div>
+  );
+};
+
+// Sale Modal Component
+const SaleModal = ({ onClose, medicamentos, pacientes, headers, setVentas }) => {
+  const [formData, setFormData] = useState({
+    paciente_id: '',
+    medicamentos_vendidos: [],
+    descuento: 0,
+    metodo_pago: 'efectivo',
+    notas: ''
+  });
+  const [selectedMedicamentos, setSelectedMedicamentos] = useState([]);
+  const [medicationSearch, setMedicationSearch] = useState('');
+  const [showMedicationList, setShowMedicationList] = useState(false);
+
+  const availableMedicamentos = medicamentos.filter(med => med.stock > 0);
+
+  const addMedicationToSale = (medication) => {
+    const existing = selectedMedicamentos.find(med => med.id === medication.id);
+    if (existing) {
+      setSelectedMedicamentos(prev => 
+        prev.map(med => 
+          med.id === medication.id 
+            ? { ...med, cantidad: med.cantidad + 1 }
+            : med
+        )
+      );
+    } else {
+      setSelectedMedicamentos(prev => [...prev, { ...medication, cantidad: 1 }]);
+    }
+    setMedicationSearch('');
+    setShowMedicationList(false);
+  };
+
+  const updateMedicationQuantity = (medicationId, cantidad) => {
+    if (cantidad <= 0) {
+      setSelectedMedicamentos(prev => prev.filter(med => med.id !== medicationId));
+    } else {
+      setSelectedMedicamentos(prev => 
+        prev.map(med => 
+          med.id === medicationId 
+            ? { ...med, cantidad: Math.min(cantidad, med.stock) }
+            : med
+        )
+      );
+    }
+  };
+
+  const subtotal = selectedMedicamentos.reduce((sum, med) => sum + (med.precio * med.cantidad), 0);
+  const descuentoAmount = subtotal * (formData.descuento / 100);
+  const total = subtotal - descuentoAmount;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (selectedMedicamentos.length === 0) {
+      alert('Debe agregar al menos un medicamento');
+      return;
+    }
+
+    try {
+      const saleData = {
+        paciente_id: formData.paciente_id || null,
+        medicamentos_vendidos: selectedMedicamentos.map(med => ({
+          medicamento_id: med.id,
+          cantidad: med.cantidad,
+          precio_unitario: med.precio
+        })),
+        subtotal,
+        descuento: formData.descuento,
+        total,
+        metodo_pago: formData.metodo_pago,
+        notas: formData.notas
+      };
+
+      const response = await axios.post(`${API}/ventas`, saleData, { headers });
+      setVentas(prev => [response.data, ...prev]);
+      alert('✅ Venta registrada exitosamente');
+      onClose();
+    } catch (error) {
+      alert('Error al registrar venta: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Nueva Venta</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Patient Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Paciente (Opcional)
+              </label>
+              <select
+                value={formData.paciente_id}
+                onChange={(e) => setFormData(prev => ({...prev, paciente_id: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Venta directa (sin paciente)</option>
+                {pacientes.map(paciente => (
+                  <option key={paciente.id} value={paciente.id}>
+                    {paciente.nombre_completo} - {paciente.edad} años
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Medication Search */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Agregar Medicamentos
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={medicationSearch}
+                  onChange={(e) => {
+                    setMedicationSearch(e.target.value);
+                    setShowMedicationList(e.target.value.length > 0);
+                  }}
+                  placeholder="Buscar medicamento..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+              </div>
+
+              {/* Available Medications List */}
+              {showMedicationList && (
+                <div className="mt-2 border border-gray-200 rounded-md bg-white shadow-lg max-h-40 overflow-y-auto">
+                  {availableMedicamentos
+                    .filter(med => med.nombre.toLowerCase().includes(medicationSearch.toLowerCase()))
+                    .slice(0, 8)
+                    .map((med) => (
+                      <div
+                        key={med.id}
+                        onClick={() => addMedicationToSale(med)}
+                        className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">{med.nombre}</div>
+                            <div className="text-xs text-gray-500">{med.categoria}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium text-green-600">{formatCurrency(med.precio)}</div>
+                            <div className="text-xs text-gray-500">Stock: {med.stock}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Selected Medications */}
+            {selectedMedicamentos.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Medicamentos Seleccionados</h3>
+                <div className="space-y-2">
+                  {selectedMedicamentos.map((med) => (
+                    <div key={med.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">{med.nombre}</div>
+                        <div className="text-xs text-gray-500">{formatCurrency(med.precio)} c/u</div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => updateMedicationQuantity(med.id, med.cantidad - 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center text-sm font-medium">{med.cantidad}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateMedicationQuantity(med.id, med.cantidad + 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300"
+                        >
+                          +
+                        </button>
+                        <div className="text-sm font-medium text-gray-900 ml-4">
+                          {formatCurrency(med.precio * med.cantidad)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sale Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Descuento (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={formData.descuento}
+                  onChange={(e) => setFormData(prev => ({...prev, descuento: parseFloat(e.target.value) || 0}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Método de Pago
+                </label>
+                <select
+                  value={formData.metodo_pago}
+                  onChange={(e) => setFormData(prev => ({...prev, metodo_pago: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                  <option value="transferencia">Transferencia</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notas
+              </label>
+              <textarea
+                value={formData.notas}
+                onChange={(e) => setFormData(prev => ({...prev, notas: e.target.value}))}
+                rows="2"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Notas adicionales..."
+              />
+            </div>
+
+            {/* Total Summary */}
+            {selectedMedicamentos.length > 0 && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span>{formatCurrency(subtotal)}</span>
+                  </div>
+                  {formData.descuento > 0 && (
+                    <div className="flex justify-between text-sm text-red-600">
+                      <span>Descuento ({formData.descuento}%):</span>
+                      <span>-{formatCurrency(descuentoAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span>{formatCurrency(total)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={selectedMedicamentos.length === 0}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Registrar Venta
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ENHANCED: Medication Card Component
 const MedicationCard = ({ medicamento, headers, setMedicamentos }) => {
   const [showDetails, setShowDetails] = useState(false);
