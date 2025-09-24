@@ -315,6 +315,15 @@ const Dashboard = ({ token, role, onLogout }) => {
         )}
         {activeView === 'cie10' && <CIE10View codigosCIE10={codigosCIE10} />}
       </div>
+      
+      {/* Modal para ver expediente desde cualquier parte */}
+      {selectedPatientForView && (
+        <PatientDetailModal
+          patient={selectedPatientForView}
+          onClose={() => setSelectedPatientForView(null)}
+          headers={headers}
+        />
+      )}
     </div>
   );
 };
