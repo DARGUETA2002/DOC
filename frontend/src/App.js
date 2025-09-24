@@ -369,87 +369,122 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
         </div>
       </div>
 
-      {/* Two column layout for tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Patients */}
+      {/* Enhanced Activity Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Pacientes Recientes</h2>
+            <h2 className="text-lg font-semibold text-gray-900">👥 Pacientes Recientes</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Paciente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {pacientesRecientes.map((paciente) => (
-                  <tr key={paciente.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{paciente.nombre_completo}</div>
-                      <div className="text-sm text-gray-500">{paciente.edad} años</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        paciente.estado_nutricional === 'normal' ? 'bg-green-100 text-green-800' :
-                        paciente.estado_nutricional === 'desnutrido' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {paciente.estado_nutricional || 'No evaluado'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-6">
+            <div className="space-y-4">
+              {pacientesRecientes.slice(0, 5).map((paciente, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <Users className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{paciente.nombre_completo}</p>
+                    <p className="text-sm text-gray-500">{paciente.edad} años</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Upcoming Appointments */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Próximas Citas</h2>
+            <h2 className="text-lg font-semibold text-gray-900">🛒 Top Productos Vendidos Hoy</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Paciente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha/Hora
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {citasProximas.map((cita) => (
-                  <tr key={cita.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{cita.paciente_nombre}</div>
-                      <div className="text-sm text-gray-500">{cita.motivo}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDateTime(cita.fecha_hora)}</div>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        cita.estado === 'confirmada' ? 'bg-green-100 text-green-800' :
-                        cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {cita.estado}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-6">
+            <div className="space-y-4">
+              {ventasHoy?.top_productos?.length > 0 ? (
+                ventasHoy.top_productos.map((producto, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <Pill className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{producto.nombre}</p>
+                        <p className="text-sm text-gray-500">Vendido: {producto.cantidad} unidades</p>
+                      </div>
+                    </div>
+                    <span className="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
+                      #{index + 1}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 py-4">
+                  <Pill className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                  <p className="text-sm">No hay ventas registradas hoy</p>
+                </div>
+              )}
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Pharmacy Alerts Section */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">🚨 Alertas de Farmacia</h2>
+            <span className="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">
+              {alertasFarmacia?.length || 0} alertas activas
+            </span>
+          </div>
+        </div>
+        <div className="p-6">
+          {alertasFarmacia?.length > 0 ? (
+            <div className="space-y-3">
+              {alertasFarmacia.slice(0, 8).map((alerta, index) => (
+                <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                  alerta.prioridad === 'alta' ? 'bg-red-50 border-red-400' :
+                  alerta.prioridad === 'media' ? 'bg-yellow-50 border-yellow-400' :
+                  'bg-blue-50 border-blue-400'
+                }`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className={`h-4 w-4 ${
+                          alerta.prioridad === 'alta' ? 'text-red-600' :
+                          alerta.prioridad === 'media' ? 'text-yellow-600' :
+                          'text-blue-600'
+                        }`} />
+                        <p className="text-sm font-medium text-gray-900">{alerta.medicamento_nombre}</p>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          alerta.prioridad === 'alta' ? 'bg-red-200 text-red-800' :
+                          alerta.prioridad === 'media' ? 'bg-yellow-200 text-yellow-800' :
+                          'bg-blue-200 text-blue-800'
+                        }`}>
+                          {alerta.prioridad?.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{alerta.mensaje}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(alerta.fecha_alerta).toLocaleDateString('es-ES')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {alertasFarmacia.length > 8 && (
+                <div className="text-center pt-4 border-t">
+                  <p className="text-sm text-gray-500">
+                    Y {alertasFarmacia.length - 8} alertas adicionales...
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <AlertTriangle className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-lg font-medium">¡Excelente!</p>
+              <p className="text-sm">No hay alertas de farmacia activas</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
