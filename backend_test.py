@@ -541,7 +541,7 @@ class PediatricClinicAPITester:
             "costo_unitario": 18.00,  # Correct field name
             "categoria": "Antiinflamatorios",
             "lote": "LOT2024002",
-            "fecha_vencimiento": "2024-03-15",  # Soon to expire
+            "fecha_vencimiento": "2025-03-15",  # Soon to expire (changed to future date)
             "proveedor": "Laboratorios Unidos"
         }
         
