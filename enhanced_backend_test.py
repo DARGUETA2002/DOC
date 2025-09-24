@@ -181,7 +181,7 @@ class EnhancedPediatricClinicTester:
         
         success, response = self.make_request(
             'POST', 'medicamentos/calcular-precios-detallado', 
-            data=test_scenario
+            params=test_scenario
         )
         
         if success:
