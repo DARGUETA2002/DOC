@@ -1225,25 +1225,27 @@ async def get_medicamentos_disponibles(buscar: str = "", token: str = Depends(ve
 # Endpoints de medicamentos con sistema de precios detallado
 @api_router.post("/medicamentos/calcular-precios-detallado")
 async def calcular_precios_detallado(
-    costo_unitario: float,
-    impuesto: float = 0,
-    escala_compra: str = "sin_escala",
-    descuento: float = 0,
+    request: PriceCalculationRequest,
     token: str = Depends(verify_token)
 ):
     """💰 Calculadora detallada de precios con margen garantizado del 25%"""
     
     # Validar entradas
-    if costo_unitario <= 0:
+    if request.costo_unitario <= 0:
         raise HTTPException(status_code=400, detail="El costo unitario debe ser mayor a 0")
     
-    if descuento < 0 or descuento > 100:
+    if request.descuento < 0 or request.descuento > 100:
         raise HTTPException(status_code=400, detail="El descuento debe estar entre 0 y 100%")
     
-    if impuesto < 0 or impuesto > 100:
+    if request.impuesto < 0 or request.impuesto > 100:
         raise HTTPException(status_code=400, detail="El impuesto debe estar entre 0 y 100%")
     
-    resultado = calcular_precios_farmacia_detallado(costo_unitario, impuesto, escala_compra, descuento)
+    resultado = calcular_precios_farmacia_detallado(
+        request.costo_unitario, 
+        request.impuesto, 
+        request.escala_compra, 
+        request.descuento
+    )
     
     return {
         **resultado,
