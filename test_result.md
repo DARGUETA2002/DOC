@@ -116,6 +116,9 @@
         -working: true
         -agent: "main"
         -comment: "Backend has weekly calendar API, need to extend for 2-week view"
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/citas/dos-semanas endpoint working correctly. Returns appointments for 14-day period. Supports optional fecha_inicio parameter for custom start dates. All functionality verified."
         
   - task: "Pharmacy pricing calculations"
     implemented: true
@@ -128,6 +131,9 @@
         -working: true
         -agent: "main"
         -comment: "Complex pricing with 25% margin already implemented and tested"
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/medicamentos/calcular-precios-detallado endpoint working perfectly. 25% margin guarantee verified (margen_garantizado: true). Scale calculations working: 10+3=13 units, 5+1=6 units, 20+5=25 units. All pricing fields present and accurate."
         
   - task: "Pharmacy alerts system"
     implemented: true
@@ -140,6 +146,9 @@
         -working: true
         -agent: "main"
         -comment: "Stock alerts and expiration alerts working"
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/medicamentos/alertas endpoint working. Alert categorization by type (stock_bajo, vencimiento_cercano) functioning correctly. Alert structure includes all required fields: tipo, medicamento_id, medicamento_nombre, mensaje, prioridad."
 
   - task: "Quick appointment creation"
     implemented: true
@@ -152,6 +161,45 @@
         -working: true
         -agent: "main"
         -comment: "Backend has rapid appointment creation endpoint"
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/pacientes/{patient_id}/cita-rapida endpoint working for all day ranges (1, 3, 7, 14, 30 days). Creates appointments correctly with automatic scheduling at 9:00 AM. Returns cita_id for tracking."
+
+  - task: "Pharmacy integration with search"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: /api/medicamentos/disponibles endpoint working perfectly. Search functionality by name, category, and indications working. Returns only medications with stock > 0. Response format includes all required fields: id, nombre, categoria, stock, dosis_pediatrica, indicaciones."
+
+  - task: "Patient medication integration"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: medicamentos_recetados field in patient model working correctly. Stores and retrieves medication IDs properly. Data integrity maintained on create, update, and retrieval operations."
+
+  - task: "Authentication and core endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        -working: true
+        -agent: "testing"
+        -comment: "TESTED: Login with code '1970' working. CIE-10 endpoints functional. Patient CRUD operations working. All core functionality verified and stable."
 
 ## frontend:
   - task: "Calendar expansion to two weeks"
