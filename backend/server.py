@@ -108,6 +108,73 @@ def calcular_imc_y_estado_nutricional(peso: float, altura: float) -> tuple[float
     
     return round(imc, 2), estado
 
+async def clasificar_cie10_inteligente_con_ai(diagnostico: str) -> Dict[str, Any]:
+    """Clasificación inteligente con IA de diagnósticos según CIE-10"""
+    if not diagnostico:
+        return {"codigo": None, "confianza": "baja", "descripcion": None}
+    
+    try:
+        # Usar IA para clasificación más precisa
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if emergent_key:
+            chat = LlmChat(
+                api_key=emergent_key,
+                session_id=f"cie10-{datetime.now().timestamp()}",
+                system_message="""Eres un experto en clasificación médica CIE-10. 
+                Tu tarea es analizar diagnósticos médicos en español y devolver ÚNICAMENTE el código CIE-10 más apropiado.
+                
+                Responde SOLO con el formato: CODIGO|DESCRIPCION
+                
+                Ejemplos:
+                - Para "Diarrea y gastroenteritis de presunto origen infeccioso" responde: A09.9|Diarrea y gastroenteritis de presunto origen infeccioso
+                - Para "Fiebre" responde: R50.9|Fiebre, no especificada
+                - Para "Otitis media aguda" responde: H66.9|Otitis media, no especificada
+                
+                Si no puedes determinar un código CIE-10 apropiado, responde: NONE|No clasificable"""
+            ).with_model("openai", "gpt-4o")
+            
+            user_message = UserMessage(
+                text=f"Clasifica este diagnóstico médico pediátrico según CIE-10: {diagnostico}"
+            )
+            
+            try:
+                response = await chat.send_message(user_message)
+                
+                if response and "|" in response:
+                    parts = response.strip().split("|", 1)
+                    if len(parts) == 2 and parts[0] != "NONE":
+                        codigo = parts[0].strip()
+                        descripcion = parts[1].strip()
+                        
+                        # Validar que el código tiene formato CIE-10 básico
+                        if re.match(r'^[A-Z]\d{2}(\.\d)?$', codigo):
+                            return {
+                                "codigo": codigo,
+                                "descripcion": descripcion,
+                                "confianza": "alta",
+                                "metodo": "ai"
+                            }
+                
+            except Exception as ai_error:
+                print(f"Error en clasificación con IA: {ai_error}")
+                # Fall back to rule-based classification
+                pass
+    
+    except Exception as e:
+        print(f"Error configurando IA: {e}")
+    
+    # Fallback al método de reglas existente
+    codigo_regla = clasificar_cie10_inteligente(diagnostico)
+    if codigo_regla:
+        return {
+            "codigo": codigo_regla,
+            "descripcion": None,
+            "confianza": "media",
+            "metodo": "reglas"
+        }
+    
+    return {"codigo": None, "confianza": "baja", "descripcion": None, "metodo": "ninguno"}
+
 def clasificar_cie10_inteligente(diagnostico: str) -> Optional[str]:
     """Clasificación inteligente y ampliada de diagnósticos según CIE-10"""
     if not diagnostico:
