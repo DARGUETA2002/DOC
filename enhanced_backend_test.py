@@ -531,7 +531,7 @@ class EnhancedPediatricClinicTester:
             ('GET', 'citas'),
             ('GET', 'medicamentos/alertas'),
             ('GET', 'ventas/balance-diario'),
-            ('POST', 'cie10/clasificar')
+            ('POST', 'cie10/clasificar', {"diagnostico": "test"})
         ]
         
         for method, endpoint in protected_endpoints:
