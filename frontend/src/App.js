@@ -1504,6 +1504,13 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
         <h1 className="text-xl font-semibold text-gray-800">📅 Citas</h1>
         <div className="flex space-x-2">
           <button
+            onClick={() => setShowTodayModal(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center transition-colors"
+          >
+            <Calendar className="h-3 w-3 mr-1" />
+            HOY ({getCitasHoy().length})
+          </button>
+          <button
             onClick={() => setShowQuickAddModal(true)}
             className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center transition-colors"
           >
