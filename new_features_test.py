@@ -450,7 +450,10 @@ class NewFeaturesAPITester:
         ]
         
         for scenario in test_scenarios:
-            success, response = self.make_request('POST', 'medicamentos/calcular-precios-detallado', scenario["data"])
+            # Convert data to query parameters for GET request
+            data = scenario["data"]
+            query_params = f"costo_unitario={data['costo_unitario']}&impuesto={data['impuesto']}&escala_compra={data['escala_compra']}&descuento={data['descuento']}"
+            success, response = self.make_request('POST', f'medicamentos/calcular-precios-detallado?{query_params}')
             if success:
                 self.log_test(f"Pricing calculator - {scenario['name']}", True, "Calculation completed")
                 
