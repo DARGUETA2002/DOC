@@ -2180,17 +2180,22 @@ async def generar_reporte_excel_ventas(mes: int, ano: int, token: str = Depends(
         ws[f"C{row}"] = f"L. {cliente['total_gastado']:,.2f}"
     
     # Ajustar ancho de columnas
-    for col in ws.columns:
+    for column_cells in ws.columns:
         max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-        adjusted_width = (max_length + 2)
-        ws.column_dimensions[column].width = adjusted_width
+        column_letter = None
+        for cell in column_cells:
+            # Skip merged cells
+            if hasattr(cell, 'column_letter'):
+                column_letter = cell.column_letter
+                try:
+                    if cell.value and len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+        
+        if column_letter and max_length > 0:
+            adjusted_width = min((max_length + 2), 25)  # Máximo 25 caracteres
+            ws.column_dimensions[column_letter].width = adjusted_width
     
     # Guardar en memoria
     output = io.BytesIO()
