@@ -1505,7 +1505,11 @@ async def crear_cita_rapida(cita_data: Dict, token: str = Depends(verify_token))
             "fecha": fecha_cita.isoformat(),
             "motivo": motivo,
             "doctor": doctor,
-            "tipo": "Cita Rápida"
+            "tipo": "Cita Rápida",
+            "tratamiento": "Consulta de seguimiento",
+            "cobro": 0.0,
+            "doctor_atencion": doctor,
+            "notas": f"Cita rápida programada automáticamente"
         }}}
     )
     
