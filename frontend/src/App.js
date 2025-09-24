@@ -1489,10 +1489,34 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
         refreshDashboard();
       }
       
-      alert(`✅ Cita rápida creada exitosamente para ${new Date(response.data.fecha_hora).toLocaleString('es-ES')}`);
+      // Cerrar modal ANTES del alert para mejor UX
       setShowQuickAddModal(false);
+      
+      // Mostrar mensaje de éxito con detalles
+      const fechaFormateada = new Date(response.data.fecha_hora).toLocaleString('es-ES', {
+        year: 'numeric',
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      alert(`✅ ¡Cita rápida creada exitosamente!
+      
+📅 Fecha: ${fechaFormateada}
+👤 Paciente: ${response.data.paciente_nombre}
+🏥 Doctor: ${response.data.doctor}
+📋 Motivo: ${response.data.motivo}
+
+La cita aparecerá automáticamente en el calendario.`);
+      
     } catch (error) {
-      alert('Error al crear cita rápida: ' + (error.response?.data?.detail || error.message));
+      console.error('Error completo:', error);
+      alert(`❌ Error al crear cita rápida: 
+
+${error.response?.data?.detail || error.message}
+
+Por favor intente nuevamente o use "Nueva Cita" en su lugar.`);
     }
   };
 
