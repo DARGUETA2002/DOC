@@ -1897,6 +1897,7 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
             medicamento={medicamento}
             headers={headers}
             setMedicamentos={setMedicamentos}
+            setShowRestockModal={setShowRestockModal}
           />
         ))}
       </div>
