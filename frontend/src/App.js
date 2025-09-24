@@ -256,6 +256,14 @@ const Dashboard = ({ token, role, onLogout }) => {
             headers={headers}
           />
         )}
+
+        {activeView === 'ventas' && (
+          <SalesView 
+            medicamentos={medicamentos}
+            pacientes={pacientes}
+            headers={headers}
+          />
+        )}
         {activeView === 'cie10' && <CIE10View codigosCIE10={codigosCIE10} />}
       </div>
     </div>
