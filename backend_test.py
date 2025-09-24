@@ -221,17 +221,17 @@ class PediatricClinicAPITester:
             self.log_test("Create patient", False, f"Response: {response}")
 
     def test_medication_management(self):
-        """Test medication/pharmacy endpoints with new pricing system"""
+        """Test medication/pharmacy endpoints with enhanced features"""
         print("\n💊 Testing Medication Management...")
         
-        # Create test medication with new fields
+        # Create test medication with correct field names
         medication_data = {
             "nombre": "Paracetamol Pediátrico",
             "descripcion": "Analgésico y antipirético para niños",
             "codigo_barras": "7501234567890",
             "stock": 50,
             "stock_minimo": 10,
-            "costo_base": 15.00,
+            "costo_unitario": 15.00,  # Correct field name
             "escala_compra": "10+2",
             "descuento_aplicable": 5.0,
             "impuesto": 15.0,
@@ -250,6 +250,13 @@ class PediatricClinicAPITester:
             medication_id = response['id']
             self.log_test("Create medication", True, f"Medication ID: {medication_id}")
             
+            # Verify automatic price calculations were applied
+            if response.get('precio_publico') and response.get('margen_utilidad'):
+                self.log_test("Automatic price calculation on creation", True, 
+                            f"Public price: {response['precio_publico']}, Margin: {response['margen_utilidad']}%")
+            else:
+                self.log_test("Automatic price calculation on creation", False, "Prices not calculated")
+            
             # Test get all medications
             success, medications = self.make_request('GET', 'medicamentos')
             if success and isinstance(medications, list):
@@ -257,15 +264,44 @@ class PediatricClinicAPITester:
             else:
                 self.log_test("Get all medications", False, f"Response: {medications}")
             
-            # Test search medications
+            # Test NEW available medications endpoint (for treatment planning)
+            success, available_meds = self.make_request('GET', 'medicamentos/disponibles')
+            if success and isinstance(available_meds, list):
+                self.log_test("Get available medications", True, f"Found {len(available_meds)} available medications")
+                
+                # Verify response format includes required fields
+                if available_meds and all(key in available_meds[0] for key in ['id', 'nombre', 'categoria', 'stock', 'dosis_pediatrica']):
+                    self.log_test("Available medications format", True, "All required fields present")
+                else:
+                    self.log_test("Available medications format", False, "Missing required fields")
+            else:
+                self.log_test("Get available medications", False, f"Response: {available_meds}")
+            
+            # Test available medications with search
+            success, search_available = self.make_request('GET', 'medicamentos/disponibles?buscar=Paracetamol')
+            if success and isinstance(search_available, list):
+                found_paracetamol = any(med['nombre'].lower().find('paracetamol') >= 0 for med in search_available)
+                self.log_test("Search available medications", found_paracetamol, 
+                            f"Found {len(search_available)} results for 'Paracetamol'")
+            else:
+                self.log_test("Search available medications", False, f"Response: {search_available}")
+            
+            # Test search by category
+            success, category_search = self.make_request('GET', 'medicamentos/disponibles?buscar=Analgésicos')
+            if success and isinstance(category_search, list):
+                self.log_test("Search by category", True, f"Found {len(category_search)} analgesics")
+            else:
+                self.log_test("Search by category", False, f"Response: {category_search}")
+            
+            # Test search medications (general search)
             success, search_results = self.make_request('GET', 'medicamentos/search?query=Paracetamol')
             if success and isinstance(search_results, list):
-                self.log_test("Search medications", True, f"Found {len(search_results)} results")
+                self.log_test("General medication search", True, f"Found {len(search_results)} results")
             else:
-                self.log_test("Search medications", False, f"Response: {search_results}")
+                self.log_test("General medication search", False, f"Response: {search_results}")
             
             # Test update stock
-            success, stock_response = self.make_request('PUT', f'medicamentos/{medication_id}/stock?nuevo_stock=45')
+            success, stock_response = self.make_request('PUT', f'medicamentos/{medication_id}/stock', {"nuevo_stock": 45})
             self.log_test("Update medication stock", success,
                          f"Response: {stock_response}" if not success else "")
             
