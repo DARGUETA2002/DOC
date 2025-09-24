@@ -583,6 +583,7 @@ const PatientsView = ({ pacientes, setPacientes, codigosCIE10, headers, refreshD
           onClose={closeModal}
           headers={headers}
           setPacientes={setPacientes}
+          refreshDashboard={refreshDashboard}
         />
       )}
 
