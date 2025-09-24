@@ -1,152 +1,134 @@
 {
-  "timestamp": "2025-09-24T05:00:50.278820",
-  "total_tests": 24,
-  "passed_tests": 21,
-  "success_rate": 87.5,
+  "timestamp": "2025-09-24T06:15:47.438575",
+  "total_tests": 21,
+  "passed_tests": 17,
+  "success_rate": 80.95238095238095,
   "test_details": [
     {
       "test": "Login with invalid code (should fail)",
       "success": true,
       "details": "Should return 401",
-      "timestamp": "2025-09-24T05:00:49.570904"
+      "timestamp": "2025-09-24T06:15:46.917879"
     },
     {
       "test": "Login with valid code 1970",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.649003"
+      "timestamp": "2025-09-24T06:15:46.957052"
     },
     {
       "test": "Token received",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.649016"
+      "timestamp": "2025-09-24T06:15:46.957063"
     },
     {
       "test": "Role is doctor",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.649020"
+      "timestamp": "2025-09-24T06:15:46.957067"
     },
     {
       "test": "Get all CIE-10 codes",
       "success": true,
       "details": "Found 45 codes",
-      "timestamp": "2025-09-24T05:00:49.691441"
+      "timestamp": "2025-09-24T06:15:46.994953"
     },
     {
       "test": "Search CIE-10 codes",
       "success": true,
       "details": "Found 1 results for 'J00'",
-      "timestamp": "2025-09-24T05:00:49.727570"
+      "timestamp": "2025-09-24T06:15:47.035993"
     },
     {
       "test": "Create patient",
       "success": true,
-      "details": "Patient ID: afdaf143-3815-4617-bd8c-abac53813a3d",
-      "timestamp": "2025-09-24T05:00:49.785834"
+      "details": "Patient ID: 2e8e8e50-b79f-4db7-9533-b51ecfc26aa4",
+      "timestamp": "2025-09-24T06:15:47.075402"
     },
     {
       "test": "Automatic age calculation",
       "success": true,
       "details": "Age: 7, Expected: ~7",
-      "timestamp": "2025-09-24T05:00:49.785852"
+      "timestamp": "2025-09-24T06:15:47.075417"
     },
     {
       "test": "Automatic BMI calculation",
       "success": true,
       "details": "BMI: 21.07",
-      "timestamp": "2025-09-24T05:00:49.785860"
+      "timestamp": "2025-09-24T06:15:47.075427"
     },
     {
       "test": "Nutritional status calculation",
       "success": true,
       "details": "Status: normal",
-      "timestamp": "2025-09-24T05:00:49.785864"
+      "timestamp": "2025-09-24T06:15:47.075431"
     },
     {
       "test": "Get all patients",
       "success": true,
-      "details": "Found 1 patients",
-      "timestamp": "2025-09-24T05:00:49.826559"
+      "details": "Found 2 patients",
+      "timestamp": "2025-09-24T06:15:47.112194"
     },
     {
       "test": "Get specific patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.867865"
+      "timestamp": "2025-09-24T06:15:47.151591"
     },
     {
       "test": "Update patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.906612"
+      "timestamp": "2025-09-24T06:15:47.188193"
     },
     {
       "test": "BMI recalculation on update",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.906624"
+      "timestamp": "2025-09-24T06:15:47.188204"
     },
     {
       "test": "Add medical appointment",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.948585"
+      "timestamp": "2025-09-24T06:15:47.223928"
     },
     {
       "test": "Add lab analysis",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:49.986266"
+      "timestamp": "2025-09-24T06:15:47.260249"
     },
     {
       "test": "Delete patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T05:00:50.021043"
+      "timestamp": "2025-09-24T06:15:47.297159"
     },
     {
       "test": "Create medication",
-      "success": true,
-      "details": "Medication ID: 74f597c0-3b20-4c8f-ac77-c07e398e071a",
-      "timestamp": "2025-09-24T05:00:50.067587"
-    },
-    {
-      "test": "Get all medications",
-      "success": true,
-      "details": "Found 1 medications",
-      "timestamp": "2025-09-24T05:00:50.101987"
-    },
-    {
-      "test": "Search medications",
-      "success": true,
-      "details": "Found 1 results",
-      "timestamp": "2025-09-24T05:00:50.137860"
-    },
-    {
-      "test": "Update medication stock",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T05:00:50.171441"
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'costo_base'], 'msg': 'Field required', 'input': {'nombre': 'Paracetamol Pedi\u00e1trico', 'descripcion': 'Analg\u00e9sico y antipir\u00e9tico para ni\u00f1os', 'stock': 50, 'precio': 25.5, 'categoria': 'Analg\u00e9sicos', 'indicaciones': 'Fiebre y dolor leve a moderado', 'contraindicaciones': 'Hipersensibilidad al paracetamol', 'dosis_pediatrica': '10-15 mg/kg cada 6-8 horas'}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T06:15:47.332534"
     },
     {
       "test": "Access patients without token (should fail)",
       "success": false,
       "details": "",
-      "timestamp": "2025-09-24T05:00:50.207852"
+      "timestamp": "2025-09-24T06:15:47.365469"
     },
     {
       "test": "Access medications without token (should fail)",
       "success": false,
       "details": "",
-      "timestamp": "2025-09-24T05:00:50.244457"
+      "timestamp": "2025-09-24T06:15:47.404113"
     },
     {
       "test": "Access CIE-10 without token (should fail)",
       "success": false,
       "details": "",
-      "timestamp": "2025-09-24T05:00:50.278800"
+      "timestamp": "2025-09-24T06:15:47.438557"
     }
   ]
 }
