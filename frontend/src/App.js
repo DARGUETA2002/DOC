@@ -2522,167 +2522,404 @@ const SalesView = ({ medicamentos, pacientes, headers }) => {
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">💰 Gestión de Ventas</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Venta
-        </button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="h-8 w-8 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Ventas</p>
-              <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalVentas)}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BarChart3 className="h-8 w-8 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Ventas Hoy</p>
-              <p className="text-2xl font-bold text-gray-900">{ventasHoy}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <TrendingUp className="h-8 w-8 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Transacciones</p>
-              <p className="text-2xl font-bold text-gray-900">{ventas.length}</p>
-            </div>
-          </div>
+        <h1 className="text-2xl font-bold text-gray-900">📊 Reportes de Ventas</h1>
+        <div className="flex space-x-3">
+          <button
+            onClick={exportToExcel}
+            disabled={!reporteData}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            📊 Exportar Excel
+          </button>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Period Selector */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar por paciente o medicamento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-          </div>
-          <div>
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex items-center space-x-4">
+            <label className="text-sm font-medium text-gray-700">📅 Período:</label>
             <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
             >
-              <option value="today">Hoy</option>
-              <option value="week">Esta Semana</option>
-              <option value="month">Este Mes</option>
-              <option value="all">Todas</option>
+              {monthNames.map((month, index) => (
+                <option key={index + 1} value={index + 1}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            >
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
             </select>
           </div>
+          
+          <div className="text-sm text-gray-600">
+            📈 Reporte: {monthNames[selectedMonth - 1]} {selectedYear}
+          </div>
         </div>
       </div>
 
-      {/* Sales List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Paciente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Medicamentos
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                    Cargando ventas...
-                  </td>
-                </tr>
-              ) : filteredVentas.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                    No se encontraron ventas
-                  </td>
-                </tr>
-              ) : (
-                filteredVentas.map((venta) => (
-                  <tr key={venta.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDateTime(venta.fecha_venta)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {venta.paciente_nombre || 'Venta directa'}
+      {loading ? (
+        <div className="text-center py-12">
+          <BarChart3 className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+          <p className="text-gray-600">Cargando reporte mensual...</p>
+        </div>
+      ) : reporteData ? (
+        <>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">💰 Ingresos Totales</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(reporteData.resumen.total_ventas)}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <TrendingUp className="h-8 w-8 text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">📈 Utilidad Bruta</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(reporteData.resumen.utilidad_bruta)}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <BarChart3 className="h-8 w-8 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">📊 Margen Promedio</p>
+                  <p className="text-2xl font-bold text-gray-900">{reporteData.resumen.margen_promedio.toFixed(1)}%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Pill className="h-8 w-8 text-orange-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">📦 Productos Vendidos</p>
+                  <p className="text-2xl font-bold text-gray-900">{reporteData.resumen.productos_diferentes_vendidos}</p>
+                  <p className="text-xs text-gray-500">{reporteData.resumen.productos_no_vendidos} sin vender</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs Navigation */}
+          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                {[
+                  { key: 'resumen', name: '📋 Resumen', icon: BarChart3 },
+                  { key: 'productos', name: '💊 Análisis Productos', icon: Pill },
+                  { key: 'clientes', name: '👥 Mejores Clientes', icon: Users },
+                  { key: 'recomendaciones', name: '🧠 Recomendaciones IA', icon: TrendingUp }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`${
+                      activeTab === tab.key
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm flex items-center`}
+                  >
+                    <tab.icon className="h-4 w-4 mr-2" />
+                    {tab.name}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="p-6">
+              {/* Resumen Tab */}
+              {activeTab === 'resumen' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">💰 Resumen Financiero</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Ingresos brutos:</span>
+                          <span className="font-medium">{formatCurrency(reporteData.resumen.total_ventas)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Costos totales:</span>
+                          <span className="font-medium">{formatCurrency(reporteData.resumen.total_costos)}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-gray-900 font-medium">Utilidad neta:</span>
+                          <span className="font-bold text-green-600">{formatCurrency(reporteData.resumen.utilidad_bruta)}</span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {venta.medicamentos?.map(med => med.nombre).join(', ') || 'N/A'}
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">📊 Actividad Comercial</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total transacciones:</span>
+                          <span className="font-medium">{reporteData.resumen.numero_transacciones}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Productos diferentes vendidos:</span>
+                          <span className="font-medium">{reporteData.resumen.productos_diferentes_vendidos}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Productos sin vender:</span>
+                          <span className="font-medium text-red-600">{reporteData.resumen.productos_no_vendidos}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Margen promedio:</span>
+                          <span className="font-medium">{reporteData.resumen.margen_promedio.toFixed(1)}%</span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatCurrency(venta.total)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        venta.estado === 'completada' ? 'bg-green-100 text-green-800' :
-                        venta.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {venta.estado || 'completada'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                    </div>
+                  </div>
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      {/* New Sale Modal */}
-      {showModal && (
-        <SaleModal
-          onClose={() => setShowModal(false)}
-          medicamentos={medicamentos}
-          pacientes={pacientes}
-          headers={headers}
-          setVentas={setVentas}
-        />
+              {/* Productos Tab */}
+              {activeTab === 'productos' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Más Vendidos */}
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">🏆 Top Productos Más Vendidos</h3>
+                      <div className="space-y-3">
+                        {reporteData.productos_mas_vendidos.slice(0, 5).map((producto, index) => (
+                          <div key={index} className="bg-green-50 p-3 rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">#{index + 1} {producto.nombre}</p>
+                                <p className="text-sm text-gray-600">
+                                  Vendido: {producto.cantidad_vendida} unidades
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold text-green-600">
+                                {formatCurrency(producto.ingresos_generados)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Más Rentables */}
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">💰 Top Productos Más Rentables</h3>
+                      <div className="space-y-3">
+                        {reporteData.productos_mas_rentables.slice(0, 5).map((producto, index) => (
+                          <div key={index} className="bg-blue-50 p-3 rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">#{index + 1} {producto.nombre}</p>
+                                <p className="text-sm text-gray-600">
+                                  Utilidad: {formatCurrency(producto.utilidad_generada)}
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold text-blue-600">
+                                {producto.cantidad_vendida} vendidos
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Productos No Vendidos */}
+                  {reporteData.productos_no_vendidos.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">⚠️ Productos Sin Vender</h3>
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {reporteData.productos_no_vendidos.slice(0, 6).map((producto, index) => (
+                            <div key={index} className="bg-white p-2 rounded border">
+                              <p className="font-medium text-sm text-gray-900">{producto.nombre}</p>
+                              <p className="text-xs text-gray-600">Stock: {producto.stock_actual}</p>
+                              <p className="text-xs text-red-600">Capital inmovilizado: {formatCurrency(producto.precio_publico * producto.stock_actual)}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {reporteData.productos_no_vendidos.length > 6 && (
+                          <p className="text-sm text-gray-600 mt-3">
+                            Y {reporteData.productos_no_vendidos.length - 6} productos más sin vender...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Clientes Tab */}
+              {activeTab === 'clientes' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Por Frecuencia */}
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">🔄 Clientes Más Frecuentes</h3>
+                      <div className="space-y-3">
+                        {reporteData.mejores_clientes_frecuencia.slice(0, 5).map((cliente, index) => (
+                          <div key={index} className="bg-purple-50 p-3 rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">#{index + 1} {cliente.nombre}</p>
+                                <p className="text-sm text-gray-600">
+                                  {cliente.numero_compras} compras | {cliente.productos_comprados} productos
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold text-purple-600">
+                                {formatCurrency(cliente.total_gastado)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Por Monto */}
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">💎 Clientes Más Valiosos</h3>
+                      <div className="space-y-3">
+                        {reporteData.mejores_clientes_monto.slice(0, 5).map((cliente, index) => (
+                          <div key={index} className="bg-yellow-50 p-3 rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">#{index + 1} {cliente.nombre}</p>
+                                <p className="text-sm text-gray-600">
+                                  {cliente.numero_compras} compras | Promedio: {formatCurrency(cliente.total_gastado / cliente.numero_compras)}
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold text-yellow-600">
+                                {formatCurrency(cliente.total_gastado)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recomendaciones IA Tab */}
+              {activeTab === 'recomendaciones' && recomendaciones && (
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                    <div className="flex items-center mb-3">
+                      <TrendingUp className="h-6 w-6 text-blue-600 mr-3" />
+                      <h3 className="text-lg font-medium text-gray-900">🧠 Recomendaciones de IA</h3>
+                      <span className="ml-auto text-xs text-gray-500">
+                        {recomendaciones.metodo === 'ia_gpt4' ? '✨ Generado con IA' : '📋 Análisis básico'}
+                      </span>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-2">📝 Resumen Ejecutivo</h4>
+                      <p className="text-sm text-gray-700">{recomendaciones.recomendaciones.resumen_ejecutivo}</p>
+                    </div>
+                  </div>
+
+                  {/* Recomendaciones de Inventario */}
+                  {recomendaciones.recomendaciones.recomendaciones_inventario?.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">📦 Recomendaciones de Inventario</h4>
+                      <div className="space-y-3">
+                        {recomendaciones.recomendaciones.recomendaciones_inventario.map((rec, index) => (
+                          <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                            rec.accion === 'COMPRAR_MAS' ? 'bg-green-50 border-green-400' :
+                            rec.accion === 'REDUCIR_STOCK' ? 'bg-yellow-50 border-yellow-400' :
+                            'bg-blue-50 border-blue-400'
+                          }`}>
+                            <div className="flex items-start">
+                              <span className={`px-2 py-1 rounded text-xs font-medium mr-3 ${
+                                rec.accion === 'COMPRAR_MAS' ? 'bg-green-200 text-green-800' :
+                                rec.accion === 'REDUCIR_STOCK' ? 'bg-yellow-200 text-yellow-800' :
+                                'bg-blue-200 text-blue-800'
+                              }`}>
+                                {rec.accion === 'COMPRAR_MAS' ? '📈 COMPRAR MÁS' :
+                                 rec.accion === 'REDUCIR_STOCK' ? '📉 REDUCIR' :
+                                 rec.accion}
+                              </span>
+                              <div className="flex-1">
+                                <p className="font-medium text-sm text-gray-900">{rec.producto}</p>
+                                <p className="text-sm text-gray-600">{rec.razon}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Alertas Financieras */}
+                  {recomendaciones.recomendaciones.alertas_financieras?.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">⚠️ Alertas Financieras</h4>
+                      <div className="space-y-2">
+                        {recomendaciones.recomendaciones.alertas_financieras.map((alerta, index) => (
+                          <div key={index} className="bg-red-50 border-l-4 border-red-400 p-3 rounded-r-lg">
+                            <p className="text-sm text-red-800">{alerta}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Oportunidades de Mejora */}
+                  {recomendaciones.recomendaciones.oportunidades_mejora?.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-3">💡 Oportunidades de Mejora</h4>
+                      <div className="space-y-2">
+                        {recomendaciones.recomendaciones.oportunidades_mejora.map((oportunidad, index) => (
+                          <div key={index} className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg">
+                            <p className="text-sm text-blue-800">{oportunidad}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-xs text-gray-500 text-center pt-4 border-t">
+                    Recomendaciones generadas el {new Date(recomendaciones.fecha_generacion).toLocaleString('es-ES')}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+          <p className="text-gray-600">No hay datos disponibles para el período seleccionado</p>
+        </div>
       )}
     </div>
   );
