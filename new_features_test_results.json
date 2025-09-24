@@ -1,0 +1,153 @@
+{
+  "timestamp": "2025-09-24T08:42:26.293928",
+  "test_type": "NEW_ENHANCED_FEATURES",
+  "total_tests": 24,
+  "passed_tests": 13,
+  "success_rate": 54.166666666666664,
+  "test_details": [
+    {
+      "test": "Authentication with code 1970",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T08:42:25.727896"
+    },
+    {
+      "test": "Setup test medication",
+      "success": true,
+      "details": "Medication ID: 80b8708c-a49d-4a7e-87d9-89937f669563",
+      "timestamp": "2025-09-24T08:42:25.804938"
+    },
+    {
+      "test": "Quick Sale (Venta R\u00e1pida) endpoint",
+      "success": true,
+      "details": "Sale ID: N/A",
+      "timestamp": "2025-09-24T08:42:25.846271"
+    },
+    {
+      "test": "Quick Sale response structure",
+      "success": false,
+      "details": "Fields present: ['success', 'venta_id', 'total', 'utilidad', 'stock_restante', 'mensaje']",
+      "timestamp": "2025-09-24T08:42:25.846290"
+    },
+    {
+      "test": "Quick Sale calculations",
+      "success": false,
+      "details": "Missing calculation fields",
+      "timestamp": "2025-09-24T08:42:25.846294"
+    },
+    {
+      "test": "Stock check after quick sale",
+      "success": false,
+      "details": "Response: {'detail': 'Method Not Allowed'}",
+      "timestamp": "2025-09-24T08:42:25.885124"
+    },
+    {
+      "test": "AI Restock Detection endpoint",
+      "success": true,
+      "details": "Detection result: False",
+      "timestamp": "2025-09-24T08:42:25.924890"
+    },
+    {
+      "test": "Restock detection response structure",
+      "success": true,
+      "details": "Fields present: ['es_restock', 'producto_existente', 'confianza', 'sugerencia', 'mensaje']",
+      "timestamp": "2025-09-24T08:42:25.924910"
+    },
+    {
+      "test": "AI restock identification",
+      "success": true,
+      "details": "Is restock: False, Confidence: alta",
+      "timestamp": "2025-09-24T08:42:25.924916"
+    },
+    {
+      "test": "Monthly Sales Report endpoint",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'mes'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}, {'type': 'missing', 'loc': ['query', 'ano'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T08:42:25.963938"
+    },
+    {
+      "test": "AI Financial Recommendations endpoint",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'mes'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}, {'type': 'missing', 'loc': ['query', 'ano'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T08:42:26.001444"
+    },
+    {
+      "test": "Enhanced alerts endpoint",
+      "success": true,
+      "details": "Alerts retrieved successfully",
+      "timestamp": "2025-09-24T08:42:26.038565"
+    },
+    {
+      "test": "4-week expiration alerts detection",
+      "success": true,
+      "details": "Found 4 expiration alerts",
+      "timestamp": "2025-09-24T08:42:26.038579"
+    },
+    {
+      "test": "4-week window detection accuracy",
+      "success": true,
+      "details": "Detected 20 days remaining, Priority: media",
+      "timestamp": "2025-09-24T08:42:26.038586"
+    },
+    {
+      "test": "Alert priority levels",
+      "success": true,
+      "details": "Priority: media",
+      "timestamp": "2025-09-24T08:42:26.038590"
+    },
+    {
+      "test": "Patient creation with lb/cm units",
+      "success": true,
+      "details": "Patient ID: 91a2ecb3-1469-46e1-a9a7-1d8de9885a46",
+      "timestamp": "2025-09-24T08:42:26.076207"
+    },
+    {
+      "test": "Weight/Height storage",
+      "success": true,
+      "details": "Weight: 55.12 lb, Height: 110.0 cm",
+      "timestamp": "2025-09-24T08:42:26.076222"
+    },
+    {
+      "test": "BMI calculation with lb/cm",
+      "success": false,
+      "details": "No BMI calculated",
+      "timestamp": "2025-09-24T08:42:26.076226"
+    },
+    {
+      "test": "Update patient with lb/cm units",
+      "success": true,
+      "details": "Updated weight: 60.0, height: 115.0",
+      "timestamp": "2025-09-24T08:42:26.116175"
+    },
+    {
+      "test": "BMI recalculation on update",
+      "success": false,
+      "details": "BMI not recalculated",
+      "timestamp": "2025-09-24T08:42:26.116192"
+    },
+    {
+      "test": "Pricing calculator - Basic 25% margin test",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T08:42:26.191469"
+    },
+    {
+      "test": "Pricing calculator - No discount scenario",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T08:42:26.223464"
+    },
+    {
+      "test": "Pricing calculator - High discount scenario",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T08:42:26.260538"
+    },
+    {
+      "test": "Cleanup test medication",
+      "success": false,
+      "details": "Response: {'detail': 'Method Not Allowed'}",
+      "timestamp": "2025-09-24T08:42:26.293876"
+    }
+  ]
+}
