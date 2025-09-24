@@ -838,7 +838,7 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Peso (kg)
+                    📏 Peso (lb)
                   </label>
                   <input
                     type="number"
@@ -847,20 +847,22 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
                     value={formData.peso}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Peso en libras (lb)"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Altura (m)
+                    📐 Altura (cm)
                   </label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.1"
                     name="altura"
                     value={formData.altura}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Altura en centímetros (cm)"
                   />
                 </div>
               </div>
