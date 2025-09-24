@@ -682,6 +682,107 @@ class PediatricClinicAPITester:
         else:
             self.log_test("Create patient with treatment", False, f"Response: {patient_response}")
 
+    def test_patient_medication_integration(self):
+        """Test patient medication integration with medicamentos_recetados field"""
+        print("\n💊👶 Testing Patient Medication Integration...")
+        
+        # First create some test medications
+        medications_to_create = [
+            {
+                "nombre": "Amoxicilina Pediátrica",
+                "descripcion": "Antibiótico para infecciones",
+                "stock": 30,
+                "costo_unitario": 25.00,
+                "categoria": "Antibióticos",
+                "dosis_pediatrica": "20-40 mg/kg/día dividido en 3 dosis"
+            },
+            {
+                "nombre": "Paracetamol Jarabe",
+                "descripcion": "Antipirético y analgésico",
+                "stock": 50,
+                "costo_unitario": 15.00,
+                "categoria": "Analgésicos",
+                "dosis_pediatrica": "10-15 mg/kg cada 6-8 horas"
+            }
+        ]
+        
+        medication_ids = []
+        for med_data in medications_to_create:
+            success, med_response = self.make_request('POST', 'medicamentos', med_data)
+            if success and med_response.get('id'):
+                medication_ids.append(med_response['id'])
+        
+        if len(medication_ids) >= 2:
+            self.log_test("Create test medications for prescription", True, f"Created {len(medication_ids)} medications")
+            
+            # Create patient with prescribed medications
+            patient_with_meds = {
+                "nombre_completo": "Sofia Hernández López",
+                "fecha_nacimiento": "2021-09-15",
+                "nombre_padre": "Miguel Hernández",
+                "nombre_madre": "Ana López",
+                "direccion": "Colonia Los Pinos, Tegucigalpa",
+                "numero_celular": "9944-3322",
+                "diagnostico_clinico": "Infección respiratoria",
+                "tratamiento_medico": "Antibiótico y antipirético según prescripción",
+                "medicamentos_recetados": medication_ids  # Test the new field
+            }
+            
+            success, patient_response = self.make_request('POST', 'pacientes', patient_with_meds)
+            if success and patient_response.get('id'):
+                patient_id = patient_response['id']
+                
+                # Verify medicamentos_recetados field is saved
+                if patient_response.get('medicamentos_recetados'):
+                    prescribed_meds = patient_response['medicamentos_recetados']
+                    self.log_test("Prescribed medications field storage", True, 
+                                f"Stored {len(prescribed_meds)} medication IDs")
+                    
+                    # Verify the IDs match what we sent
+                    if set(prescribed_meds) == set(medication_ids):
+                        self.log_test("Prescribed medications ID integrity", True, "All medication IDs preserved")
+                    else:
+                        self.log_test("Prescribed medications ID integrity", False, 
+                                    f"Expected {medication_ids}, got {prescribed_meds}")
+                else:
+                    self.log_test("Prescribed medications field storage", False, "Field not saved")
+                
+                # Test retrieving patient and verifying medications are still there
+                success, retrieved_patient = self.make_request('GET', f'pacientes/{patient_id}')
+                if success and retrieved_patient.get('medicamentos_recetados'):
+                    retrieved_meds = retrieved_patient['medicamentos_recetados']
+                    self.log_test("Prescribed medications field retrieval", True, 
+                                f"Retrieved {len(retrieved_meds)} medication IDs")
+                    
+                    # Verify data integrity on retrieval
+                    if set(retrieved_meds) == set(medication_ids):
+                        self.log_test("Prescribed medications retrieval integrity", True, "All medication IDs retrieved correctly")
+                    else:
+                        self.log_test("Prescribed medications retrieval integrity", False, 
+                                    f"Expected {medication_ids}, retrieved {retrieved_meds}")
+                else:
+                    self.log_test("Prescribed medications field retrieval", False, "Field not retrieved")
+                
+                # Test updating patient with different medications
+                update_meds = medication_ids[:1]  # Only first medication
+                update_data = {"medicamentos_recetados": update_meds}
+                success, updated_patient = self.make_request('PUT', f'pacientes/{patient_id}', update_data)
+                if success and updated_patient.get('medicamentos_recetados'):
+                    if len(updated_patient['medicamentos_recetados']) == 1:
+                        self.log_test("Update prescribed medications", True, "Successfully updated medication list")
+                    else:
+                        self.log_test("Update prescribed medications", False, 
+                                    f"Expected 1 medication, got {len(updated_patient['medicamentos_recetados'])}")
+                else:
+                    self.log_test("Update prescribed medications", False, "Update failed")
+                
+                # Clean up
+                self.make_request('DELETE', f'pacientes/{patient_id}')
+            else:
+                self.log_test("Create patient with prescribed medications", False, f"Response: {patient_response}")
+        else:
+            self.log_test("Create test medications for prescription", False, "Failed to create required medications")
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🏥 Starting Pediatric Clinic Management System API Tests")
