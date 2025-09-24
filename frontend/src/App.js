@@ -1101,11 +1101,13 @@ const PatientDetailModal = ({ patient, onClose, headers }) => {
   );
 };
 
-// NEW: Appointments View Component
+// ENHANCED: Two-Week Appointments View Component
 const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
   const [showModal, setShowModal] = useState(false);
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
-  const [viewMode, setViewMode] = useState('week'); // week, day
+  const [viewMode, setViewMode] = useState('twoWeeks'); // twoWeeks, week
 
   function getCurrentWeek() {
     const today = new Date();
@@ -1116,9 +1118,10 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
 
   const weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   
-  const getWeekDates = () => {
+  // Get two weeks of dates starting from selectedWeek
+  const getTwoWeeksDates = () => {
     const dates = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 14; i++) {
       const date = new Date(selectedWeek);
       date.setDate(selectedWeek.getDate() + i);
       dates.push(date);
@@ -1133,14 +1136,41 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
     }).sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
   };
 
+  // Create quick appointment
+  const createQuickAppointment = async (pacienteId, diasAdelante = 7) => {
+    try {
+      const response = await axios.post(`${API}/pacientes/${pacienteId}/cita-rapida`, {
+        motivo: "Seguimiento médico",
+        doctor: "Dr. Usuario",
+        dias_adelante: diasAdelante
+      }, { headers });
+
+      // Reload citas
+      const citasRes = await axios.get(`${API}/citas`, { headers });
+      setCitas(citasRes.data);
+      
+      alert(`Cita rápida creada exitosamente para ${response.data.fecha_hora}`);
+      setShowQuickAddModal(false);
+    } catch (error) {
+      alert('Error al crear cita rápida: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Calendario de Citas</h1>
-        <div className="flex space-x-4">
+        <h1 className="text-2xl font-bold text-gray-900">📅 Calendario de Citas - Vista 2 Semanas</h1>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowQuickAddModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Cita Rápida
+          </button>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nueva Cita
@@ -1148,85 +1178,151 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
         </div>
       </div>
 
-      {/* Week Navigation */}
+      {/* Two Weeks Navigation */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => {
               const newWeek = new Date(selectedWeek);
-              newWeek.setDate(selectedWeek.getDate() - 7);
+              newWeek.setDate(selectedWeek.getDate() - 14);
               setSelectedWeek(newWeek);
             }}
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
           >
-            ← Semana Anterior
+            ← 2 Semanas Atrás
           </button>
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-indigo-700">
             {selectedWeek.toLocaleDateString('es-ES')} - {
-              new Date(selectedWeek.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
+              new Date(selectedWeek.getTime() + 13 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
             }
           </h2>
           <button
             onClick={() => {
               const newWeek = new Date(selectedWeek);
-              newWeek.setDate(selectedWeek.getDate() + 7);
+              newWeek.setDate(selectedWeek.getDate() + 14);
               setSelectedWeek(newWeek);
             }}
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
           >
-            Siguiente Semana →
+            2 Semanas Adelante →
           </button>
         </div>
         
         <button
           onClick={() => setSelectedWeek(getCurrentWeek())}
-          className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded"
+          className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
         >
-          Hoy
+          🏠 Hoy
         </button>
       </div>
 
-      {/* Weekly Calendar Grid */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="grid grid-cols-7 gap-0">
-          {/* Day Headers */}
-          {weekDays.map((day, index) => (
-            <div key={day} className="bg-gray-50 p-4 text-center font-semibold border-r border-gray-200">
-              <div className="text-sm text-gray-600">{day}</div>
-              <div className="text-lg">{getWeekDates()[index].getDate()}</div>
-            </div>
-          ))}
-          
-          {/* Day Cells */}
-          {getWeekDates().map((date, index) => (
-            <div key={index} className="min-h-32 p-2 border-r border-t border-gray-200">
-              <div className="space-y-1">
-                {getCitasForDate(date).map((cita) => (
-                  <div 
-                    key={cita.id}
-                    className={`p-2 rounded text-xs ${
-                      cita.estado === 'confirmada' ? 'bg-green-100 text-green-800' :
-                      cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    <div className="font-semibold">
-                      {new Date(cita.fecha_hora).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                    <div className="truncate">{cita.paciente_nombre}</div>
-                    <div className="truncate text-gray-600">{cita.motivo}</div>
-                  </div>
-                ))}
+      {/* Two Weeks Calendar Grid */}
+      <div className="space-y-6">
+        {/* First Week */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-indigo-50 p-3 border-b">
+            <h3 className="text-lg font-semibold text-indigo-800">
+              Semana 1: {selectedWeek.toLocaleDateString('es-ES')} - {
+                new Date(selectedWeek.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
+              }
+            </h3>
+          </div>
+          <div className="grid grid-cols-7 gap-0">
+            {/* Week 1 Headers */}
+            {weekDays.map((day, index) => (
+              <div key={`w1-${day}`} className="bg-gray-50 p-3 text-center font-semibold border-r border-gray-200">
+                <div className="text-sm text-gray-600">{day}</div>
+                <div className="text-lg text-indigo-700">{getTwoWeeksDates()[index].getDate()}</div>
               </div>
-            </div>
-          ))}
+            ))}
+            
+            {/* Week 1 Day Cells */}
+            {getTwoWeeksDates().slice(0, 7).map((date, index) => (
+              <div key={`w1-${index}`} className="min-h-32 p-2 border-r border-t border-gray-200 hover:bg-gray-50 transition-colors">
+                <div className="space-y-1">
+                  {getCitasForDate(date).map((cita) => (
+                    <div 
+                      key={cita.id}
+                      className={`p-2 rounded text-xs shadow-sm ${
+                        cita.estado === 'confirmada' ? 'bg-green-100 text-green-800 border-l-2 border-green-500' :
+                        cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800 border-l-2 border-yellow-500' :
+                        'bg-gray-100 text-gray-800 border-l-2 border-gray-500'
+                      }`}
+                    >
+                      <div className="font-semibold">
+                        {new Date(cita.fecha_hora).toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                      <div className="truncate">{cita.paciente_nombre}</div>
+                      <div className="truncate text-gray-600">{cita.motivo}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Second Week */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-purple-50 p-3 border-b">
+            <h3 className="text-lg font-semibold text-purple-800">
+              Semana 2: {new Date(selectedWeek.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')} - {
+                new Date(selectedWeek.getTime() + 13 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
+              }
+            </h3>
+          </div>
+          <div className="grid grid-cols-7 gap-0">
+            {/* Week 2 Headers */}
+            {weekDays.map((day, index) => (
+              <div key={`w2-${day}`} className="bg-gray-50 p-3 text-center font-semibold border-r border-gray-200">
+                <div className="text-sm text-gray-600">{day}</div>
+                <div className="text-lg text-purple-700">{getTwoWeeksDates()[index + 7].getDate()}</div>
+              </div>
+            ))}
+            
+            {/* Week 2 Day Cells */}
+            {getTwoWeeksDates().slice(7, 14).map((date, index) => (
+              <div key={`w2-${index}`} className="min-h-32 p-2 border-r border-t border-gray-200 hover:bg-gray-50 transition-colors">
+                <div className="space-y-1">
+                  {getCitasForDate(date).map((cita) => (
+                    <div 
+                      key={cita.id}
+                      className={`p-2 rounded text-xs shadow-sm ${
+                        cita.estado === 'confirmada' ? 'bg-green-100 text-green-800 border-l-2 border-green-500' :
+                        cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800 border-l-2 border-yellow-500' :
+                        'bg-gray-100 text-gray-800 border-l-2 border-gray-500'
+                      }`}
+                    >
+                      <div className="font-semibold">
+                        {new Date(cita.fecha_hora).toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                      <div className="truncate">{cita.paciente_nombre}</div>
+                      <div className="truncate text-gray-600">{cita.motivo}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* New Appointment Modal */}
+      {/* Quick Add Appointment Modal */}
+      {showQuickAddModal && (
+        <QuickAppointmentModal
+          onClose={() => setShowQuickAddModal(false)}
+          pacientes={pacientes}
+          onCreateQuick={createQuickAppointment}
+        />
+      )}
+
+      {/* Regular New Appointment Modal */}
       {showModal && (
         <AppointmentModal
           onClose={() => setShowModal(false)}
