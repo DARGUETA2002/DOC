@@ -35,7 +35,7 @@ class FocusedAPITester:
             "timestamp": datetime.now().isoformat()
         })
 
-    def make_request(self, method: str, endpoint: str, data: Dict[Any, Any] = None, expected_status: int = 200) -> tuple[bool, Dict[Any, Any]]:
+    def make_request(self, method: str, endpoint: str, data: Dict[Any, Any] = None, params: Dict[str, Any] = None, expected_status: int = 200) -> tuple[bool, Dict[Any, Any]]:
         """Make HTTP request with proper headers"""
         url = f"{self.api_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
@@ -45,13 +45,13 @@ class FocusedAPITester:
 
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=30)
+                response = requests.get(url, headers=headers, params=params, timeout=30)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=30)
+                response = requests.post(url, json=data, params=params, headers=headers, timeout=30)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers, timeout=30)
+                response = requests.put(url, json=data, params=params, headers=headers, timeout=30)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=30)
+                response = requests.delete(url, headers=headers, params=params, timeout=30)
             else:
                 return False, {"error": f"Unsupported method: {method}"}
 
