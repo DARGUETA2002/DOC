@@ -327,14 +327,8 @@ class PediatricClinicAPITester:
         print("\n💰 Testing Price Calculation System...")
         
         # Test price calculator endpoint
-        test_data = {
-            "costo_base": 20.00,
-            "escala_compra": "10+3",
-            "descuento": 10.0,
-            "impuesto": 15.0
-        }
-        
-        success, response = self.make_request('POST', 'medicamentos/calcular-precios', test_data)
+        params = "costo_base=20.00&escala_compra=10+3&descuento=10.0&impuesto=15.0"
+        success, response = self.make_request('POST', f'medicamentos/calcular-precios?{params}')
         if success:
             self.log_test("Price calculation endpoint", True)
             
