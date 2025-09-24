@@ -3670,6 +3670,8 @@ const PriceCalculatorModal = ({ onClose, headers }) => {
         return;
       }
 
+      console.log('🧮 Enviando datos:', formData);
+
       // Usar el endpoint correcto con datos en el cuerpo
       const response = await axios.post(`${API}/medicamentos/calcular-precios-detallado`, {
         costo_unitario: parseFloat(formData.costo_unitario),
@@ -3680,16 +3682,27 @@ const PriceCalculatorModal = ({ onClose, headers }) => {
         headers: headers
       });
       
+      console.log('📊 Respuesta recibida:', response.data);
       setResultado(response.data);
       
-      // Mostrar mensaje de éxito
-      if (response.data.mensaje) {
-        console.log('✅ Cálculo exitoso:', response.data.mensaje);
-      }
+      // Mensaje de éxito mejorado
+      alert(`✅ ¡Cálculo completado exitosamente!
+
+💰 Costo Real: L. ${response.data.costo_real?.toFixed(2) || '0.00'}
+💵 Precio Base: L. ${response.data.precio_base?.toFixed(2) || '0.00'}  
+🏪 Precio Público: L. ${response.data.precio_publico?.toFixed(2) || '0.00'}
+📈 Margen: ${response.data.margen_utilidad_final || 0}%
+💎 Utilidad: L. ${response.data.utilidad_por_unidad?.toFixed(2) || '0.00'}
+
+${response.data.mensaje || 'Cálculo completado'}`);
       
     } catch (error) {
-      console.error('Error al calcular precios:', error);
-      alert('❌ Error al calcular precios: ' + (error.response?.data?.detail || error.message));
+      console.error('❌ Error completo:', error);
+      alert(`❌ Error al calcular precios:
+
+${error.response?.data?.detail || error.message}
+
+Intente con valores diferentes o revise los datos ingresados.`);
     }
   };
 
