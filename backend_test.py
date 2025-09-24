@@ -609,7 +609,7 @@ class PediatricClinicAPITester:
             "codigo_barras": "7501234567892",
             "stock": 25,
             "stock_minimo": 5,
-            "costo_base": 12.00,
+            "costo_unitario": 12.00,  # Correct field name
             "categoria": "Cosméticos",
             "lote": "COSM2024001",
             "fecha_vencimiento": "2026-01-31",
