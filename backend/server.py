@@ -2103,11 +2103,11 @@ async def generar_reporte_excel_ventas(mes: int, ano: int, token: str = Depends(
     
     row += 1
     ws[f"A{row}"] = "Total Productos Vendidos:"
-    ws[f"B{row}"] = reporte_mensual['resumen']['productos_vendidos']
+    ws[f"B{row}"] = reporte_mensual['resumen']['productos_diferentes_vendidos']
     
     row += 1
     ws[f"A{row}"] = "Número de Transacciones:"
-    ws[f"B{row}"] = reporte_mensual['resumen']['numero_ventas']
+    ws[f"B{row}"] = reporte_mensual['resumen']['numero_transacciones']
     
     row += 1
     ws[f"A{row}"] = "Utilidad Generada:"
