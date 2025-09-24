@@ -1,0 +1,152 @@
+{
+  "timestamp": "2025-09-24T05:00:50.278820",
+  "total_tests": 24,
+  "passed_tests": 21,
+  "success_rate": 87.5,
+  "test_details": [
+    {
+      "test": "Login with invalid code (should fail)",
+      "success": true,
+      "details": "Should return 401",
+      "timestamp": "2025-09-24T05:00:49.570904"
+    },
+    {
+      "test": "Login with valid code 1970",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.649003"
+    },
+    {
+      "test": "Token received",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.649016"
+    },
+    {
+      "test": "Role is doctor",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.649020"
+    },
+    {
+      "test": "Get all CIE-10 codes",
+      "success": true,
+      "details": "Found 45 codes",
+      "timestamp": "2025-09-24T05:00:49.691441"
+    },
+    {
+      "test": "Search CIE-10 codes",
+      "success": true,
+      "details": "Found 1 results for 'J00'",
+      "timestamp": "2025-09-24T05:00:49.727570"
+    },
+    {
+      "test": "Create patient",
+      "success": true,
+      "details": "Patient ID: afdaf143-3815-4617-bd8c-abac53813a3d",
+      "timestamp": "2025-09-24T05:00:49.785834"
+    },
+    {
+      "test": "Automatic age calculation",
+      "success": true,
+      "details": "Age: 7, Expected: ~7",
+      "timestamp": "2025-09-24T05:00:49.785852"
+    },
+    {
+      "test": "Automatic BMI calculation",
+      "success": true,
+      "details": "BMI: 21.07",
+      "timestamp": "2025-09-24T05:00:49.785860"
+    },
+    {
+      "test": "Nutritional status calculation",
+      "success": true,
+      "details": "Status: normal",
+      "timestamp": "2025-09-24T05:00:49.785864"
+    },
+    {
+      "test": "Get all patients",
+      "success": true,
+      "details": "Found 1 patients",
+      "timestamp": "2025-09-24T05:00:49.826559"
+    },
+    {
+      "test": "Get specific patient",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.867865"
+    },
+    {
+      "test": "Update patient",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.906612"
+    },
+    {
+      "test": "BMI recalculation on update",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.906624"
+    },
+    {
+      "test": "Add medical appointment",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.948585"
+    },
+    {
+      "test": "Add lab analysis",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:49.986266"
+    },
+    {
+      "test": "Delete patient",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:50.021043"
+    },
+    {
+      "test": "Create medication",
+      "success": true,
+      "details": "Medication ID: 74f597c0-3b20-4c8f-ac77-c07e398e071a",
+      "timestamp": "2025-09-24T05:00:50.067587"
+    },
+    {
+      "test": "Get all medications",
+      "success": true,
+      "details": "Found 1 medications",
+      "timestamp": "2025-09-24T05:00:50.101987"
+    },
+    {
+      "test": "Search medications",
+      "success": true,
+      "details": "Found 1 results",
+      "timestamp": "2025-09-24T05:00:50.137860"
+    },
+    {
+      "test": "Update medication stock",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:50.171441"
+    },
+    {
+      "test": "Access patients without token (should fail)",
+      "success": false,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:50.207852"
+    },
+    {
+      "test": "Access medications without token (should fail)",
+      "success": false,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:50.244457"
+    },
+    {
+      "test": "Access CIE-10 without token (should fail)",
+      "success": false,
+      "details": "",
+      "timestamp": "2025-09-24T05:00:50.278800"
+    }
+  ]
+}
