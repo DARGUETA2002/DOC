@@ -1135,6 +1135,29 @@ async def get_citas_semana(token: str = Depends(verify_token)):
     citas = await db.citas.find(query).to_list(1000)
     return [CitaMedica(**parse_from_mongo(cita)) for cita in citas]
 
+@api_router.get("/citas/dos-semanas")
+async def get_citas_dos_semanas(fecha_inicio: Optional[date] = None, token: str = Depends(verify_token)):
+    """Obtiene las citas de dos semanas consecutivas a partir de una fecha"""
+    from datetime import timedelta
+    
+    if not fecha_inicio:
+        hoy = date.today()
+        inicio_periodo = hoy - timedelta(days=hoy.weekday())  # Inicio de semana actual
+    else:
+        inicio_periodo = fecha_inicio
+    
+    fin_periodo = inicio_periodo + timedelta(days=13)  # 14 días = 2 semanas
+    
+    query = {
+        "fecha_hora": {
+            "$gte": datetime.combine(inicio_periodo, datetime.min.time()).isoformat(),
+            "$lte": datetime.combine(fin_periodo, datetime.max.time()).isoformat()
+        }
+    }
+    
+    citas = await db.citas.find(query).to_list(1000)
+    return [CitaMedica(**parse_from_mongo(cita)) for cita in citas]
+
 @api_router.put("/citas/{cita_id}/estado")
 async def actualizar_estado_cita(cita_id: str, estado: EstadoCita, token: str = Depends(verify_token)):
     result = await db.citas.update_one(
