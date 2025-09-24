@@ -1809,6 +1809,13 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
         <h1 className="text-2xl font-bold text-gray-900">🏪 Gestión de Farmacia</h1>
         <div className="flex space-x-3">
           <button
+            onClick={() => setShowQuickSale(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <DollarSign className="h-4 w-4 mr-2" />
+            ⚡ Venta Rápida
+          </button>
+          <button
             onClick={() => setShowCalculator(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
           >
