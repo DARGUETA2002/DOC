@@ -147,7 +147,7 @@ const Dashboard = ({ token, role, onLogout }) => {
         axios.get(`${API}/pacientes`, { headers }),
         axios.get(`${API}/medicamentos`, { headers }),
         axios.get(`${API}/cie10`, { headers }),
-        axios.get(`${API}/citas/semana`, { headers })
+        axios.get(`${API}/citas/dos-semanas`, { headers })  // Updated to use two-week endpoint
       ]);
       
       setPacientes(pacientesRes.data);
