@@ -716,6 +716,46 @@ class AlertaFarmacia(BaseModel):
     fecha_alerta: datetime
     leida: bool = False
 
+class VentaItem(BaseModel):
+    medicamento_id: str
+    medicamento_nombre: str
+    cantidad: int
+    precio_unitario: float
+    costo_unitario: float
+    descuento_aplicado: float = 0
+    subtotal: float
+    costo_total: float
+
+class Venta(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    paciente_id: Optional[str] = None
+    paciente_nombre: Optional[str] = None
+    items: List[VentaItem]
+    subtotal: float
+    descuento_total: float = 0
+    total_venta: float
+    total_costo: float
+    utilidad_bruta: float
+    fecha_venta: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    vendedor: str = "Sistema"
+    notas: str = ""
+
+class VentaCreate(BaseModel):
+    paciente_id: Optional[str] = None
+    items: List[Dict]  # Lista de {medicamento_id, cantidad, descuento_aplicado}
+    descuento_total: float = 0
+    vendedor: str = "Sistema"
+    notas: str = ""
+
+class BalanceDiario(BaseModel):
+    fecha: date
+    total_ventas: float
+    total_costos: float
+    utilidad_bruta: float
+    numero_ventas: int
+    productos_vendidos: int
+    medicamentos_mas_vendidos: List[Dict]
+
 # Authentication function
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials.credentials != "valid_token_1970":
