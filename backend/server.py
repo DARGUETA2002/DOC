@@ -1512,6 +1512,215 @@ async def crear_cita_rapida(cita_data: Dict, token: str = Depends(verify_token))
     
     return nueva_cita
 
+@api_router.post("/debug/poblar-datos-ejemplo")
+async def poblar_datos_ejemplo(token: str = Depends(verify_token)):
+    """🔧 Poblar base de datos con datos de ejemplo completos"""
+    
+    try:
+        # Limpiar colecciones existentes
+        await db.pacientes.delete_many({})
+        await db.medicamentos.delete_many({})
+        await db.ventas.delete_many({})
+        await db.citas.delete_many({})
+        
+        # 1. CREAR PACIENTES DE EJEMPLO
+        pacientes_ejemplo = [
+            {
+                "nombre_completo": "María José González López",
+                "fecha_nacimiento": "2018-05-15",
+                "nombre_padre": "Carlos González",
+                "nombre_madre": "Ana López",
+                "direccion": "Col. Kennedy, Tegucigalpa",
+                "numero_celular": "98765432",
+                "sintomas_signos": "Fiebre y dolor abdominal",
+                "diagnostico_clinico": "Gastroenteritis viral",
+                "codigo_cie10": "A08.4",
+                "peso": 25.5,
+                "altura": 1.1
+            },
+            {
+                "nombre_completo": "Pedro Antonio Ramírez Cruz",
+                "fecha_nacimiento": "2020-03-10", 
+                "nombre_padre": "Antonio Ramírez",
+                "nombre_madre": "Carmen Cruz",
+                "direccion": "Col. Miraflores, Tegucigalpa", 
+                "numero_celular": "99887766",
+                "sintomas_signos": "Tos persistente y fiebre",
+                "diagnostico_clinico": "Bronquiolitis aguda",
+                "codigo_cie10": "J21.9",
+                "peso": 18.2,
+                "altura": 0.92
+            },
+            {
+                "nombre_completo": "Isabella Sofia Mendoza Torres",
+                "fecha_nacimiento": "2019-08-22",
+                "nombre_padre": "Roberto Mendoza", 
+                "nombre_madre": "Sofia Torres",
+                "direccion": "Residencial El Prado, San Pedro Sula",
+                "numero_celular": "97654321",
+                "sintomas_signos": "Irritabilidad y rechazo alimentario",
+                "diagnostico_clinico": "Otitis media aguda",
+                "codigo_cie10": "H66.012",
+                "peso": 22.1,
+                "altura": 1.05
+            },
+            {
+                "nombre_completo": "Diego Alejandro Castillo Herrera",
+                "fecha_nacimiento": "2021-01-18",
+                "nombre_padre": "Alejandro Castillo",
+                "nombre_madre": "Patricia Herrera", 
+                "direccion": "Col. Las Mercedes, Tegucigalpa",
+                "numero_celular": "96543210",
+                "sintomas_signos": "Diarrea y vómitos",
+                "diagnostico_clinico": "Gastroenteritis aguda",
+                "codigo_cie10": "A09",
+                "peso": 15.8,
+                "altura": 0.88
+            },
+            {
+                "nombre_completo": "Camila Andrea Flores Jiménez", 
+                "fecha_nacimiento": "2017-11-30",
+                "nombre_padre": "Fernando Flores",
+                "nombre_madre": "Andrea Jiménez",
+                "direccion": "Barrio Guanacaste, Tegucigalpa",
+                "numero_celular": "95432109", 
+                "sintomas_signos": "Dolor de garganta y fiebre alta",
+                "diagnostico_clinico": "Faringitis estreptocócica",
+                "codigo_cie10": "J02.0",
+                "peso": 28.7,
+                "altura": 1.18
+            }
+        ]
+        
+        # Crear pacientes
+        pacientes_creados = []
+        for paciente_data in pacientes_ejemplo:
+            response = await crear_paciente(PacienteCreate(**paciente_data), token)
+            pacientes_creados.append(response)
+        
+        # 2. CREAR MEDICAMENTOS DE EJEMPLO
+        medicamentos_ejemplo = [
+            {
+                "nombre": "Paracetamol Pediátrico Jarabe",
+                "categoria": "Analgésicos",
+                "descripcion": "Analgésico y antipirético para niños",
+                "costo_unitario": 45.0,
+                "impuesto": 15.0,
+                "escala_compra": "10_mas_3",
+                "descuento_aplicable": 5.0,
+                "stock": 150,
+                "stock_minimo": 30,
+                "dosis_pediatrica": "10-15mg/kg cada 6 horas",
+                "indicaciones": "Fiebre, dolor leve a moderado",
+                "codigo_barras": "7501234567890",
+                "fecha_vencimiento": "2025-12-31",
+                "lote": "PAR2024A",
+                "proveedor": "Laboratorios Unidos SA"
+            },
+            {
+                "nombre": "Ibuprofeno Suspensión Pediátrica",
+                "categoria": "Antiinflamatorios",
+                "descripcion": "AINE para uso pediátrico",
+                "costo_unitario": 52.0,
+                "impuesto": 15.0,
+                "escala_compra": "6_mas_2",
+                "descuento_aplicable": 3.0,
+                "stock": 8,  # Stock bajo para generar alerta
+                "stock_minimo": 25,
+                "dosis_pediatrica": "5-10mg/kg cada 8 horas",
+                "indicaciones": "Inflamación, fiebre alta, dolor",
+                "codigo_barras": "7501234567891",
+                "fecha_vencimiento": "2025-08-15",
+                "lote": "IBU2024B",
+                "proveedor": "Farmacia Nacional"
+            },
+            {
+                "nombre": "Amoxicilina Suspensión 250mg",
+                "categoria": "Antibióticos",
+                "descripcion": "Antibiótico betalactámico",
+                "costo_unitario": 68.0,
+                "impuesto": 15.0,
+                "escala_compra": "sin_escala",
+                "descuento_aplicable": 0.0,
+                "stock": 95,
+                "stock_minimo": 20,
+                "dosis_pediatrica": "40-50mg/kg/día dividido en 3 dosis",
+                "indicaciones": "Infecciones bacterianas",
+                "codigo_barras": "7501234567892",
+                "fecha_vencimiento": "2025-06-30",
+                "lote": "AMO2024C",
+                "proveedor": "Distribuidora Médica"
+            },
+            {
+                "nombre": "Salbutamol Jarabe Pediátrico",
+                "categoria": "Broncodilatadores",
+                "descripcion": "Broncodilatador para asma infantil",
+                "costo_unitario": 38.5,
+                "impuesto": 15.0,
+                "escala_compra": "12_mas_4",
+                "descuento_aplicable": 8.0,
+                "stock": 12,  # Stock bajo
+                "stock_minimo": 15,
+                "dosis_pediatrica": "0.1-0.2mg/kg cada 6-8 horas",
+                "indicaciones": "Broncoespasmo, asma bronquial",
+                "codigo_barras": "7501234567893",
+                "fecha_vencimiento": "2025-03-20",  # Próximo a vencer
+                "lote": "SAL2024D",
+                "proveedor": "Medicina Especializada SA"
+            },
+            {
+                "nombre": "Cetirizina Gotas Pediátricas",
+                "categoria": "Antihistamínicos",
+                "descripcion": "Antihistamínico para alergias",
+                "costo_unitario": 41.0,
+                "impuesto": 15.0,
+                "escala_compra": "8_mas_2",
+                "descuento_aplicable": 6.0,
+                "stock": 75,
+                "stock_minimo": 20,
+                "dosis_pediatrica": "2.5-5mg una vez al día",
+                "indicaciones": "Rinitis alérgica, urticaria",
+                "codigo_barras": "7501234567894",
+                "fecha_vencimiento": "2026-01-15",
+                "lote": "CET2024E",
+                "proveedor": "Farmacéutica Central"
+            },
+            {
+                "nombre": "Suero Oral Pediátrico",
+                "categoria": "Hidratación",
+                "descripcion": "Sales de rehidratación oral",
+                "costo_unitario": 22.0,
+                "impuesto": 15.0,
+                "escala_compra": "20_mas_5",
+                "descuento_aplicable": 4.0,
+                "stock": 3,  # Stock crítico
+                "stock_minimo": 50,
+                "dosis_pediatrica": "75ml/kg en 4 horas",
+                "indicaciones": "Deshidratación leve a moderada",
+                "codigo_barras": "7501234567895", 
+                "fecha_vencimiento": "2025-02-28",  # Próximo a vencer
+                "lote": "SUE2024F",
+                "proveedor": "Laboratorio Vida SA"
+            }
+        ]
+        
+        # Crear medicamentos
+        medicamentos_creados = []
+        for med_data in medicamentos_ejemplo:
+            response = await crear_medicamento(MedicamentoCreate(**med_data), token)
+            medicamentos_creados.append(response)
+        
+        return {
+            "mensaje": "✅ Base de datos poblada exitosamente",
+            "pacientes_creados": len(pacientes_creados),
+            "medicamentos_creados": len(medicamentos_creados),
+            "pacientes": [p.nombre_completo for p in pacientes_creados],
+            "medicamentos": [m.nombre for m in medicamentos_creados]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error poblando datos: {str(e)}")
+
 # NEW: Sales Management Endpoints
 @api_router.post("/ventas", response_model=Venta)
 async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token)):
