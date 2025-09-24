@@ -844,7 +844,8 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
         ...formData,
         fecha_nacimiento: formData.fecha_nacimiento,
         peso: formData.peso ? parseFloat(formData.peso) : null,
-        altura: formData.altura ? parseFloat(formData.altura) : null
+        altura: formData.altura ? parseFloat(formData.altura) : null,
+        codigos_cie10_multiples: selectedCIE10Codes // 🆕 NUEVO: Múltiples códigos CIE-10
       };
 
       let response;
@@ -854,6 +855,11 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
       } else {
         response = await axios.post(`${API}/pacientes`, dataToSubmit, { headers });
         setPacientes(prev => [...prev, response.data]);
+      }
+      
+      // 🔄 Refrescar dashboard después de crear/actualizar paciente
+      if (refreshDashboard) {
+        refreshDashboard();
       }
       
       onClose();
