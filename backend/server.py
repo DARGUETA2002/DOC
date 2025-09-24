@@ -2336,17 +2336,22 @@ async def generar_reporte_anual_excel(ano: int, token: str = Depends(verify_toke
             cell.fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
     
     # Ajustar ancho de columnas
-    for col in ws.columns:
+    for column_cells in ws.columns:
         max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-        adjusted_width = min((max_length + 2), 20)  # Máximo 20 caracteres
-        ws.column_dimensions[column].width = adjusted_width
+        column_letter = None
+        for cell in column_cells:
+            # Skip merged cells
+            if hasattr(cell, 'column_letter'):
+                column_letter = cell.column_letter
+                try:
+                    if cell.value and len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+        
+        if column_letter and max_length > 0:
+            adjusted_width = min((max_length + 2), 20)  # Máximo 20 caracteres
+            ws.column_dimensions[column_letter].width = adjusted_width
     
     # Guardar en memoria
     output = io.BytesIO()
