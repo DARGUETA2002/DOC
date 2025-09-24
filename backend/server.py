@@ -1537,6 +1537,232 @@ async def get_ventas_hoy(token: str = Depends(verify_token)):
         "top_productos": balance.medicamentos_mas_vendidos[:3]
     }
 
+@api_router.post("/ventas/venta-rapida")
+async def crear_venta_rapida(venta: VentaRapida, token: str = Depends(verify_token)):
+    """⚡ Crear venta rápida desde farmacia"""
+    
+    # Obtener información del medicamento
+    medicamento = await db.medicamentos.find_one({"id": venta.medicamento_id})
+    if not medicamento:
+        raise HTTPException(status_code=404, detail="Medicamento no encontrado")
+    
+    # Verificar stock suficiente
+    if medicamento["stock"] < venta.cantidad:
+        raise HTTPException(status_code=400, detail=f"Stock insuficiente. Disponible: {medicamento['stock']}")
+    
+    # Calcular totales
+    subtotal = venta.precio_venta * venta.cantidad
+    descuento_total = subtotal * (venta.descuento_aplicado / 100)
+    total_venta = subtotal - descuento_total
+    costo_total = medicamento["costo_real"] * venta.cantidad
+    utilidad = total_venta - costo_total
+    
+    # Crear item de venta
+    item_venta = VentaItem(
+        medicamento_id=venta.medicamento_id,
+        medicamento_nombre=medicamento["nombre"],
+        cantidad=venta.cantidad,
+        precio_unitario=venta.precio_venta,
+        costo_unitario=medicamento["costo_real"],
+        descuento_aplicado=venta.descuento_aplicado,
+        subtotal=subtotal,
+        costo_total=costo_total
+    )
+    
+    # Crear venta completa
+    nueva_venta = Venta(
+        paciente_nombre=venta.cliente_nombre,
+        items=[item_venta],
+        subtotal=subtotal,
+        descuento_total=venta.descuento_aplicado,
+        total_venta=total_venta,
+        total_costo=costo_total,
+        utilidad_bruta=utilidad,
+        vendedor=venta.vendedor,
+        notas=f"Venta rápida - Cliente: {venta.cliente_nombre}"
+    )
+    
+    # Guardar venta
+    await db.ventas.insert_one(prepare_for_mongo(nueva_venta.dict()))
+    
+    # Actualizar stock
+    new_stock = medicamento["stock"] - venta.cantidad
+    await db.medicamentos.update_one(
+        {"id": venta.medicamento_id},
+        {
+            "$inc": {"stock": -venta.cantidad, "ventas_mes": venta.cantidad},
+            "$set": {"ultima_venta": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+    
+    # Verificar si el stock llegó a 0 para notificar
+    if new_stock == 0:
+        # Crear alerta de stock agotado
+        alerta = {
+            "tipo": "STOCK_AGOTADO",
+            "medicamento_id": venta.medicamento_id,
+            "medicamento_nombre": medicamento["nombre"],
+            "mensaje": f"🚨 STOCK AGOTADO: {medicamento['nombre']} - Se necesita restock urgente",
+            "prioridad": "alta",
+            "fecha_alerta": datetime.now(timezone.utc),
+            "leida": False
+        }
+        await db.alertas_farmacia.insert_one(prepare_for_mongo(alerta))
+    
+    return {
+        "success": True,
+        "venta_id": nueva_venta.id,
+        "total": total_venta,
+        "utilidad": utilidad,
+        "stock_restante": new_stock,
+        "mensaje": f"✅ Venta rápida registrada: {medicamento['nombre']} - {venta.cliente_nombre}"
+    }
+
+@api_router.post("/medicamentos/detectar-restock")
+async def detectar_restock_inteligente(restock_data: RestockDetection, token: str = Depends(verify_token)):
+    """🧠 Detectar restock inteligente con IA"""
+    
+    try:
+        # Buscar productos similares en la base de datos
+        productos_similares = await db.medicamentos.find({
+            "nombre": {"$regex": restock_data.nombre_producto, "$options": "i"}
+        }).to_list(10)
+        
+        if productos_similares:
+            # Usar IA para determinar si es el mismo producto
+            emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+            if emergent_key:
+                chat = LlmChat(
+                    api_key=emergent_key,
+                    session_id=f"restock-{datetime.now().timestamp()}",
+                    system_message="""Eres un experto en farmacia. Tu tarea es determinar si un producto nuevo es un restock (reabastecimiento) de un producto existente.
+
+Responde ÚNICAMENTE con el formato: RESTOCK|ID_PRODUCTO|CONFIANZA
+- RESTOCK: SI o NO
+- ID_PRODUCTO: el ID del producto existente si es restock
+- CONFIANZA: ALTA, MEDIA, BAJA
+
+Ejemplos:
+- Para "Acetaminofén 500mg" vs productos existentes ["Acetaminofén 500mg", "Ibuprofeno"] responde: SI|id123|ALTA
+- Para "Vitamina C 1000mg" vs productos existentes ["Acetaminofén 500mg"] responde: NO||BAJA"""
+                ).with_model("openai", "gpt-4o")
+                
+                productos_texto = ", ".join([f"{p['nombre']} (ID: {p['id']})" for p in productos_similares[:5]])
+                
+                user_message = UserMessage(
+                    text=f"¿El producto '{restock_data.nombre_producto}' es un restock de alguno de estos productos existentes?: {productos_texto}"
+                )
+                
+                try:
+                    response = await chat.send_message(user_message)
+                    
+                    if response and "|" in response:
+                        parts = response.strip().split("|")
+                        if len(parts) >= 3 and parts[0] == "SI":
+                            # Es un restock - obtener datos del producto existente
+                            producto_id = parts[1]
+                            confianza = parts[2]
+                            
+                            producto_existente = await db.medicamentos.find_one({"id": producto_id})
+                            if producto_existente:
+                                return {
+                                    "es_restock": True,
+                                    "producto_existente": producto_existente,
+                                    "confianza": confianza.lower(),
+                                    "sugerencia": {
+                                        "mantener": {
+                                            "nombre": producto_existente["nombre"],
+                                            "categoria": producto_existente["categoria"],
+                                            "descripcion": producto_existente["descripcion"],
+                                            "dosis_pediatrica": producto_existente.get("dosis_pediatrica", ""),
+                                            "stock_minimo": producto_existente["stock_minimo"]
+                                        },
+                                        "actualizar": {
+                                            "lote": restock_data.nuevo_lote,
+                                            "fecha_vencimiento": restock_data.fecha_vencimiento.isoformat(),
+                                            "stock": restock_data.stock_inicial,
+                                            "costo_unitario": restock_data.costo_unitario,
+                                            "impuesto": restock_data.impuesto,
+                                            "escala_compra": restock_data.escala_compra
+                                        }
+                                    },
+                                    "mensaje": f"🔄 Restock detectado con {confianza.lower()} confianza. Datos del producto existente pre-cargados."
+                                }
+                
+                except Exception as ai_error:
+                    print(f"Error en AI restock detection: {ai_error}")
+        
+        # No es restock - producto completamente nuevo
+        return {
+            "es_restock": False,
+            "producto_existente": None,
+            "confianza": "alta",
+            "sugerencia": {
+                "crear_nuevo": True,
+                "datos": {
+                    "nombre": restock_data.nombre_producto,
+                    "lote": restock_data.nuevo_lote,
+                    "fecha_vencimiento": restock_data.fecha_vencimiento.isoformat(),
+                    "stock": restock_data.stock_inicial,
+                    "costo_unitario": restock_data.costo_unitario,
+                    "impuesto": restock_data.impuesto,
+                    "escala_compra": restock_data.escala_compra
+                }
+            },
+            "mensaje": "✨ Producto nuevo detectado. Proceda a crear como nuevo producto."
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en detección de restock: {str(e)}")
+
+@api_router.put("/medicamentos/{medicamento_id}/restock")
+async def aplicar_restock(medicamento_id: str, restock_data: RestockDetection, token: str = Depends(verify_token)):
+    """🔄 Aplicar restock a producto existente"""
+    
+    # Verificar que el medicamento existe
+    existing = await db.medicamentos.find_one({"id": medicamento_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Medicamento no encontrado")
+    
+    # Calcular nuevos precios
+    precios = calcular_precios_farmacia_detallado(
+        restock_data.costo_unitario,
+        restock_data.impuesto,
+        restock_data.escala_compra,
+        existing.get("descuento_maximo", 0)
+    )
+    
+    # Actualizar solo los campos de restock
+    await db.medicamentos.update_one(
+        {"id": medicamento_id},
+        {"$set": {
+            "lote": restock_data.nuevo_lote,
+            "fecha_vencimiento": restock_data.fecha_vencimiento.isoformat(),
+            "stock": existing["stock"] + restock_data.stock_inicial,  # Sumar al stock existente
+            "costo_unitario": restock_data.costo_unitario,
+            "impuesto": restock_data.impuesto,
+            "escala_compra": restock_data.escala_compra,
+            "costo_real": precios['costo_real'],
+            "precio_base": precios['precio_base'],
+            "precio_publico": precios['precio_publico'],
+            "margen_utilidad": precios['margen_utilidad_final'],
+            "fecha_actualizacion": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Eliminar alertas de stock agotado para este producto
+    await db.alertas_farmacia.delete_many({
+        "medicamento_id": medicamento_id,
+        "tipo": "STOCK_AGOTADO"
+    })
+    
+    return {
+        "success": True,
+        "mensaje": f"✅ Restock aplicado exitosamente a {existing['nombre']}",
+        "nuevo_stock": existing["stock"] + restock_data.stock_inicial,
+        "nuevos_precios": precios
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
