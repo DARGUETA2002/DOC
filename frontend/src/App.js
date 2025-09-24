@@ -1472,7 +1472,8 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
   // Create quick appointment
   const createQuickAppointment = async (pacienteId, diasAdelante = 7) => {
     try {
-      const response = await axios.post(`${API}/pacientes/${pacienteId}/cita-rapida`, {
+      const response = await axios.post(`${API}/citas/crear-rapida`, {
+        paciente_id: pacienteId,
         motivo: "Seguimiento médico",
         doctor: "Dr. Usuario",
         dias_adelante: diasAdelante
