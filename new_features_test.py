@@ -394,7 +394,7 @@ class NewFeaturesAPITester:
             
             success, updated_response = self.make_request('PUT', f'pacientes/{patient_id}', update_data)
             if success:
-                self.log_test("Update patient with lb/cm units", True, 
+                self.log_test("Update patient with kg/m units", True, 
                              f"Updated weight: {updated_response.get('peso')}, height: {updated_response.get('altura')}")
                 
                 # Verify BMI recalculation
