@@ -1554,8 +1554,8 @@ async def get_balance_diario(fecha: Optional[date] = None, token: str = Depends(
         fecha = date.today()
     
     # Obtener ventas del día
-    inicio_dia = datetime.combine(fecha, datetime.min.time()).isoformat()
-    fin_dia = datetime.combine(fecha, datetime.max.time()).isoformat()
+    inicio_dia = datetime.combine(fecha, datetime.min.time()).replace(tzinfo=timezone.utc).isoformat()
+    fin_dia = datetime.combine(fecha, datetime.max.time()).replace(tzinfo=timezone.utc).isoformat()
     
     ventas_dia = await db.ventas.find({
         "fecha_venta": {
