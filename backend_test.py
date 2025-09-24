@@ -293,6 +293,257 @@ class PediatricClinicAPITester:
         # Restore token
         self.token = original_token
 
+    def test_automatic_cie10_classification(self):
+        """Test automatic CIE-10 classification feature"""
+        print("\n🤖 Testing Automatic CIE-10 Classification...")
+        
+        # Test classification endpoint
+        test_cases = [
+            ("fiebre", "R50"),
+            ("diarrea", "A09"),
+            ("asma", "J45"),
+            ("otitis", "H66"),
+            ("bronquitis", "J20")
+        ]
+        
+        for diagnostico, expected_code in test_cases:
+            success, response = self.make_request('POST', f'cie10/clasificar?diagnostico={diagnostico}')
+            if success and response.get('codigo') == expected_code:
+                self.log_test(f"Auto-classify '{diagnostico}' -> {expected_code}", True)
+                
+                # Check if chapter is included
+                if response.get('capitulo'):
+                    self.log_test(f"Chapter classification for {expected_code}", True, 
+                                f"Chapter: {response['capitulo']}")
+                else:
+                    self.log_test(f"Chapter classification for {expected_code}", False, "No chapter returned")
+            else:
+                self.log_test(f"Auto-classify '{diagnostico}' -> {expected_code}", False, 
+                            f"Expected {expected_code}, got {response.get('codigo')}")
+
+    def test_price_calculation_system(self):
+        """Test automatic price calculation with 25% margin"""
+        print("\n💰 Testing Price Calculation System...")
+        
+        # Test price calculator endpoint
+        test_data = {
+            "costo_base": 20.00,
+            "escala_compra": "10+3",
+            "descuento": 10.0,
+            "impuesto": 15.0
+        }
+        
+        success, response = self.make_request('POST', 'medicamentos/calcular-precios', test_data)
+        if success:
+            self.log_test("Price calculation endpoint", True)
+            
+            # Verify 25% margin is maintained
+            if response.get('margen_utilidad'):
+                margin = response['margen_utilidad']
+                # Should be close to 25% (allowing small rounding differences)
+                margin_ok = abs(margin - 25.0) < 1.0
+                self.log_test("25% margin guarantee", margin_ok, 
+                            f"Margin: {margin}%, Expected: ~25%")
+            else:
+                self.log_test("25% margin guarantee", False, "No margin returned")
+                
+            # Check all price fields are present
+            required_fields = ['costo_real', 'precio_base', 'precio_publico', 'precio_final', 'margen_utilidad']
+            for field in required_fields:
+                if field in response:
+                    self.log_test(f"Price field '{field}' present", True, f"Value: {response[field]}")
+                else:
+                    self.log_test(f"Price field '{field}' present", False)
+        else:
+            self.log_test("Price calculation endpoint", False, f"Response: {response}")
+
+    def test_appointments_system(self):
+        """Test appointment management system"""
+        print("\n📅 Testing Appointments System...")
+        
+        # First create a test patient for appointments
+        patient_data = {
+            "nombre_completo": "Ana García Rodríguez",
+            "fecha_nacimiento": "2020-03-10",
+            "nombre_padre": "Luis García",
+            "nombre_madre": "Carmen Rodríguez",
+            "direccion": "Colonia Palmira, San Pedro Sula",
+            "numero_celular": "9988-7766",
+            "tratamiento_medico": "Control de crecimiento y desarrollo"
+        }
+        
+        success, patient_response = self.make_request('POST', 'pacientes', patient_data)
+        if success and patient_response.get('id'):
+            patient_id = patient_response['id']
+            
+            # Create appointment
+            appointment_data = {
+                "paciente_id": patient_id,
+                "fecha_hora": "2024-02-15T10:30:00",
+                "motivo": "Control rutinario",
+                "doctor": "Dr. Martínez",
+                "notas": "Primera consulta del año"
+            }
+            
+            success, appointment_response = self.make_request('POST', 'citas', appointment_data)
+            if success and appointment_response.get('id'):
+                appointment_id = appointment_response['id']
+                self.log_test("Create appointment", True, f"Appointment ID: {appointment_id}")
+                
+                # Test get all appointments
+                success, appointments = self.make_request('GET', 'citas')
+                if success and isinstance(appointments, list):
+                    self.log_test("Get all appointments", True, f"Found {len(appointments)} appointments")
+                else:
+                    self.log_test("Get all appointments", False, f"Response: {appointments}")
+                
+                # Test weekly appointments
+                success, weekly_appointments = self.make_request('GET', 'citas/semana')
+                if success and isinstance(weekly_appointments, list):
+                    self.log_test("Get weekly appointments", True, f"Found {len(weekly_appointments)} weekly appointments")
+                else:
+                    self.log_test("Get weekly appointments", False, f"Response: {weekly_appointments}")
+                
+                # Test update appointment status
+                success, status_response = self.make_request('PUT', f'citas/{appointment_id}/estado?estado=confirmada')
+                self.log_test("Update appointment status", success, 
+                            f"Response: {status_response}" if not success else "")
+                
+            else:
+                self.log_test("Create appointment", False, f"Response: {appointment_response}")
+            
+            # Clean up - delete test patient
+            self.make_request('DELETE', f'pacientes/{patient_id}')
+        else:
+            self.log_test("Create test patient for appointments", False, f"Response: {patient_response}")
+
+    def test_pharmacy_alerts_system(self):
+        """Test pharmacy stock and expiration alerts"""
+        print("\n⚠️ Testing Pharmacy Alerts System...")
+        
+        # Create medication with low stock
+        low_stock_med = {
+            "nombre": "Ibuprofeno Infantil",
+            "descripcion": "Antiinflamatorio pediátrico",
+            "codigo_barras": "7501234567891",
+            "stock": 3,
+            "stock_minimo": 10,
+            "costo_base": 18.00,
+            "categoria": "Antiinflamatorios",
+            "lote": "LOT2024002",
+            "fecha_vencimiento": "2024-03-15",  # Soon to expire
+            "proveedor": "Laboratorios Unidos"
+        }
+        
+        success, med_response = self.make_request('POST', 'medicamentos', low_stock_med)
+        if success and med_response.get('id'):
+            med_id = med_response['id']
+            
+            # Test low stock alert
+            success, low_stock_response = self.make_request('GET', 'medicamentos/stock-bajo')
+            if success and isinstance(low_stock_response, list):
+                found_low_stock = any(med['id'] == med_id for med in low_stock_response)
+                self.log_test("Low stock alert detection", found_low_stock, 
+                            f"Found {len(low_stock_response)} low stock medications")
+            else:
+                self.log_test("Low stock alert detection", False, f"Response: {low_stock_response}")
+            
+            # Test expiration alert
+            success, expiring_response = self.make_request('GET', 'medicamentos/vencer?dias=60')
+            if success and isinstance(expiring_response, list):
+                found_expiring = any(med['id'] == med_id for med in expiring_response)
+                self.log_test("Expiration alert detection", found_expiring,
+                            f"Found {len(expiring_response)} medications expiring in 60 days")
+            else:
+                self.log_test("Expiration alert detection", False, f"Response: {expiring_response}")
+                
+        else:
+            self.log_test("Create test medication for alerts", False, f"Response: {med_response}")
+
+    def test_cosmetics_category(self):
+        """Test cosmetics category in pharmacy"""
+        print("\n💄 Testing Cosmetics Category...")
+        
+        # Create cosmetic product
+        cosmetic_data = {
+            "nombre": "Crema Hidratante Bebé",
+            "descripcion": "Crema hidratante para piel sensible de bebés",
+            "codigo_barras": "7501234567892",
+            "stock": 25,
+            "stock_minimo": 5,
+            "costo_base": 12.00,
+            "categoria": "Cosméticos",
+            "lote": "COSM2024001",
+            "fecha_vencimiento": "2026-01-31",
+            "proveedor": "Cosméticos Naturales"
+        }
+        
+        success, cosmetic_response = self.make_request('POST', 'medicamentos', cosmetic_data)
+        if success and cosmetic_response.get('id'):
+            self.log_test("Create cosmetic product", True, f"Product ID: {cosmetic_response['id']}")
+            
+            # Verify category is correctly set
+            if cosmetic_response.get('categoria') == 'Cosméticos':
+                self.log_test("Cosmetics category assignment", True)
+            else:
+                self.log_test("Cosmetics category assignment", False, 
+                            f"Expected 'Cosméticos', got '{cosmetic_response.get('categoria')}'")
+                
+            # Test search by cosmetics category
+            success, search_response = self.make_request('GET', 'medicamentos/search?query=Cosméticos')
+            if success and isinstance(search_response, list):
+                found_cosmetic = any(prod['id'] == cosmetic_response['id'] for prod in search_response)
+                self.log_test("Search cosmetics by category", found_cosmetic,
+                            f"Found {len(search_response)} cosmetic products")
+            else:
+                self.log_test("Search cosmetics by category", False, f"Response: {search_response}")
+        else:
+            self.log_test("Create cosmetic product", False, f"Response: {cosmetic_response}")
+
+    def test_treatment_field_integration(self):
+        """Test medical treatment field integration"""
+        print("\n🩺 Testing Medical Treatment Field...")
+        
+        # Create patient with treatment field
+        patient_with_treatment = {
+            "nombre_completo": "Pedro Martínez Silva",
+            "fecha_nacimiento": "2019-07-20",
+            "nombre_padre": "Roberto Martínez",
+            "nombre_madre": "Elena Silva",
+            "direccion": "Barrio La Granja, Tegucigalpa",
+            "numero_celular": "9955-4433",
+            "diagnostico_clinico": "Bronquitis aguda",
+            "tratamiento_medico": "Amoxicilina 250mg cada 8 horas por 7 días, abundantes líquidos y reposo"
+        }
+        
+        success, patient_response = self.make_request('POST', 'pacientes', patient_with_treatment)
+        if success and patient_response.get('id'):
+            # Verify treatment field is saved
+            if patient_response.get('tratamiento_medico'):
+                self.log_test("Treatment field creation", True, 
+                            f"Treatment: {patient_response['tratamiento_medico'][:50]}...")
+            else:
+                self.log_test("Treatment field creation", False, "Treatment field not saved")
+            
+            # Verify automatic CIE-10 classification worked
+            if patient_response.get('codigo_cie10'):
+                self.log_test("Auto CIE-10 from diagnosis", True, 
+                            f"Code: {patient_response['codigo_cie10']}")
+                
+                # Check if chapter was assigned
+                if patient_response.get('capitulo_cie10'):
+                    self.log_test("CIE-10 chapter assignment", True,
+                                f"Chapter: {patient_response['capitulo_cie10'][:50]}...")
+                else:
+                    self.log_test("CIE-10 chapter assignment", False, "No chapter assigned")
+            else:
+                self.log_test("Auto CIE-10 from diagnosis", False, "No automatic classification")
+            
+            # Clean up
+            self.make_request('DELETE', f'pacientes/{patient_response["id"]}')
+        else:
+            self.log_test("Create patient with treatment", False, f"Response: {patient_response}")
+
     def run_all_tests(self):
         """Run all test suites"""
         print("🏥 Starting Pediatric Clinic Management System API Tests")
