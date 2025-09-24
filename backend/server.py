@@ -1556,32 +1556,30 @@ async def debug_ventas(token: str = Depends(verify_token)):
     # Obtener todas las ventas
     todas_ventas = await db.ventas.find({}).to_list(1000)
     
-    # Probar diferentes métodos de búsqueda
-    fecha_str = date.today().strftime("%Y-%m-%d")
+    # Método correcto: usando rango de fechas datetime
+    fecha = date.today()
+    inicio_dia = datetime.combine(fecha, datetime.min.time())
+    fin_dia = datetime.combine(fecha, datetime.max.time())
     
-    # Método 1: Regex con T
-    ventas_regex_t = await db.ventas.find({
-        "fecha_venta": {"$regex": f"^{fecha_str}T"}
-    }).to_list(1000)
-    
-    # Método 2: Regex sin T
-    ventas_regex_simple = await db.ventas.find({
-        "fecha_venta": {"$regex": f"^{fecha_str}"}
-    }).to_list(1000)
-    
-    # Método 3: Usando contains
-    ventas_contains = await db.ventas.find({
-        "fecha_venta": {"$regex": fecha_str}
+    ventas_datetime = await db.ventas.find({
+        "fecha_venta": {
+            "$gte": inicio_dia,
+            "$lte": fin_dia
+        }
     }).to_list(1000)
     
     return {
         "total_ventas_db": len(todas_ventas),
-        "metodo1_regex_T": len(ventas_regex_t),
-        "metodo2_regex_simple": len(ventas_regex_simple), 
-        "metodo3_contains": len(ventas_contains),
-        "fecha_busqueda": fecha_str,
-        "ejemplo_fecha_venta": todas_ventas[-1]["fecha_venta"] if todas_ventas else "No hay ventas",
-        "tipo_fecha": type(todas_ventas[-1]["fecha_venta"]).__name__ if todas_ventas else "N/A"
+        "ventas_con_datetime": len(ventas_datetime),
+        "fecha_inicio": inicio_dia.isoformat(),
+        "fecha_fin": fin_dia.isoformat(),
+        "ventas_hoy_data": [
+            {
+                "id": v["id"],
+                "fecha_venta": v["fecha_venta"].isoformat() if hasattr(v["fecha_venta"], 'isoformat') else str(v["fecha_venta"]),
+                "total_venta": v["total_venta"]
+            } for v in ventas_datetime[:3]  # Primeras 3 del día
+        ]
     }
 
 @api_router.get("/ventas/balance-diario")
