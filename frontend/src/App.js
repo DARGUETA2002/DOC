@@ -65,22 +65,14 @@ const Login = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
+          <div className="mx-auto h-32 w-32 mb-6 flex items-center justify-center">
             <img 
               src="https://customer-assets.emergentagent.com/job_pedimed-fix/artifacts/5xrfx3b6_Screenshot%202025-09-24%20at%2005.03.50.png" 
               alt="Logo Clínica Pediátrica" 
-              className="h-20 w-20 object-contain rounded-full"
+              className="h-32 w-32 object-contain"
+              style={{filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'}}
             />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Clínica & Farmacia
-          </h2>
-          <h3 className="text-2xl font-semibold text-gray-700 mt-1">
-            PEDIATRICA
-          </h3>
-          <p className="text-sm text-gray-600 mt-2">
-            by Dr. Argueta & Dra. Nely
-          </p>
           <p className="mt-2 text-sm text-gray-600">
             Ingrese su código de acceso
           </p>
