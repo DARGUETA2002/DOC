@@ -393,7 +393,7 @@ class PediatricClinicAPITester:
                             f"Expected {scale_test['expected_units']}, got {scale_response.get('unidades_recibidas') if success else 'error'}")
 
     def test_appointments_system(self):
-        """Test appointment management system"""
+        """Test appointment management system including two-week calendar and quick appointments"""
         print("\n📅 Testing Appointments System...")
         
         # First create a test patient for appointments
@@ -439,13 +439,52 @@ class PediatricClinicAPITester:
                 else:
                     self.log_test("Get weekly appointments", False, f"Response: {weekly_appointments}")
                 
+                # Test NEW two-week calendar endpoint
+                success, two_week_appointments = self.make_request('GET', 'citas/dos-semanas')
+                if success and isinstance(two_week_appointments, list):
+                    self.log_test("Get two-week appointments", True, f"Found {len(two_week_appointments)} appointments in 2-week period")
+                else:
+                    self.log_test("Get two-week appointments", False, f"Response: {two_week_appointments}")
+                
+                # Test two-week calendar with specific start date
+                success, two_week_specific = self.make_request('GET', 'citas/dos-semanas?fecha_inicio=2024-02-12')
+                if success and isinstance(two_week_specific, list):
+                    self.log_test("Get two-week appointments with specific date", True, 
+                                f"Found {len(two_week_specific)} appointments from 2024-02-12")
+                else:
+                    self.log_test("Get two-week appointments with specific date", False, f"Response: {two_week_specific}")
+                
                 # Test update appointment status
-                success, status_response = self.make_request('PUT', f'citas/{appointment_id}/estado?estado=confirmada')
+                success, status_response = self.make_request('PUT', f'citas/{appointment_id}/estado', {"estado": "confirmada"})
                 self.log_test("Update appointment status", success, 
                             f"Response: {status_response}" if not success else "")
                 
             else:
                 self.log_test("Create appointment", False, f"Response: {appointment_response}")
+            
+            # Test QUICK APPOINTMENT CREATION with different day ranges
+            quick_appointment_tests = [
+                {"dias_adelante": 1, "motivo": "Urgente - fiebre alta"},
+                {"dias_adelante": 3, "motivo": "Control post-tratamiento"},
+                {"dias_adelante": 7, "motivo": "Seguimiento semanal"},
+                {"dias_adelante": 14, "motivo": "Control quincenal"},
+                {"dias_adelante": 30, "motivo": "Control mensual"}
+            ]
+            
+            for quick_test in quick_appointment_tests:
+                quick_data = {
+                    "motivo": quick_test["motivo"],
+                    "doctor": "Dr. Sistema",
+                    "dias_adelante": quick_test["dias_adelante"]
+                }
+                
+                success, quick_response = self.make_request('POST', f'pacientes/{patient_id}/cita-rapida', quick_data)
+                if success and quick_response.get('cita_id'):
+                    self.log_test(f"Quick appointment ({quick_test['dias_adelante']} days)", True, 
+                                f"Created for {quick_test['dias_adelante']} days ahead")
+                else:
+                    self.log_test(f"Quick appointment ({quick_test['dias_adelante']} days)", False, 
+                                f"Response: {quick_response}")
             
             # Clean up - delete test patient
             self.make_request('DELETE', f'pacientes/{patient_id}')
