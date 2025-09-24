@@ -1556,24 +1556,32 @@ async def debug_ventas(token: str = Depends(verify_token)):
     # Obtener todas las ventas
     todas_ventas = await db.ventas.find({}).to_list(1000)
     
-    # Obtener ventas con regex actualizado
+    # Probar diferentes métodos de búsqueda
     fecha_str = date.today().strftime("%Y-%m-%d")
-    ventas_regex = await db.ventas.find({
+    
+    # Método 1: Regex con T
+    ventas_regex_t = await db.ventas.find({
         "fecha_venta": {"$regex": f"^{fecha_str}T"}
+    }).to_list(1000)
+    
+    # Método 2: Regex sin T
+    ventas_regex_simple = await db.ventas.find({
+        "fecha_venta": {"$regex": f"^{fecha_str}"}
+    }).to_list(1000)
+    
+    # Método 3: Usando contains
+    ventas_contains = await db.ventas.find({
+        "fecha_venta": {"$regex": fecha_str}
     }).to_list(1000)
     
     return {
         "total_ventas_db": len(todas_ventas),
-        "ventas_hoy_regex_actualizado": len(ventas_regex),
-        "fecha_busqueda": fecha_str + "T",
-        "regex_pattern": f"^{fecha_str}T",
-        "ventas_recientes": [
-            {
-                "id": v["id"], 
-                "fecha_venta": v["fecha_venta"],
-                "total_venta": v["total_venta"]
-            } for v in todas_ventas[-5:]  # Últimas 5
-        ]
+        "metodo1_regex_T": len(ventas_regex_t),
+        "metodo2_regex_simple": len(ventas_regex_simple), 
+        "metodo3_contains": len(ventas_contains),
+        "fecha_busqueda": fecha_str,
+        "ejemplo_fecha_venta": todas_ventas[-1]["fecha_venta"] if todas_ventas else "No hay ventas",
+        "tipo_fecha": type(todas_ventas[-1]["fecha_venta"]).__name__ if todas_ventas else "N/A"
     }
 
 @api_router.get("/ventas/balance-diario")
