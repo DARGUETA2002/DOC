@@ -2300,7 +2300,7 @@ const CIE10View = ({ codigosCIE10 }) => {
 function obtener_capitulo_cie10(codigo) {
   if (!codigo) return "No clasificado";
   
-  const primera_letra = codigo[0].upper();
+  const primera_letra = codigo[0].toUpperCase();
   
   const capitulos = {
     'A': "Capítulo I – Ciertas enfermedades infecciosas y parasitarias (A00-B99)",
