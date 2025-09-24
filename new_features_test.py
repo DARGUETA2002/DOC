@@ -235,8 +235,9 @@ class NewFeaturesAPITester:
         """Test NEW Advanced Sales Reports"""
         print("\n📊 Testing Advanced Sales Reports...")
         
-        # Test monthly sales report
-        success, monthly_response = self.make_request('GET', 'reportes/ventas-mensual')
+        # Test monthly sales report with required parameters
+        current_date = datetime.now()
+        success, monthly_response = self.make_request('GET', f'reportes/ventas-mensual?mes={current_date.month}&ano={current_date.year}')
         if success:
             self.log_test("Monthly Sales Report endpoint", True, f"Report generated successfully")
             
