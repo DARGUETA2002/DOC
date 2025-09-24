@@ -245,7 +245,15 @@ const Dashboard = ({ token, role, onLogout }) => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {activeView === 'dashboard' && <DashboardView pacientes={pacientes} medicamentos={medicamentos} citas={citas} />}
+        {activeView === 'dashboard' && (
+          <DashboardView 
+            pacientes={pacientes}
+            citas={citas}
+            medicamentos={medicamentos}
+            ventasHoy={ventasHoy}
+            alertasFarmacia={alertasFarmacia}
+          />
+        )}
         {activeView === 'patients' && (
           <PatientsView 
             pacientes={pacientes} 
