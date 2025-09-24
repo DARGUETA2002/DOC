@@ -1695,7 +1695,7 @@ Por favor intente nuevamente o use "Nueva Cita" en su lugar.`);
           citasHoy={getCitasHoy()}
           pacientes={pacientes}
           onViewPatient={(patient) => {
-            setSelectedPatient(patient);
+            setSelectedPatientForView(patient);
           }}
         />
       )}
