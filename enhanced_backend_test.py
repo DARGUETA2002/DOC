@@ -101,7 +101,7 @@ class EnhancedPediatricClinicTester:
         
         success, response = self.make_request(
             'POST', 'cie10/clasificar', 
-            params={"diagnostico": test_diagnosis}
+            data={"diagnostico": test_diagnosis}
         )
         
         if success:
