@@ -1747,21 +1747,21 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Farmacia</h1>
+        <h1 className="text-2xl font-bold text-gray-900">🏪 Gestión de Farmacia</h1>
         <div className="flex space-x-3">
           <button
             onClick={() => setShowCalculator(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
           >
             <Calculator className="h-4 w-4 mr-2" />
             Calculadora de Precios
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo Medicamento
+            🛒 Nuevo Producto
           </button>
         </div>
       </div>
