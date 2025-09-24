@@ -1,134 +1,278 @@
 {
-  "timestamp": "2025-09-24T06:15:47.438575",
-  "total_tests": 21,
-  "passed_tests": 17,
-  "success_rate": 80.95238095238095,
+  "timestamp": "2025-09-24T06:17:22.705256",
+  "total_tests": 45,
+  "passed_tests": 42,
+  "success_rate": 93.33333333333333,
   "test_details": [
     {
       "test": "Login with invalid code (should fail)",
       "success": true,
       "details": "Should return 401",
-      "timestamp": "2025-09-24T06:15:46.917879"
+      "timestamp": "2025-09-24T06:17:20.338267"
     },
     {
       "test": "Login with valid code 1970",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:46.957052"
+      "timestamp": "2025-09-24T06:17:20.378052"
     },
     {
       "test": "Token received",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:46.957063"
+      "timestamp": "2025-09-24T06:17:20.378064"
     },
     {
       "test": "Role is doctor",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:46.957067"
+      "timestamp": "2025-09-24T06:17:20.378068"
     },
     {
       "test": "Get all CIE-10 codes",
       "success": true,
       "details": "Found 45 codes",
-      "timestamp": "2025-09-24T06:15:46.994953"
+      "timestamp": "2025-09-24T06:17:20.896829"
     },
     {
       "test": "Search CIE-10 codes",
       "success": true,
       "details": "Found 1 results for 'J00'",
-      "timestamp": "2025-09-24T06:15:47.035993"
+      "timestamp": "2025-09-24T06:17:20.936700"
+    },
+    {
+      "test": "Auto-classify 'fiebre' -> R50",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:20.973582"
+    },
+    {
+      "test": "Chapter classification for R50",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo XVIII \u2013 S\u00edntomas, signos y hallazgos anormales (R00-R99)",
+      "timestamp": "2025-09-24T06:17:20.973596"
+    },
+    {
+      "test": "Auto-classify 'diarrea' -> A09",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:21.016117"
+    },
+    {
+      "test": "Chapter classification for A09",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo I \u2013 Ciertas enfermedades infecciosas y parasitarias (A00-B99)",
+      "timestamp": "2025-09-24T06:17:21.016129"
+    },
+    {
+      "test": "Auto-classify 'asma' -> J45",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:21.056699"
+    },
+    {
+      "test": "Chapter classification for J45",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio (J00-J99)",
+      "timestamp": "2025-09-24T06:17:21.056710"
+    },
+    {
+      "test": "Auto-classify 'otitis' -> H66",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:21.094287"
+    },
+    {
+      "test": "Chapter classification for H66",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo VII \u2013 Enfermedades del ojo y del o\u00eddo (H00-H95)",
+      "timestamp": "2025-09-24T06:17:21.094298"
+    },
+    {
+      "test": "Auto-classify 'bronquitis' -> J20",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:21.168032"
+    },
+    {
+      "test": "Chapter classification for J20",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio (J00-J99)",
+      "timestamp": "2025-09-24T06:17:21.168044"
     },
     {
       "test": "Create patient",
       "success": true,
-      "details": "Patient ID: 2e8e8e50-b79f-4db7-9533-b51ecfc26aa4",
-      "timestamp": "2025-09-24T06:15:47.075402"
+      "details": "Patient ID: bb0b687e-caa7-444e-a086-fb4fbff76748",
+      "timestamp": "2025-09-24T06:17:21.246787"
     },
     {
       "test": "Automatic age calculation",
       "success": true,
       "details": "Age: 7, Expected: ~7",
-      "timestamp": "2025-09-24T06:15:47.075417"
+      "timestamp": "2025-09-24T06:17:21.246802"
     },
     {
       "test": "Automatic BMI calculation",
       "success": true,
       "details": "BMI: 21.07",
-      "timestamp": "2025-09-24T06:15:47.075427"
+      "timestamp": "2025-09-24T06:17:21.246810"
     },
     {
       "test": "Nutritional status calculation",
       "success": true,
       "details": "Status: normal",
-      "timestamp": "2025-09-24T06:15:47.075431"
+      "timestamp": "2025-09-24T06:17:21.246813"
     },
     {
       "test": "Get all patients",
       "success": true,
       "details": "Found 2 patients",
-      "timestamp": "2025-09-24T06:15:47.112194"
+      "timestamp": "2025-09-24T06:17:21.281928"
     },
     {
       "test": "Get specific patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.151591"
+      "timestamp": "2025-09-24T06:17:21.320418"
     },
     {
       "test": "Update patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.188193"
+      "timestamp": "2025-09-24T06:17:21.356194"
     },
     {
       "test": "BMI recalculation on update",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.188204"
+      "timestamp": "2025-09-24T06:17:21.356205"
     },
     {
       "test": "Add medical appointment",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.223928"
+      "timestamp": "2025-09-24T06:17:21.392320"
     },
     {
       "test": "Add lab analysis",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.260249"
+      "timestamp": "2025-09-24T06:17:21.426444"
     },
     {
       "test": "Delete patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.297159"
+      "timestamp": "2025-09-24T06:17:21.504908"
+    },
+    {
+      "test": "Treatment field creation",
+      "success": true,
+      "details": "Treatment: Amoxicilina 250mg cada 8 horas por 7 d\u00edas, abundan...",
+      "timestamp": "2025-09-24T06:17:21.541180"
+    },
+    {
+      "test": "Auto CIE-10 from diagnosis",
+      "success": true,
+      "details": "Code: J20",
+      "timestamp": "2025-09-24T06:17:21.541190"
+    },
+    {
+      "test": "CIE-10 chapter assignment",
+      "success": true,
+      "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio...",
+      "timestamp": "2025-09-24T06:17:21.541194"
     },
     {
       "test": "Create medication",
-      "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'costo_base'], 'msg': 'Field required', 'input': {'nombre': 'Paracetamol Pedi\u00e1trico', 'descripcion': 'Analg\u00e9sico y antipir\u00e9tico para ni\u00f1os', 'stock': 50, 'precio': 25.5, 'categoria': 'Analg\u00e9sicos', 'indicaciones': 'Fiebre y dolor leve a moderado', 'contraindicaciones': 'Hipersensibilidad al paracetamol', 'dosis_pediatrica': '10-15 mg/kg cada 6-8 horas'}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T06:15:47.332534"
+      "success": true,
+      "details": "Medication ID: 347efb9f-6ea6-4c47-bdfb-ca454014205c",
+      "timestamp": "2025-09-24T06:17:21.629625"
     },
     {
-      "test": "Access patients without token (should fail)",
+      "test": "Get all medications",
       "success": false,
-      "details": "",
-      "timestamp": "2025-09-24T06:15:47.365469"
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T06:17:21.694824"
     },
     {
-      "test": "Access medications without token (should fail)",
+      "test": "Search medications",
       "success": false,
-      "details": "",
-      "timestamp": "2025-09-24T06:15:47.404113"
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T06:17:21.735890"
     },
     {
-      "test": "Access CIE-10 without token (should fail)",
-      "success": false,
+      "test": "Update medication stock",
+      "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:15:47.438557"
+      "timestamp": "2025-09-24T06:17:21.768903"
+    },
+    {
+      "test": "Price calculation endpoint",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_base'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T06:17:21.808363"
+    },
+    {
+      "test": "Low stock alert detection",
+      "success": true,
+      "details": "Found 1 low stock medications",
+      "timestamp": "2025-09-24T06:17:21.931004"
+    },
+    {
+      "test": "Expiration alert detection",
+      "success": true,
+      "details": "Found 1 medications expiring in 60 days",
+      "timestamp": "2025-09-24T06:17:21.966062"
+    },
+    {
+      "test": "Create cosmetic product",
+      "success": true,
+      "details": "Product ID: 685c1a3f-dc91-4ed9-b47a-5b4833c76870",
+      "timestamp": "2025-09-24T06:17:21.998820"
+    },
+    {
+      "test": "Cosmetics category assignment",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:21.998829"
+    },
+    {
+      "test": "Search cosmetics by category",
+      "success": true,
+      "details": "Found 1 cosmetic products",
+      "timestamp": "2025-09-24T06:17:22.036490"
+    },
+    {
+      "test": "Create appointment",
+      "success": true,
+      "details": "Appointment ID: ec5a8b70-86a4-4a3f-bd07-cec2b796a20d",
+      "timestamp": "2025-09-24T06:17:22.292768"
+    },
+    {
+      "test": "Get all appointments",
+      "success": true,
+      "details": "Found 1 appointments",
+      "timestamp": "2025-09-24T06:17:22.492810"
+    },
+    {
+      "test": "Get weekly appointments",
+      "success": true,
+      "details": "Found 0 weekly appointments",
+      "timestamp": "2025-09-24T06:17:22.595096"
+    },
+    {
+      "test": "Update appointment status",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:22.631967"
+    },
+    {
+      "test": "Reject invalid token (security)",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-24T06:17:22.705236"
     }
   ]
 }
