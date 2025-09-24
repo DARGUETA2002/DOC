@@ -231,15 +231,10 @@ class FocusedAPITester:
         """Test enhanced pricing system with 25% margin guarantee"""
         print("\n💰 Testing Enhanced Pricing System...")
         
-        # Test detailed price calculation endpoint
-        price_data = {
-            "costo_unitario": 20.00,
-            "impuesto": 15.0,
-            "escala_compra": "10+3",
-            "descuento": 10.0
-        }
+        # Test detailed price calculation endpoint (uses query parameters)
+        params = "costo_unitario=20.00&impuesto=15.0&escala_compra=10+3&descuento=10.0"
         
-        success, response = self.make_request('POST', 'medicamentos/calcular-precios-detallado', price_data)
+        success, response = self.make_request('POST', f'medicamentos/calcular-precios-detallado?{params}')
         if success:
             self.log_test("Enhanced price calculation endpoint", True)
             
@@ -260,6 +255,22 @@ class FocusedAPITester:
             else:
                 self.log_test("Scale calculation (10+3)", False, 
                             f"Expected 13 units, got {response.get('unidades_recibidas')}")
+                            
+            # Test different scales
+            test_scales = [
+                ("sin_escala", 1),
+                ("5+1", 6),
+                ("20+5", 25)
+            ]
+            
+            for escala, expected_units in test_scales:
+                scale_params = f"costo_unitario=15.00&escala_compra={escala}"
+                success, scale_response = self.make_request('POST', f'medicamentos/calcular-precios-detallado?{scale_params}')
+                if success and scale_response.get('unidades_recibidas') == expected_units:
+                    self.log_test(f"Scale calculation ({escala})", True, f"Got {expected_units} units")
+                else:
+                    self.log_test(f"Scale calculation ({escala})", False, 
+                                f"Expected {expected_units}, got {scale_response.get('unidades_recibidas') if success else 'error'}")
         else:
             self.log_test("Enhanced price calculation endpoint", False, f"Response: {response}")
 
