@@ -1490,7 +1490,7 @@ async def crear_cita_rapida(cita_data: Dict, token: str = Depends(verify_token))
         fecha_hora=fecha_cita,
         motivo=motivo,
         doctor=doctor,
-        estado="Programada",
+        estado="confirmada",
         notas=f"Cita rápida creada automáticamente para {fecha_cita.strftime('%Y-%m-%d %H:%M')}"
     )
     
