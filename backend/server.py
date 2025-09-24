@@ -1218,8 +1218,7 @@ async def actualizar_medicamento(medicamento_id: str, medicamento: MedicamentoCr
         costo_real=precios['costo_real'],
         precio_base=precios['precio_base'],
         precio_publico=precios['precio_publico'],
-        margen_utilidad=precios['margen_utilidad_final'],
-        fecha_actualizacion=datetime.now(timezone.utc)
+        margen_utilidad=precios['margen_utilidad_final']
     )
     
     # Actualizar en base de datos
