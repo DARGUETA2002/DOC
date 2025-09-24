@@ -1,314 +1,380 @@
 {
-  "timestamp": "2025-09-24T06:18:34.499443",
-  "total_tests": 51,
-  "passed_tests": 51,
-  "success_rate": 100.0,
+  "timestamp": "2025-09-24T07:27:16.933212",
+  "total_tests": 62,
+  "passed_tests": 39,
+  "success_rate": 62.903225806451616,
   "test_details": [
     {
       "test": "Login with invalid code (should fail)",
       "success": true,
       "details": "Should return 401",
-      "timestamp": "2025-09-24T06:18:31.604824"
+      "timestamp": "2025-09-24T07:27:13.582695"
     },
     {
       "test": "Login with valid code 1970",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:32.659735"
+      "timestamp": "2025-09-24T07:27:13.896627"
     },
     {
       "test": "Token received",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:32.659746"
+      "timestamp": "2025-09-24T07:27:13.896639"
     },
     {
       "test": "Role is doctor",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:32.659750"
+      "timestamp": "2025-09-24T07:27:13.896643"
     },
     {
       "test": "Get all CIE-10 codes",
       "success": true,
-      "details": "Found 45 codes",
-      "timestamp": "2025-09-24T06:18:32.696231"
+      "details": "Found 86 codes",
+      "timestamp": "2025-09-24T07:27:14.495116"
     },
     {
       "test": "Search CIE-10 codes",
       "success": true,
       "details": "Found 1 results for 'J00'",
-      "timestamp": "2025-09-24T06:18:32.736750"
+      "timestamp": "2025-09-24T07:27:14.530120"
     },
     {
       "test": "Auto-classify 'fiebre' -> R50",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:32.772062"
-    },
-    {
-      "test": "Chapter classification for R50",
-      "success": true,
-      "details": "Chapter: Cap\u00edtulo XVIII \u2013 S\u00edntomas, signos y hallazgos anormales (R00-R99)",
-      "timestamp": "2025-09-24T06:18:32.772078"
+      "success": false,
+      "details": "Expected R50, got R50.9",
+      "timestamp": "2025-09-24T07:27:14.593169"
     },
     {
       "test": "Auto-classify 'diarrea' -> A09",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:32.812392"
-    },
-    {
-      "test": "Chapter classification for A09",
-      "success": true,
-      "details": "Chapter: Cap\u00edtulo I \u2013 Ciertas enfermedades infecciosas y parasitarias (A00-B99)",
-      "timestamp": "2025-09-24T06:18:32.812406"
+      "success": false,
+      "details": "Expected A09, got A09.9",
+      "timestamp": "2025-09-24T07:27:14.635021"
     },
     {
       "test": "Auto-classify 'asma' -> J45",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.188221"
-    },
-    {
-      "test": "Chapter classification for J45",
-      "success": true,
-      "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio (J00-J99)",
-      "timestamp": "2025-09-24T06:18:33.188233"
+      "success": false,
+      "details": "Expected J45, got J45.9",
+      "timestamp": "2025-09-24T07:27:14.732852"
     },
     {
       "test": "Auto-classify 'otitis' -> H66",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.225246"
-    },
-    {
-      "test": "Chapter classification for H66",
-      "success": true,
-      "details": "Chapter: Cap\u00edtulo VII \u2013 Enfermedades del ojo y del o\u00eddo (H00-H95)",
-      "timestamp": "2025-09-24T06:18:33.225257"
+      "success": false,
+      "details": "Expected H66, got H66.9",
+      "timestamp": "2025-09-24T07:27:14.809079"
     },
     {
       "test": "Auto-classify 'bronquitis' -> J20",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.289906"
-    },
-    {
-      "test": "Chapter classification for J20",
-      "success": true,
-      "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio (J00-J99)",
-      "timestamp": "2025-09-24T06:18:33.289918"
+      "success": false,
+      "details": "Expected J20, got J20.9",
+      "timestamp": "2025-09-24T07:27:14.892453"
     },
     {
       "test": "Create patient",
       "success": true,
-      "details": "Patient ID: f9cbaddd-b8d4-4be6-bca3-a728e4c38f24",
-      "timestamp": "2025-09-24T06:18:33.393083"
+      "details": "Patient ID: 187249e0-020d-4db1-86d2-873fc9c1bbbc",
+      "timestamp": "2025-09-24T07:27:14.935951"
     },
     {
       "test": "Automatic age calculation",
       "success": true,
       "details": "Age: 7, Expected: ~7",
-      "timestamp": "2025-09-24T06:18:33.393100"
+      "timestamp": "2025-09-24T07:27:14.935965"
     },
     {
       "test": "Automatic BMI calculation",
       "success": true,
       "details": "BMI: 21.07",
-      "timestamp": "2025-09-24T06:18:33.393108"
+      "timestamp": "2025-09-24T07:27:14.935971"
     },
     {
       "test": "Nutritional status calculation",
       "success": true,
       "details": "Status: normal",
-      "timestamp": "2025-09-24T06:18:33.393112"
+      "timestamp": "2025-09-24T07:27:14.935974"
     },
     {
       "test": "Get all patients",
       "success": true,
       "details": "Found 2 patients",
-      "timestamp": "2025-09-24T06:18:33.429495"
+      "timestamp": "2025-09-24T07:27:15.001707"
     },
     {
       "test": "Get specific patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:33.465351"
+      "timestamp": "2025-09-24T07:27:15.044480"
     },
     {
       "test": "Update patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:33.531094"
+      "timestamp": "2025-09-24T07:27:15.081711"
     },
     {
       "test": "BMI recalculation on update",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:33.531107"
+      "timestamp": "2025-09-24T07:27:15.081722"
     },
     {
       "test": "Add medical appointment",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.571750"
+      "success": false,
+      "details": "Response: {'detail': 'Not Found'}",
+      "timestamp": "2025-09-24T07:27:15.116940"
     },
     {
       "test": "Add lab analysis",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.609429"
+      "success": false,
+      "details": "Response: {'detail': 'Not Found'}",
+      "timestamp": "2025-09-24T07:27:15.161264"
     },
     {
       "test": "Delete patient",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:33.646037"
+      "timestamp": "2025-09-24T07:27:15.197446"
     },
     {
       "test": "Treatment field creation",
       "success": true,
       "details": "Treatment: Amoxicilina 250mg cada 8 horas por 7 d\u00edas, abundan...",
-      "timestamp": "2025-09-24T06:18:33.708819"
+      "timestamp": "2025-09-24T07:27:15.234516"
     },
     {
       "test": "Auto CIE-10 from diagnosis",
       "success": true,
-      "details": "Code: J20",
-      "timestamp": "2025-09-24T06:18:33.708830"
+      "details": "Code: J20.9",
+      "timestamp": "2025-09-24T07:27:15.234527"
     },
     {
       "test": "CIE-10 chapter assignment",
       "success": true,
       "details": "Chapter: Cap\u00edtulo X \u2013 Enfermedades del sistema respiratorio...",
-      "timestamp": "2025-09-24T06:18:33.708835"
+      "timestamp": "2025-09-24T07:27:15.234531"
+    },
+    {
+      "test": "Create test medications for prescription",
+      "success": true,
+      "details": "Created 2 medications",
+      "timestamp": "2025-09-24T07:27:15.338948"
+    },
+    {
+      "test": "Prescribed medications field storage",
+      "success": true,
+      "details": "Stored 2 medication IDs",
+      "timestamp": "2025-09-24T07:27:15.377047"
+    },
+    {
+      "test": "Prescribed medications ID integrity",
+      "success": true,
+      "details": "All medication IDs preserved",
+      "timestamp": "2025-09-24T07:27:15.377060"
+    },
+    {
+      "test": "Prescribed medications field retrieval",
+      "success": true,
+      "details": "Retrieved 2 medication IDs",
+      "timestamp": "2025-09-24T07:27:15.412311"
+    },
+    {
+      "test": "Prescribed medications retrieval integrity",
+      "success": true,
+      "details": "All medication IDs retrieved correctly",
+      "timestamp": "2025-09-24T07:27:15.412326"
+    },
+    {
+      "test": "Update prescribed medications",
+      "success": true,
+      "details": "Successfully updated medication list",
+      "timestamp": "2025-09-24T07:27:15.447916"
     },
     {
       "test": "Create medication",
       "success": true,
-      "details": "Medication ID: dfda00ba-2ee7-446a-96b2-9bab034f5a7c",
-      "timestamp": "2025-09-24T06:18:33.785164"
+      "details": "Medication ID: a4ed6dc1-de62-4b2a-bef8-e5f6c592891f",
+      "timestamp": "2025-09-24T07:27:15.562051"
+    },
+    {
+      "test": "Automatic price calculation on creation",
+      "success": true,
+      "details": "Public price: 20.18, Margin: 25.0%",
+      "timestamp": "2025-09-24T07:27:15.562067"
     },
     {
       "test": "Get all medications",
-      "success": true,
-      "details": "Found 4 medications",
-      "timestamp": "2025-09-24T06:18:33.822977"
+      "success": false,
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T07:27:15.597103"
     },
     {
-      "test": "Search medications",
+      "test": "Get available medications",
       "success": true,
-      "details": "Found 2 results",
-      "timestamp": "2025-09-24T06:18:33.859199"
+      "details": "Found 9 available medications",
+      "timestamp": "2025-09-24T07:27:15.634043"
+    },
+    {
+      "test": "Available medications format",
+      "success": true,
+      "details": "All required fields present",
+      "timestamp": "2025-09-24T07:27:15.634057"
+    },
+    {
+      "test": "Search available medications",
+      "success": true,
+      "details": "Found 4 results for 'Paracetamol'",
+      "timestamp": "2025-09-24T07:27:15.668075"
+    },
+    {
+      "test": "Search by category",
+      "success": true,
+      "details": "Found 4 analgesics",
+      "timestamp": "2025-09-24T07:27:15.793596"
+    },
+    {
+      "test": "General medication search",
+      "success": false,
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T07:27:15.827075"
     },
     {
       "test": "Update medication stock",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.895021"
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'nuevo_stock'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:15.862042"
     },
     {
-      "test": "Price calculation endpoint",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:33.931939"
+      "test": "Enhanced price calculation endpoint",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:15.896801"
     },
     {
-      "test": "25% margin guarantee",
-      "success": true,
-      "details": "Margin: 25.0%, Expected: ~25%",
-      "timestamp": "2025-09-24T06:18:33.931955"
+      "test": "Scale calculation (sin_escala)",
+      "success": false,
+      "details": "Expected 1, got error",
+      "timestamp": "2025-09-24T07:27:15.936098"
     },
     {
-      "test": "Price field 'costo_real' present",
-      "success": true,
-      "details": "Value: 23.0",
-      "timestamp": "2025-09-24T06:18:33.931963"
+      "test": "Scale calculation (5+1)",
+      "success": false,
+      "details": "Expected 6, got error",
+      "timestamp": "2025-09-24T07:27:15.970538"
     },
     {
-      "test": "Price field 'precio_base' present",
-      "success": true,
-      "details": "Value: 30.67",
-      "timestamp": "2025-09-24T06:18:33.931968"
+      "test": "Scale calculation (20+5)",
+      "success": false,
+      "details": "Expected 25, got error",
+      "timestamp": "2025-09-24T07:27:16.094508"
     },
     {
-      "test": "Price field 'precio_publico' present",
+      "test": "Comprehensive alerts endpoint",
       "success": true,
-      "details": "Value: 34.07",
-      "timestamp": "2025-09-24T06:18:33.931971"
+      "details": "Total alerts: 3",
+      "timestamp": "2025-09-24T07:27:16.207134"
     },
     {
-      "test": "Price field 'precio_final' present",
+      "test": "Alert categorization",
       "success": true,
-      "details": "Value: 30.67",
-      "timestamp": "2025-09-24T06:18:33.931977"
+      "details": "Stock alerts: 3, Expiry alerts: 0",
+      "timestamp": "2025-09-24T07:27:16.207147"
     },
     {
-      "test": "Price field 'margen_utilidad' present",
+      "test": "Alert structure completeness",
       "success": true,
-      "details": "Value: 25.0",
-      "timestamp": "2025-09-24T06:18:33.931980"
+      "details": "Alert fields: ['tipo', 'medicamento_id', 'medicamento_nombre', 'mensaje', 'prioridad', 'fecha_alerta']",
+      "timestamp": "2025-09-24T07:27:16.207160"
     },
     {
       "test": "Low stock alert detection",
-      "success": true,
-      "details": "Found 2 low stock medications",
-      "timestamp": "2025-09-24T06:18:34.006032"
+      "success": false,
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T07:27:16.245439"
     },
     {
       "test": "Expiration alert detection",
-      "success": true,
-      "details": "Found 2 medications expiring in 60 days",
-      "timestamp": "2025-09-24T06:18:34.045531"
+      "success": false,
+      "details": "Response: {'status_code': 500, 'text': 'Internal Server Error'}",
+      "timestamp": "2025-09-24T07:27:16.282887"
     },
     {
       "test": "Create cosmetic product",
-      "success": true,
-      "details": "Product ID: bdb797b5-6e42-4edb-bbbb-e96ec15eadd9",
-      "timestamp": "2025-09-24T06:18:34.125306"
-    },
-    {
-      "test": "Cosmetics category assignment",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:34.125318"
-    },
-    {
-      "test": "Search cosmetics by category",
-      "success": true,
-      "details": "Found 2 cosmetic products",
-      "timestamp": "2025-09-24T06:18:34.201953"
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'costo_unitario'], 'msg': 'Field required', 'input': {'nombre': 'Crema Hidratante Beb\u00e9', 'descripcion': 'Crema hidratante para piel sensible de beb\u00e9s', 'codigo_barras': '7501234567892', 'stock': 25, 'stock_minimo': 5, 'costo_base': 12.0, 'categoria': 'Cosm\u00e9ticos', 'lote': 'COSM2024001', 'fecha_vencimiento': '2026-01-31', 'proveedor': 'Cosm\u00e9ticos Naturales'}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.391121"
     },
     {
       "test": "Create appointment",
       "success": true,
-      "details": "Appointment ID: e5b1515e-c089-4437-907c-36bf01bd4a0f",
-      "timestamp": "2025-09-24T06:18:34.270838"
+      "details": "Appointment ID: bf6c36dd-5877-41ba-a2d6-12aa6aee26c3",
+      "timestamp": "2025-09-24T07:27:16.461625"
     },
     {
       "test": "Get all appointments",
       "success": true,
-      "details": "Found 2 appointments",
-      "timestamp": "2025-09-24T06:18:34.316243"
+      "details": "Found 3 appointments",
+      "timestamp": "2025-09-24T07:27:16.497714"
     },
     {
       "test": "Get weekly appointments",
       "success": true,
       "details": "Found 0 weekly appointments",
-      "timestamp": "2025-09-24T06:18:34.351614"
+      "timestamp": "2025-09-24T07:27:16.533773"
+    },
+    {
+      "test": "Get two-week appointments",
+      "success": true,
+      "details": "Found 0 appointments in 2-week period",
+      "timestamp": "2025-09-24T07:27:16.567881"
+    },
+    {
+      "test": "Get two-week appointments with specific date",
+      "success": true,
+      "details": "Found 3 appointments from 2024-02-12",
+      "timestamp": "2025-09-24T07:27:16.603722"
     },
     {
       "test": "Update appointment status",
-      "success": true,
-      "details": "",
-      "timestamp": "2025-09-24T06:18:34.387251"
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'estado'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.690275"
+    },
+    {
+      "test": "Quick appointment (1 days)",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'paciente_id'], 'msg': 'Field required', 'input': {'motivo': 'Urgente - fiebre alta', 'doctor': 'Dr. Sistema', 'dias_adelante': 1}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.727079"
+    },
+    {
+      "test": "Quick appointment (3 days)",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'paciente_id'], 'msg': 'Field required', 'input': {'motivo': 'Control post-tratamiento', 'doctor': 'Dr. Sistema', 'dias_adelante': 3}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.762190"
+    },
+    {
+      "test": "Quick appointment (7 days)",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'paciente_id'], 'msg': 'Field required', 'input': {'motivo': 'Seguimiento semanal', 'doctor': 'Dr. Sistema', 'dias_adelante': 7}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.795764"
+    },
+    {
+      "test": "Quick appointment (14 days)",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'paciente_id'], 'msg': 'Field required', 'input': {'motivo': 'Control quincenal', 'doctor': 'Dr. Sistema', 'dias_adelante': 14}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.829898"
+    },
+    {
+      "test": "Quick appointment (30 days)",
+      "success": false,
+      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['body', 'paciente_id'], 'msg': 'Field required', 'input': {'motivo': 'Control mensual', 'doctor': 'Dr. Sistema', 'dias_adelante': 30}, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "timestamp": "2025-09-24T07:27:16.865578"
     },
     {
       "test": "Reject invalid token (security)",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T06:18:34.499423"
+      "timestamp": "2025-09-24T07:27:16.933192"
     }
   ]
 }
