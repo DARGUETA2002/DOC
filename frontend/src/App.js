@@ -211,6 +211,13 @@ const Dashboard = ({ token, role, onLogout }) => {
             onClick={setActiveView}
           />
           <MenuItem
+            icon={DollarSign}
+            label="Ventas"
+            view="ventas"
+            active={activeView === 'ventas'}
+            onClick={setActiveView}
+          />
+          <MenuItem
             icon={FileText}
             label="Códigos CIE-10"
             view="cie10"
