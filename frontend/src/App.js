@@ -1286,11 +1286,11 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
         dias_adelante: diasAdelante
       }, { headers });
 
-      // Reload citas
-      const citasRes = await axios.get(`${API}/citas`, { headers });
+      // Reload citas for two weeks
+      const citasRes = await axios.get(`${API}/citas/dos-semanas`, { headers });
       setCitas(citasRes.data);
       
-      alert(`Cita rápida creada exitosamente para ${response.data.fecha_hora}`);
+      alert(`✅ Cita rápida creada exitosamente para ${new Date(response.data.fecha_hora).toLocaleString('es-ES')}`);
       setShowQuickAddModal(false);
     } catch (error) {
       alert('Error al crear cita rápida: ' + (error.response?.data?.detail || error.message));
