@@ -1915,6 +1915,26 @@ const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
           onClose={() => setShowCalculator(false)}
         />
       )}
+
+      {/* Quick Sale Modal */}
+      {showQuickSale && (
+        <QuickSaleModal 
+          onClose={() => setShowQuickSale(false)}
+          medicamentos={medicamentos}
+          setMedicamentos={setMedicamentos}
+          headers={headers}
+        />
+      )}
+
+      {/* Restock Modal */}
+      {showRestockModal && (
+        <RestockModal 
+          onClose={() => setShowRestockModal(false)}
+          medicamentos={medicamentos}
+          setMedicamentos={setMedicamentos}
+          headers={headers}
+        />
+      )}
     </div>
   );
 };
