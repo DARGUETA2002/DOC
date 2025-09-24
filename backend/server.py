@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, date, timezone
 from enum import Enum
 import re
+import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
