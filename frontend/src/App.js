@@ -513,7 +513,7 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
 };
 
 // Patients View Component
-const PatientsView = ({ pacientes, setPacientes, codigosCIE10, headers }) => {
+const PatientsView = ({ pacientes, setPacientes, codigosCIE10, headers, refreshDashboard }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
