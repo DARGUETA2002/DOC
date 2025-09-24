@@ -1,153 +1,219 @@
 {
-  "timestamp": "2025-09-24T08:42:26.293928",
+  "timestamp": "2025-09-24T08:44:12.290569",
   "test_type": "NEW_ENHANCED_FEATURES",
-  "total_tests": 24,
-  "passed_tests": 13,
-  "success_rate": 54.166666666666664,
+  "total_tests": 35,
+  "passed_tests": 26,
+  "success_rate": 74.28571428571429,
   "test_details": [
     {
       "test": "Authentication with code 1970",
       "success": true,
       "details": "",
-      "timestamp": "2025-09-24T08:42:25.727896"
+      "timestamp": "2025-09-24T08:44:11.683380"
     },
     {
       "test": "Setup test medication",
       "success": true,
-      "details": "Medication ID: 80b8708c-a49d-4a7e-87d9-89937f669563",
-      "timestamp": "2025-09-24T08:42:25.804938"
+      "details": "Medication ID: 1dac240a-eccb-4ed4-8752-fbccbed6a582",
+      "timestamp": "2025-09-24T08:44:11.723447"
     },
     {
       "test": "Quick Sale (Venta R\u00e1pida) endpoint",
       "success": true,
       "details": "Sale ID: N/A",
-      "timestamp": "2025-09-24T08:42:25.846271"
+      "timestamp": "2025-09-24T08:44:11.803965"
     },
     {
       "test": "Quick Sale response structure",
       "success": false,
       "details": "Fields present: ['success', 'venta_id', 'total', 'utilidad', 'stock_restante', 'mensaje']",
-      "timestamp": "2025-09-24T08:42:25.846290"
+      "timestamp": "2025-09-24T08:44:11.803985"
     },
     {
       "test": "Quick Sale calculations",
       "success": false,
       "details": "Missing calculation fields",
-      "timestamp": "2025-09-24T08:42:25.846294"
+      "timestamp": "2025-09-24T08:44:11.803990"
     },
     {
       "test": "Stock check after quick sale",
       "success": false,
       "details": "Response: {'detail': 'Method Not Allowed'}",
-      "timestamp": "2025-09-24T08:42:25.885124"
+      "timestamp": "2025-09-24T08:44:11.881263"
     },
     {
       "test": "AI Restock Detection endpoint",
       "success": true,
       "details": "Detection result: False",
-      "timestamp": "2025-09-24T08:42:25.924890"
+      "timestamp": "2025-09-24T08:44:11.923989"
     },
     {
       "test": "Restock detection response structure",
       "success": true,
       "details": "Fields present: ['es_restock', 'producto_existente', 'confianza', 'sugerencia', 'mensaje']",
-      "timestamp": "2025-09-24T08:42:25.924910"
+      "timestamp": "2025-09-24T08:44:11.924007"
     },
     {
       "test": "AI restock identification",
       "success": true,
       "details": "Is restock: False, Confidence: alta",
-      "timestamp": "2025-09-24T08:42:25.924916"
+      "timestamp": "2025-09-24T08:44:11.924012"
     },
     {
       "test": "Monthly Sales Report endpoint",
+      "success": true,
+      "details": "Report generated successfully",
+      "timestamp": "2025-09-24T08:44:11.963870"
+    },
+    {
+      "test": "Monthly report structure completeness",
       "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'mes'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}, {'type': 'missing', 'loc': ['query', 'ano'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T08:42:25.963938"
+      "details": "Sections present: ['periodo', 'resumen', 'productos_mas_vendidos', 'productos_menos_vendidos', 'productos_mas_rentables', 'productos_menos_rentables', 'productos_no_vendidos', 'mejores_clientes_frecuencia', 'mejores_clientes_monto', 'datos_completos']",
+      "timestamp": "2025-09-24T08:44:11.963891"
+    },
+    {
+      "test": "Top selling products analysis",
+      "success": false,
+      "details": "No top products data",
+      "timestamp": "2025-09-24T08:44:11.963896"
+    },
+    {
+      "test": "Customer analysis completeness",
+      "success": false,
+      "details": "No customer analysis data",
+      "timestamp": "2025-09-24T08:44:11.963899"
     },
     {
       "test": "AI Financial Recommendations endpoint",
+      "success": true,
+      "details": "AI recommendations generated",
+      "timestamp": "2025-09-24T08:44:12.003918"
+    },
+    {
+      "test": "AI recommendations structure",
       "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'mes'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}, {'type': 'missing', 'loc': ['query', 'ano'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T08:42:26.001444"
+      "details": "AI fields present: ['periodo', 'fecha_generacion', 'recomendaciones', 'metodo']",
+      "timestamp": "2025-09-24T08:44:12.003936"
+    },
+    {
+      "test": "AI inventory recommendations quality",
+      "success": false,
+      "details": "No inventory recommendations",
+      "timestamp": "2025-09-24T08:44:12.003939"
     },
     {
       "test": "Enhanced alerts endpoint",
       "success": true,
       "details": "Alerts retrieved successfully",
-      "timestamp": "2025-09-24T08:42:26.038565"
+      "timestamp": "2025-09-24T08:44:12.038994"
     },
     {
       "test": "4-week expiration alerts detection",
       "success": true,
-      "details": "Found 4 expiration alerts",
-      "timestamp": "2025-09-24T08:42:26.038579"
+      "details": "Found 5 expiration alerts",
+      "timestamp": "2025-09-24T08:44:12.039007"
     },
     {
       "test": "4-week window detection accuracy",
       "success": true,
       "details": "Detected 20 days remaining, Priority: media",
-      "timestamp": "2025-09-24T08:42:26.038586"
+      "timestamp": "2025-09-24T08:44:12.039014"
     },
     {
       "test": "Alert priority levels",
       "success": true,
       "details": "Priority: media",
-      "timestamp": "2025-09-24T08:42:26.038590"
+      "timestamp": "2025-09-24T08:44:12.039018"
     },
     {
       "test": "Patient creation with lb/cm units",
       "success": true,
-      "details": "Patient ID: 91a2ecb3-1469-46e1-a9a7-1d8de9885a46",
-      "timestamp": "2025-09-24T08:42:26.076207"
+      "details": "Patient ID: 6087cf4b-6a30-481c-8366-18b1984ea235",
+      "timestamp": "2025-09-24T08:44:12.074428"
     },
     {
       "test": "Weight/Height storage",
       "success": true,
-      "details": "Weight: 55.12 lb, Height: 110.0 cm",
-      "timestamp": "2025-09-24T08:42:26.076222"
+      "details": "Weight: 25.0 lb, Height: 1.1 cm",
+      "timestamp": "2025-09-24T08:44:12.074441"
     },
     {
       "test": "BMI calculation with lb/cm",
-      "success": false,
-      "details": "No BMI calculated",
-      "timestamp": "2025-09-24T08:42:26.076226"
+      "success": true,
+      "details": "BMI: 20.66",
+      "timestamp": "2025-09-24T08:44:12.074446"
     },
     {
-      "test": "Update patient with lb/cm units",
+      "test": "Update patient with kg/m units",
       "success": true,
-      "details": "Updated weight: 60.0, height: 115.0",
-      "timestamp": "2025-09-24T08:42:26.116175"
+      "details": "Updated weight: 26.0, height: 1.15",
+      "timestamp": "2025-09-24T08:44:12.114386"
     },
     {
       "test": "BMI recalculation on update",
-      "success": false,
-      "details": "BMI not recalculated",
-      "timestamp": "2025-09-24T08:42:26.116192"
+      "success": true,
+      "details": "New BMI: 19.66",
+      "timestamp": "2025-09-24T08:44:12.114398"
     },
     {
       "test": "Pricing calculator - Basic 25% margin test",
-      "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T08:42:26.191469"
+      "success": true,
+      "details": "Calculation completed",
+      "timestamp": "2025-09-24T08:44:12.181127"
+    },
+    {
+      "test": "25% margin guarantee - Basic 25% margin test",
+      "success": true,
+      "details": "Final margin: 25.0%",
+      "timestamp": "2025-09-24T08:44:12.181139"
+    },
+    {
+      "test": "Exact formula verification - Basic 25% margin test",
+      "success": true,
+      "details": "Formula applied correctly",
+      "timestamp": "2025-09-24T08:44:12.181148"
     },
     {
       "test": "Pricing calculator - No discount scenario",
-      "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T08:42:26.223464"
+      "success": true,
+      "details": "Calculation completed",
+      "timestamp": "2025-09-24T08:44:12.213779"
+    },
+    {
+      "test": "25% margin guarantee - No discount scenario",
+      "success": true,
+      "details": "Final margin: 25.0%",
+      "timestamp": "2025-09-24T08:44:12.213791"
+    },
+    {
+      "test": "Exact formula verification - No discount scenario",
+      "success": true,
+      "details": "Formula applied correctly",
+      "timestamp": "2025-09-24T08:44:12.213799"
     },
     {
       "test": "Pricing calculator - High discount scenario",
-      "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
-      "timestamp": "2025-09-24T08:42:26.260538"
+      "success": true,
+      "details": "Calculation completed",
+      "timestamp": "2025-09-24T08:44:12.252046"
+    },
+    {
+      "test": "25% margin guarantee - High discount scenario",
+      "success": true,
+      "details": "Final margin: 25.0%",
+      "timestamp": "2025-09-24T08:44:12.252061"
+    },
+    {
+      "test": "Exact formula verification - High discount scenario",
+      "success": true,
+      "details": "Formula applied correctly",
+      "timestamp": "2025-09-24T08:44:12.252071"
     },
     {
       "test": "Cleanup test medication",
       "success": false,
       "details": "Response: {'detail': 'Method Not Allowed'}",
-      "timestamp": "2025-09-24T08:42:26.293876"
+      "timestamp": "2025-09-24T08:44:12.290523"
     }
   ]
 }
