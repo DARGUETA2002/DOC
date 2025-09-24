@@ -2033,14 +2033,14 @@ const PriceCalculatorModal = ({ onClose }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Costo Base (L) *
+                  💰 Costo Unitario (L) *
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  name="costo_base"
+                  name="costo_unitario"
                   required
-                  value={formData.costo_base}
+                  value={formData.costo_unitario}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Ej: 100.00"
