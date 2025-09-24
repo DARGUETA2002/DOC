@@ -1655,6 +1655,15 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
         </div>
       </div>
 
+      {/* 🆕 NUEVO: Modal de Citas de Hoy */}
+      {showTodayModal && (
+        <TodayAppointmentsModal
+          onClose={() => setShowTodayModal(false)}
+          citasHoy={getCitasHoy()}
+          pacientes={pacientes}
+        />
+      )}
+
       {/* Quick Add Appointment Modal */}
       {showQuickAddModal && (
         <QuickAppointmentModal
