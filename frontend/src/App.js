@@ -302,6 +302,7 @@ const Dashboard = ({ token, role, onLogout }) => {
             medicamentos={medicamentos}
             pacientes={pacientes}
             headers={headers}
+            refreshDashboard={refreshDashboardData}
           />
         )}
         {activeView === 'cie10' && <CIE10View codigosCIE10={codigosCIE10} />}
