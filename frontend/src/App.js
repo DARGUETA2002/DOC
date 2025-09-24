@@ -369,7 +369,7 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer hover:bg-gray-50" onClick={() => {setActiveView('appointments'); setShowTodayModal(true);}}>
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer hover:bg-gray-50" onClick={() => setActiveView('appointments')}>
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <CalendarDays className="h-8 w-8 text-purple-600" />
