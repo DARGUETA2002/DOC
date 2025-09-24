@@ -490,8 +490,8 @@ class PediatricClinicAPITester:
                 else:
                     self.log_test("Get two-week appointments with specific date", False, f"Response: {two_week_specific}")
                 
-                # Test update appointment status
-                success, status_response = self.make_request('PUT', f'citas/{appointment_id}/estado', {"estado": "confirmada"})
+            # Test update appointment status
+                success, status_response = self.make_request('PUT', f'citas/{appointment_id}/estado?estado=confirmada')
                 self.log_test("Update appointment status", success, 
                             f"Response: {status_response}" if not success else "")
                 
