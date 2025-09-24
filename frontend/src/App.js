@@ -206,7 +206,9 @@ const Dashboard = ({ token, role, onLogout }) => {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg">
         <div className="p-4 bg-indigo-600 text-white">
-          <h1 className="text-lg font-semibold">Clínica Pediátrica Y Farmacia por Dr. Argueta y Dra. Nely</h1>
+          <h1 className="text-lg font-semibold">Clínica & Farmacia</h1>
+          <h2 className="text-base font-medium">PEDIATRICA</h2>
+          <p className="text-xs text-indigo-200">by Dr. Argueta & Dra. Nely</p>
           <p className="text-sm text-indigo-200">Dr. {role}</p>
         </div>
         
