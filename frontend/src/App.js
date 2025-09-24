@@ -3282,13 +3282,24 @@ const MedicationCard = ({ medicamento, headers, setMedicamentos, setShowRestockM
           )}
         </div>
         
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="mt-4 w-full flex items-center justify-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
-        >
-          {showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}
-          {showDetails ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
-        </button>
+        <div className="mt-4 space-y-2">
+          {medicamento.stock === 0 && (
+            <button
+              onClick={() => setShowRestockModal(true)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              🔄 Restock
+            </button>
+          )}
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="w-full flex items-center justify-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+          >
+            {showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}
+            {showDetails ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+          </button>
+        </div>
         
         {showDetails && (
           <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
