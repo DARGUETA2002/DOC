@@ -3210,7 +3210,7 @@ const SaleModal = ({ onClose, medicamentos, pacientes, headers, setVentas }) => 
 };
 
 // ENHANCED: Medication Card Component
-const MedicationCard = ({ medicamento, headers, setMedicamentos }) => {
+const MedicationCard = ({ medicamento, headers, setMedicamentos, setShowRestockModal }) => {
   const [showDetails, setShowDetails] = useState(false);
   
   const isLowStock = medicamento.stock <= medicamento.stock_minimo;
