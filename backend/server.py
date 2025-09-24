@@ -756,6 +756,23 @@ class VentaCreate(BaseModel):
     vendedor: str = "Sistema"
     notas: str = ""
 
+class VentaRapida(BaseModel):
+    medicamento_id: str
+    cliente_nombre: str
+    precio_venta: float
+    descuento_aplicado: float = 0
+    cantidad: int = 1
+    vendedor: str = "Farmacia"
+
+class RestockDetection(BaseModel):
+    nombre_producto: str
+    nuevo_lote: str
+    fecha_vencimiento: date
+    stock_inicial: int
+    costo_unitario: float
+    impuesto: float = 0
+    escala_compra: str = "sin_escala"
+
 class BalanceDiario(BaseModel):
     fecha: date
     total_ventas: float
