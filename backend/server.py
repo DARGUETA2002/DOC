@@ -1549,39 +1549,6 @@ async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token
     await db.ventas.insert_one(prepare_for_mongo(venta.dict()))
     return venta
 
-@api_router.get("/ventas/debug")
-async def debug_ventas(token: str = Depends(verify_token)):
-    """🔍 Debug ventas para encontrar el problema de sincronización"""
-    
-    # Obtener todas las ventas
-    todas_ventas = await db.ventas.find({}).to_list(1000)
-    
-    # Método correcto: usando rango de fechas datetime
-    fecha = date.today()
-    inicio_dia = datetime.combine(fecha, datetime.min.time())
-    fin_dia = datetime.combine(fecha, datetime.max.time())
-    
-    ventas_datetime = await db.ventas.find({
-        "fecha_venta": {
-            "$gte": inicio_dia,
-            "$lte": fin_dia
-        }
-    }).to_list(1000)
-    
-    return {
-        "total_ventas_db": len(todas_ventas),
-        "ventas_con_datetime": len(ventas_datetime),
-        "fecha_inicio": inicio_dia.isoformat(),
-        "fecha_fin": fin_dia.isoformat(),
-        "ventas_hoy_data": [
-            {
-                "id": v["id"],
-                "fecha_venta": v["fecha_venta"].isoformat() if hasattr(v["fecha_venta"], 'isoformat') else str(v["fecha_venta"]),
-                "total_venta": v["total_venta"]
-            } for v in ventas_datetime[:3]  # Primeras 3 del día
-        ]
-    }
-
 @api_router.get("/ventas/balance-diario")
 async def get_balance_diario(fecha: Optional[date] = None, token: str = Depends(verify_token)):
     """📊 Obtener balance diario de ventas"""
