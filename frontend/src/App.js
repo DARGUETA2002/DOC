@@ -1477,11 +1477,25 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
       const citasRes = await axios.get(`${API}/citas/dos-semanas`, { headers });
       setCitas(citasRes.data);
       
+      // 🔄 Refrescar dashboard después de crear cita rápida
+      if (refreshDashboard) {
+        refreshDashboard();
+      }
+      
       alert(`✅ Cita rápida creada exitosamente para ${new Date(response.data.fecha_hora).toLocaleString('es-ES')}`);
       setShowQuickAddModal(false);
     } catch (error) {
       alert('Error al crear cita rápida: ' + (error.response?.data?.detail || error.message));
     }
+  };
+
+  // 🆕 NUEVA FUNCIÓN: Obtener citas de hoy
+  const getCitasHoy = () => {
+    const today = new Date();
+    return citas.filter(cita => {
+      const citaDate = new Date(cita.fecha_hora);
+      return citaDate.toDateString() === today.toDateString();
+    }).sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
   };
 
   return (
