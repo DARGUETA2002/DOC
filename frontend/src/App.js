@@ -1771,6 +1771,8 @@ const QuickAppointmentModal = ({ onClose, pacientes, onCreateQuick }) => {
 const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
   const [showModal, setShowModal] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [showQuickSale, setShowQuickSale] = useState(false);
+  const [showRestockModal, setShowRestockModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
