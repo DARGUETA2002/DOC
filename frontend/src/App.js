@@ -65,8 +65,12 @@ const Login = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center">
-            <Users className="h-8 w-8 text-white" />
+          <div className="mx-auto h-24 w-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_pedimed-fix/artifacts/5xrfx3b6_Screenshot%202025-09-24%20at%2005.03.50.png" 
+              alt="Logo Clínica Pediátrica" 
+              className="h-20 w-20 object-contain rounded-full"
+            />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Clínica & Farmacia
