@@ -1251,6 +1251,8 @@ function App() {
   }, [token]);
 
   const handleLogin = (newToken, newRole) => {
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('role', newRole);
     setToken(newToken);
     setRole(newRole);
     setIsAuthenticated(true);
