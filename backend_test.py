@@ -323,34 +323,74 @@ class PediatricClinicAPITester:
                             f"Expected {expected_code}, got {response.get('codigo')}")
 
     def test_price_calculation_system(self):
-        """Test automatic price calculation with 25% margin"""
-        print("\n💰 Testing Price Calculation System...")
+        """Test enhanced pricing system with 25% margin guarantee"""
+        print("\n💰 Testing Enhanced Pricing System...")
         
-        # Test price calculator endpoint
-        params = "costo_base=20.00&escala_compra=10+3&descuento=10.0&impuesto=15.0"
-        success, response = self.make_request('POST', f'medicamentos/calcular-precios?{params}')
+        # Test the new detailed price calculator endpoint
+        price_data = {
+            "costo_unitario": 20.00,
+            "impuesto": 15.0,
+            "escala_compra": "10+3",
+            "descuento": 10.0
+        }
+        
+        success, response = self.make_request('POST', 'medicamentos/calcular-precios-detallado', price_data)
         if success:
-            self.log_test("Price calculation endpoint", True)
+            self.log_test("Enhanced price calculation endpoint", True)
             
-            # Verify 25% margin is maintained
-            if response.get('margen_utilidad'):
-                margin = response['margen_utilidad']
-                # Should be close to 25% (allowing small rounding differences)
-                margin_ok = abs(margin - 25.0) < 1.0
-                self.log_test("25% margin guarantee", margin_ok, 
-                            f"Margin: {margin}%, Expected: ~25%")
+            # Verify 25% margin is guaranteed
+            if response.get('margen_garantizado'):
+                self.log_test("25% margin guarantee flag", response['margen_garantizado'], 
+                            f"Margin guaranteed: {response['margen_garantizado']}")
+            
+            if response.get('margen_utilidad_final'):
+                margin = response['margen_utilidad_final']
+                # Should be at least 24.5% (with 0.5% tolerance)
+                margin_ok = margin >= 24.5
+                self.log_test("25% margin verification", margin_ok, 
+                            f"Final margin: {margin}%, Expected: >=24.5%")
             else:
-                self.log_test("25% margin guarantee", False, "No margin returned")
+                self.log_test("25% margin verification", False, "No final margin returned")
                 
-            # Check all price fields are present
-            required_fields = ['costo_real', 'precio_base', 'precio_publico', 'precio_final', 'margen_utilidad']
+            # Check all required price fields are present
+            required_fields = [
+                'costo_unitario_original', 'costo_con_impuesto', 'costo_real', 
+                'precio_base', 'precio_publico', 'precio_final_cliente', 
+                'margen_utilidad_final', 'escala_aplicada', 'unidades_recibidas'
+            ]
             for field in required_fields:
                 if field in response:
                     self.log_test(f"Price field '{field}' present", True, f"Value: {response[field]}")
                 else:
                     self.log_test(f"Price field '{field}' present", False)
+                    
+            # Test scale calculation (10+3 should give 13 units received)
+            if response.get('unidades_recibidas') == 13:
+                self.log_test("Scale calculation (10+3)", True, "Correctly calculated 13 units received")
+            else:
+                self.log_test("Scale calculation (10+3)", False, 
+                            f"Expected 13 units, got {response.get('unidades_recibidas')}")
         else:
-            self.log_test("Price calculation endpoint", False, f"Response: {response}")
+            self.log_test("Enhanced price calculation endpoint", False, f"Response: {response}")
+            
+        # Test different scale scenarios
+        test_scales = [
+            {"escala": "sin_escala", "expected_units": 1},
+            {"escala": "5+1", "expected_units": 6},
+            {"escala": "20+5", "expected_units": 25}
+        ]
+        
+        for scale_test in test_scales:
+            scale_data = {
+                "costo_unitario": 15.00,
+                "escala_compra": scale_test["escala"]
+            }
+            success, scale_response = self.make_request('POST', 'medicamentos/calcular-precios-detallado', scale_data)
+            if success and scale_response.get('unidades_recibidas') == scale_test["expected_units"]:
+                self.log_test(f"Scale calculation ({scale_test['escala']})", True)
+            else:
+                self.log_test(f"Scale calculation ({scale_test['escala']})", False, 
+                            f"Expected {scale_test['expected_units']}, got {scale_response.get('unidades_recibidas') if success else 'error'}")
 
     def test_appointments_system(self):
         """Test appointment management system"""
