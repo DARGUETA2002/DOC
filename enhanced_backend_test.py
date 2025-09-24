@@ -245,7 +245,7 @@ class EnhancedPediatricClinicTester:
         for scenario in additional_scenarios:
             success, response = self.make_request(
                 'POST', 'medicamentos/calcular-precios-detallado',
-                data={"costo_unitario": scenario["costo_unitario"], "escala_compra": scenario["escala_compra"]}
+                params={"costo_unitario": scenario["costo_unitario"], "escala_compra": scenario["escala_compra"]}
             )
             if success and response.get('unidades_recibidas') == scenario["expected_units"]:
                 self.log_test(f"Scale calculation ({scenario['escala_compra']})", True)
