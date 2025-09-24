@@ -3731,7 +3731,7 @@ const PriceCalculatorModal = ({ onClose, headers }) => {
               
               <button
                 onClick={calcularPrecios}
-                disabled={!formData.costo_base}
+                disabled={!formData.costo_unitario}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
               >
                 <Calculator className="h-4 w-4 inline mr-2" />
