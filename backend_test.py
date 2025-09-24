@@ -556,8 +556,14 @@ class PediatricClinicAPITester:
         
         # Run all test suites
         self.test_cie10_endpoints()
+        self.test_automatic_cie10_classification()
         self.test_patient_crud_operations()
+        self.test_treatment_field_integration()
         self.test_medication_management()
+        self.test_price_calculation_system()
+        self.test_pharmacy_alerts_system()
+        self.test_cosmetics_category()
+        self.test_appointments_system()
         self.test_unauthorized_access()
         
         # Print summary
