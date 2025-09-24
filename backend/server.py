@@ -1556,24 +1556,24 @@ async def debug_ventas(token: str = Depends(verify_token)):
     # Obtener todas las ventas
     todas_ventas = await db.ventas.find({}).to_list(1000)
     
-    # Obtener ventas con regex
+    # Obtener ventas con regex actualizado
     fecha_str = date.today().strftime("%Y-%m-%d")
     ventas_regex = await db.ventas.find({
-        "fecha_venta": {"$regex": f"^{fecha_str}"}
+        "fecha_venta": {"$regex": f"^{fecha_str}T"}
     }).to_list(1000)
     
     return {
         "total_ventas_db": len(todas_ventas),
-        "ventas_hoy_regex": len(ventas_regex),
-        "fecha_busqueda": fecha_str,
+        "ventas_hoy_regex_actualizado": len(ventas_regex),
+        "fecha_busqueda": fecha_str + "T",
+        "regex_pattern": f"^{fecha_str}T",
         "ventas_recientes": [
             {
                 "id": v["id"], 
                 "fecha_venta": v["fecha_venta"],
                 "total_venta": v["total_venta"]
             } for v in todas_ventas[-5:]  # Últimas 5
-        ],
-        "fechas_todas_ventas": [v["fecha_venta"] for v in todas_ventas]
+        ]
     }
 
 @api_router.get("/ventas/balance-diario")
