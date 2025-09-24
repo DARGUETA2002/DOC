@@ -129,6 +129,8 @@ const Dashboard = ({ token, role, onLogout }) => {
   const [codigosCIE10, setCodigosCIE10] = useState([]);
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [ventasHoy, setVentasHoy] = useState({});
+  const [alertasFarmacia, setAlertasFarmacia] = useState([]);
 
   // Headers for authenticated requests
   const headers = {
