@@ -273,6 +273,7 @@ const Dashboard = ({ token, role, onLogout }) => {
             medicamentos={medicamentos}
             ventasHoy={ventasHoy}
             alertasFarmacia={alertasFarmacia}
+            setActiveView={setActiveView}
           />
         )}
         {activeView === 'patients' && (
