@@ -534,8 +534,13 @@ class EnhancedPediatricClinicTester:
             ('POST', 'cie10/clasificar', {"diagnostico": "test"})
         ]
         
-        for method, endpoint in protected_endpoints:
-            success, response = self.make_request(method, endpoint)
+        for endpoint_info in protected_endpoints:
+            if len(endpoint_info) == 3:
+                method, endpoint, params = endpoint_info
+                success, response = self.make_request(method, endpoint, params=params)
+            else:
+                method, endpoint = endpoint_info
+                success, response = self.make_request(method, endpoint)
             if success:
                 self.log_test(f"Authentication for {method} {endpoint}", True)
             else:
