@@ -69,8 +69,14 @@ const Login = ({ onLogin }) => {
             <Users className="h-8 w-8 text-white" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Sistema de Clínica Pediátrica Y Farmacia por Dr. Argueta y Dra. Nely
+            Clínica & Farmacia
           </h2>
+          <h3 className="text-2xl font-semibold text-gray-700 mt-1">
+            PEDIATRICA
+          </h3>
+          <p className="text-sm text-gray-600 mt-2">
+            by Dr. Argueta & Dra. Nely
+          </p>
           <p className="mt-2 text-sm text-gray-600">
             Ingrese su código de acceso
           </p>
