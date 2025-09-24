@@ -1300,23 +1300,23 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">📅 Calendario de Citas - Vista 2 Semanas</h1>
-        <div className="flex space-x-3">
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold text-gray-800">📅 Citas</h1>
+        <div className="flex space-x-2">
           <button
             onClick={() => setShowQuickAddModal(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center transition-colors"
           >
-            <Clock className="h-4 w-4 mr-2" />
-            Cita Rápida
+            <Clock className="h-3 w-3 mr-1" />
+            Rápida
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-md text-sm flex items-center transition-colors"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Cita
+            <Plus className="h-3 w-3 mr-1" />
+            Nueva
           </button>
         </div>
       </div>
