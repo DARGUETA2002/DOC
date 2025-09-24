@@ -1694,7 +1694,6 @@ Por favor intente nuevamente o use "Nueva Cita" en su lugar.`);
           pacientes={pacientes}
           onViewPatient={(patient) => {
             setSelectedPatient(patient);
-            setShowPatientModal(true);
           }}
         />
       )}
