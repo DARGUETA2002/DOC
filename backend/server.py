@@ -513,7 +513,7 @@ def generar_alertas_farmacia(medicamentos: List[Dict]) -> List[Dict]:
                 'fecha_alerta': datetime.now(timezone.utc)
             })
         
-        # Alerta de vencimiento cercano (30 días)
+        # Alerta de vencimiento cercano (4 semanas = 28 días)
         if med.get('fecha_vencimiento'):
             try:
                 if isinstance(med['fecha_vencimiento'], str):
@@ -523,15 +523,25 @@ def generar_alertas_farmacia(medicamentos: List[Dict]) -> List[Dict]:
                 
                 dias_hasta_vencimiento = (fecha_venc - date.today()).days
                 
-                if 0 <= dias_hasta_vencimiento <= 30:
-                    prioridad = 'alta' if dias_hasta_vencimiento <= 7 else 'media'
+                if 0 <= dias_hasta_vencimiento <= 28:  # 4 semanas
+                    if dias_hasta_vencimiento <= 7:
+                        prioridad = 'alta'
+                        mensaje = f"⚠️ URGENTE: Vence en {dias_hasta_vencimiento} días ({fecha_venc.strftime('%d/%m/%Y')})"
+                    elif dias_hasta_vencimiento <= 14:
+                        prioridad = 'alta'
+                        mensaje = f"🚨 Vence en {dias_hasta_vencimiento} días ({fecha_venc.strftime('%d/%m/%Y')})"
+                    else:
+                        prioridad = 'media'
+                        mensaje = f"⏰ Vence en {dias_hasta_vencimiento} días ({fecha_venc.strftime('%d/%m/%Y')})"
+                    
                     alertas.append({
                         'tipo': AlertaTipo.VENCIMIENTO_CERCANO,
                         'medicamento_id': med.get('id'),
                         'medicamento_nombre': med.get('nombre'),
-                        'mensaje': f"Vence en {dias_hasta_vencimiento} días ({fecha_venc.strftime('%d/%m/%Y')})",
+                        'mensaje': mensaje,
                         'prioridad': prioridad,
-                        'fecha_alerta': datetime.now(timezone.utc)
+                        'fecha_alerta': datetime.now(timezone.utc),
+                        'dias_restantes': dias_hasta_vencimiento
                     })
             except Exception:
                 pass
