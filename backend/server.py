@@ -1195,6 +1195,41 @@ async def get_medicamentos(token: str = Depends(verify_token)):
     medicamentos = await db.medicamentos.find().to_list(1000)
     return [Medicamento(**parse_from_mongo(medicamento)) for medicamento in medicamentos]
 
+@api_router.put("/medicamentos/{medicamento_id}", response_model=Medicamento)
+async def actualizar_medicamento(medicamento_id: str, medicamento: MedicamentoCreate, token: str = Depends(verify_token)):
+    """✏️ Actualizar información de un medicamento existente"""
+    
+    # Verificar que el medicamento existe
+    existing = await db.medicamentos.find_one({"id": medicamento_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Medicamento no encontrado")
+    
+    # Calcular precios actualizados
+    precios = calcular_precios_farmacia_detallado(
+        medicamento.costo_unitario,
+        medicamento.impuesto,
+        medicamento.escala_compra,
+        medicamento.descuento_aplicable
+    )
+    
+    medicamento_actualizado = Medicamento(
+        id=medicamento_id,
+        **medicamento.dict(),
+        costo_real=precios['costo_real'],
+        precio_base=precios['precio_base'],
+        precio_publico=precios['precio_publico'],
+        margen_utilidad=precios['margen_utilidad_final'],
+        fecha_actualizacion=datetime.now(timezone.utc)
+    )
+    
+    # Actualizar en base de datos
+    await db.medicamentos.update_one(
+        {"id": medicamento_id},
+        {"$set": prepare_for_mongo(medicamento_actualizado.dict())}
+    )
+    
+    return medicamento_actualizado
+
 @api_router.get("/medicamentos/alertas")
 async def get_alertas_farmacia(token: str = Depends(verify_token)):
     """Obtener todas las alertas de farmacia"""
