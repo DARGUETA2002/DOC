@@ -277,6 +277,7 @@ const Dashboard = ({ token, role, onLogout }) => {
             setPacientes={setPacientes}
             codigosCIE10={codigosCIE10}
             headers={headers}
+            refreshDashboard={refreshDashboardData}
           />
         )}
         {activeView === 'appointments' && (
