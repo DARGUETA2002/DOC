@@ -1686,6 +1686,115 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboar
   );
 };
 
+// 🆕 NUEVO: Modal de Citas de Hoy Component
+const TodayAppointmentsModal = ({ onClose, citasHoy, pacientes }) => {
+  const getPatientName = (pacienteId) => {
+    const patient = pacientes.find(p => p.id === pacienteId);
+    return patient ? patient.nombre_completo : 'Paciente no encontrado';
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              📅 Citas de Hoy ({citasHoy.length})
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+
+          {citasHoy.length > 0 ? (
+            <div className="space-y-4">
+              {citasHoy.map((cita) => (
+                <div
+                  key={cita.id}
+                  className={`p-4 rounded-lg border-l-4 ${
+                    cita.estado === 'confirmada' ? 'bg-green-50 border-green-400' :
+                    cita.estado === 'pendiente' ? 'bg-yellow-50 border-yellow-400' :
+                    'bg-gray-50 border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-lg font-semibold text-gray-900">
+                        {new Date(cita.fecha_hora).toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        cita.estado === 'confirmada' ? 'bg-green-200 text-green-800' :
+                        cita.estado === 'pendiente' ? 'bg-yellow-200 text-yellow-800' :
+                        'bg-gray-200 text-gray-800'
+                      }`}>
+                        {cita.estado?.toUpperCase()}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        // Aquí puedes agregar funcionalidad para ver expediente
+                        const patient = pacientes.find(p => p.id === cita.paciente_id);
+                        if (patient) {
+                          alert(`Ver expediente de ${patient.nombre_completo}`);
+                        }
+                      }}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                      👁️ Ver Expediente
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <span className="font-medium text-gray-700">Paciente:</span>
+                      <span className="ml-2 text-gray-900">{cita.paciente_nombre}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Motivo:</span>
+                      <span className="ml-2 text-gray-900">{cita.motivo}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Doctor:</span>
+                      <span className="ml-2 text-gray-900">{cita.doctor}</span>
+                    </div>
+                    {cita.notas && (
+                      <div>
+                        <span className="font-medium text-gray-700">Notas:</span>
+                        <span className="ml-2 text-gray-900">{cita.notas}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-12">
+              <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-lg font-medium">No hay citas programadas para hoy</p>
+              <p className="text-sm">Las citas aparecerán aquí cuando se programen</p>
+            </div>
+          )}
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // NEW: Appointment Modal Component
 const AppointmentModal = ({ onClose, pacientes, headers, setCitas }) => {
   const [formData, setFormData] = useState({
