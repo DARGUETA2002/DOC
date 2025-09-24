@@ -65,11 +65,11 @@ const Login = ({ onLogin }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-32 w-32 mb-6 flex items-center justify-center">
+          <div className="mx-auto h-40 w-40 mb-6 flex items-center justify-center">
             <img 
-              src="https://customer-assets.emergentagent.com/job_pedimed-fix/artifacts/5xrfx3b6_Screenshot%202025-09-24%20at%2005.03.50.png" 
+              src="https://customer-assets.emergentagent.com/job_pedimed-fix/artifacts/e8l5dq9y_logo-search-grid-2x.png" 
               alt="Logo Clínica Pediátrica" 
-              className="h-32 w-32 object-contain"
+              className="h-40 w-40 object-contain"
               style={{filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))'}}
             />
           </div>
