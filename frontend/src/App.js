@@ -628,6 +628,59 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
     }
   };
 
+  // Load available medications on component mount
+  useEffect(() => {
+    loadAvailableMedications();
+  }, []);
+
+  const loadAvailableMedications = async () => {
+    try {
+      const response = await axios.get(`${API}/medicamentos/disponibles`, { headers });
+      setAvailableMedicamentos(response.data);
+    } catch (error) {
+      console.error('Error loading available medications:', error);
+    }
+  };
+
+  // Search medications
+  const searchMedications = async (searchTerm) => {
+    setMedicationSearch(searchTerm);
+    if (searchTerm.length > 2) {
+      try {
+        const response = await axios.get(`${API}/medicamentos/disponibles?buscar=${encodeURIComponent(searchTerm)}`, { headers });
+        setAvailableMedicamentos(response.data);
+        setShowMedicationList(true);
+      } catch (error) {
+        console.error('Error searching medications:', error);
+      }
+    } else {
+      loadAvailableMedications();
+      setShowMedicationList(false);
+    }
+  };
+
+  // Add medication to prescription
+  const addMedicationToPrescription = (medication) => {
+    if (!selectedMedications.find(med => med.id === medication.id)) {
+      setSelectedMedications(prev => [...prev, medication]);
+      setFormData(prev => ({
+        ...prev, 
+        medicamentos_recetados: [...prev.medicamentos_recetados, medication.id]
+      }));
+    }
+    setMedicationSearch('');
+    setShowMedicationList(false);
+  };
+
+  // Remove medication from prescription
+  const removeMedicationFromPrescription = (medicationId) => {
+    setSelectedMedications(prev => prev.filter(med => med.id !== medicationId));
+    setFormData(prev => ({
+      ...prev,
+      medicamentos_recetados: prev.medicamentos_recetados.filter(id => id !== medicationId)
+    }));
+  };
+
   // NUEVA FUNCIÓN: Clasificación automática CIE-10
   const classifyDiagnosis = async (diagnostico) => {
     try {
