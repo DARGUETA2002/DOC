@@ -1429,9 +1429,10 @@ const PatientDetailModal = ({ patient, onClose, headers }) => {
 };
 
 // ENHANCED: Two-Week Appointments View Component
-const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
+const AppointmentsView = ({ citas, setCitas, pacientes, headers, refreshDashboard }) => {
   const [showModal, setShowModal] = useState(false);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [showTodayModal, setShowTodayModal] = useState(false); // 🆕 NUEVO: Modal de citas de hoy
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
   const [viewMode, setViewMode] = useState('twoWeeks'); // twoWeeks, week
