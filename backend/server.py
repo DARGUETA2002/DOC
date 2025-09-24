@@ -12,6 +12,8 @@ import uuid
 from datetime import datetime, date, timezone
 from enum import Enum
 import re
+import asyncio
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
