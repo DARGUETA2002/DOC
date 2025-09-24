@@ -3631,7 +3631,7 @@ const PriceCalculatorModal = ({ onClose }) => {
         escala_compra: formData.escala_compra || "sin_escala",
         descuento: parseFloat(formData.descuento) || 0
       }, {
-        headers: { Authorization: `Bearer valid_token_1970` }
+        headers: headers
       });
       
       setResultado(response.data);
