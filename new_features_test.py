@@ -347,6 +347,7 @@ class NewFeaturesAPITester:
         print("\n📏 Testing Weight/Height Unit Changes...")
         
         # Test patient creation with weight in pounds and height in centimeters
+        # Note: Backend expects weight in kg and height in meters for BMI calculation
         patient_data = {
             "nombre_completo": "Carlos Mendoza Rivera",
             "fecha_nacimiento": "2019-08-12",
@@ -354,8 +355,8 @@ class NewFeaturesAPITester:
             "nombre_madre": "Laura Rivera",
             "direccion": "Colonia Miraflores, Tegucigalpa",
             "numero_celular": "9933-2211",
-            "peso": 55.12,  # Weight in pounds (should be ~25 kg)
-            "altura": 110.0,  # Height in centimeters (should be 1.10 m)
+            "peso": 25.0,  # Weight in kg (converted from pounds for BMI calculation)
+            "altura": 1.10,  # Height in meters (converted from cm for BMI calculation)
             "diagnostico_clinico": "Control de crecimiento"
         }
         
