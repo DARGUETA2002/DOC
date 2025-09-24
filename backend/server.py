@@ -53,6 +53,12 @@ class EstadoCita(str, Enum):
     COMPLETADA = "completada"
     CANCELADA = "cancelada"
 
+class AlertaTipo(str, Enum):
+    STOCK_BAJO = "stock_bajo"
+    VENCIMIENTO_CERCANO = "vencimiento_cercano"
+    ALTA_ROTACION = "alta_rotacion"
+    BAJA_ROTACION = "baja_rotacion"
+
 # Helper functions
 def prepare_for_mongo(data):
     if isinstance(data.get('fecha_nacimiento'), date):
@@ -100,61 +106,218 @@ def calcular_imc_y_estado_nutricional(peso: float, altura: float) -> tuple[float
     
     return round(imc, 2), estado
 
-def clasificar_cie10_automatico(diagnostico: str) -> Optional[str]:
-    """Clasifica automáticamente un diagnóstico según CIE-10"""
+def clasificar_cie10_inteligente(diagnostico: str) -> Optional[str]:
+    """Clasificación inteligente y ampliada de diagnósticos según CIE-10"""
     if not diagnostico:
         return None
     
     diagnostico_lower = diagnostico.lower()
     
-    # Mapeo de palabras clave a códigos CIE-10
+    # Mapeo expandido y más inteligente de diagnósticos a códigos CIE-10
     clasificaciones = {
+        # Enfermedades neurológicas (G00-G99)
+        'hidrocefalia': 'G91.9',
+        'hidrocefalias': 'G91.9',
+        'hidrocéfalo': 'G91.9',
+        'meningitis': 'G03.9',
+        'encefalitis': 'G04.9',
+        'epilepsia': 'G40.9',
+        'convulsiones': 'R56.8',
+        'parálisis cerebral': 'G80.9',
+        'paralisis cerebral': 'G80.9',
+        'microcefalia': 'Q02',
+        'macrocefalia': 'Q75.3',
+        'espina bífida': 'Q05.9',
+        'espina bifida': 'Q05.9',
+        
         # Enfermedades infecciosas y parasitarias (A00-B99)
-        'diarrea': 'A09',
-        'gastroenteritis': 'A09',
-        'fiebre': 'R50',
-        'varicela': 'B01',
-        'sarampión': 'B05',
-        'rubéola': 'B06',
+        'diarrea': 'A09.9',
+        'gastroenteritis': 'A09.0',
+        'rotavirus': 'A08.0',
+        'salmonela': 'A02.9',
+        'salmonella': 'A02.9',
+        'shigella': 'A03.9',
+        'shigelosis': 'A03.9',
+        'cólera': 'A00.9',
+        'fiebre tifoidea': 'A01.0',
+        'hepatitis a': 'B15.9',
+        'hepatitis b': 'B16.9',
+        'varicela': 'B01.9',
+        'sarampión': 'B05.9',
+        'rubeola': 'B06.9',
+        'rubéola': 'B06.9',
+        'parotiditis': 'B26.9',
+        'paperas': 'B26.9',
+        'mononucleosis': 'B27.9',
+        'citomegalovirus': 'B25.9',
+        'herpes simple': 'B00.9',
+        'herpes zoster': 'B02.9',
+        'candidiasis': 'B37.9',
+        'candida': 'B37.9',
         
         # Enfermedades respiratorias (J00-J99)
         'resfriado': 'J00',
+        'resfrio': 'J00',
+        'gripe': 'J11.1',
+        'influenza': 'J11.1',
         'rinitis': 'J00',
-        'sinusitis': 'J01',
-        'faringitis': 'J02',
-        'amigdalitis': 'J03',
-        'laringitis': 'J04',
-        'traqueitis': 'J04',
-        'bronquitis': 'J20',
-        'bronquiolitis': 'J21',
-        'neumonía': 'J18',
-        'asma': 'J45',
+        'rinofaringitis': 'J00',
+        'sinusitis': 'J01.9',
+        'faringitis': 'J02.9',
+        'dolor de garganta': 'J02.9',
+        'amigdalitis': 'J03.9',
+        'anginas': 'J03.9',
+        'laringitis': 'J04.0',
+        'traqueitis': 'J04.1',
+        'crup': 'J05.0',
+        'epiglotitis': 'J05.1',
+        'bronquitis': 'J20.9',
+        'bronquiolitis': 'J21.9',
+        'neumonía': 'J18.9',
+        'neumonia': 'J18.9',
+        'pulmonía': 'J18.9',
+        'pulmonia': 'J18.9',
+        'asma': 'J45.9',
+        'broncoespasmo': 'J45.9',
         'tos': 'R05',
+        'tos ferina': 'A37.9',
         
         # Enfermedades del oído (H60-H95)
-        'otitis': 'H66',
+        'otitis': 'H66.9',
+        'otitis media': 'H66.9',
+        'otitis externa': 'H60.9',
+        'dolor de oído': 'H92.0',
+        'otalgia': 'H92.0',
         
         # Enfermedades del ojo (H00-H59)
-        'conjuntivitis': 'H10',
+        'conjuntivitis': 'H10.9',
+        'blefaritis': 'H01.9',
+        'orzuelo': 'H00.0',
+        'chalazión': 'H00.1',
+        
+        # Enfermedades gastrointestinales (K00-K93)
+        'dolor abdominal': 'R10.4',
+        'dolor estómago': 'K30',
+        'dolor de estomago': 'K30',
+        'gastritis': 'K29.7',
+        'úlcera gástrica': 'K25.9',
+        'ulcera gastrica': 'K25.9',
+        'reflujo': 'K21.9',
+        'estreñimiento': 'K59.0',
+        'constipación': 'K59.0',
+        'apendicitis': 'K37',
+        'intususcepción': 'K56.1',
+        'intususcepcio': 'K56.1',
+        'invaginación': 'K56.1',
+        'cólico intestinal': 'K59.1',
+        'colico intestinal': 'K59.1',
         
         # Enfermedades de la piel (L00-L99)
-        'dermatitis': 'L30',
-        'eccema': 'L20',
-        'sarpullido': 'L30',
+        'dermatitis': 'L30.9',
+        'eccema': 'L20.9',
+        'dermatitis atópica': 'L20.9',
+        'dermatitis atopica': 'L20.9',
+        'dermatitis del pañal': 'L22',
+        'dermatitis del panal': 'L22',
+        'impétigo': 'L01.0',
+        'impetigo': 'L01.0',
+        'celulitis': 'L03.9',
+        'urticaria': 'L50.9',
+        'sarpullido': 'L30.9',
+        'erupción': 'R21',
+        'erupcion': 'R21',
+        'acné': 'L70.9',
+        'acne': 'L70.9',
+        'psoriasis': 'L40.9',
+        'vitíligo': 'L80',
+        'vitiligo': 'L80',
         
-        # Síntomas y signos (R00-R99)
-        'dolor abdominal': 'R10',
+        # Síntomas y signos generales (R00-R99)
+        'fiebre': 'R50.9',
+        'hipertermia': 'R50.9',
+        'hipotermia': 'R68.0',
         'vómito': 'R11',
+        'vomito': 'R11',
         'náusea': 'R11',
+        'nausea': 'R11',
+        'mareo': 'R42',
+        'cefalea': 'R51',
+        'dolor de cabeza': 'R51',
+        'fatiga': 'R53',
+        'cansancio': 'R53',
+        'debilidad': 'R53',
+        'pérdida de peso': 'R63.4',
+        'perdida de peso': 'R63.4',
+        'ganancia de peso': 'R63.5',
+        'sudoración': 'R61',
+        'sudoracion': 'R61',
+        'palidez': 'R23.1',
+        'cianosis': 'R23.0',
+        'ictericia': 'R17',
+        'convulsión': 'R56.9',
+        'convulsion': 'R56.9',
         
-        # Trastornos nutricionales (E40-E46)
-        'desnutrición': 'E44',
-        'obesidad': 'E66',
+        # Trastornos nutricionales y metabólicos (E00-E89)
+        'desnutrición': 'E44.1',
+        'desnutricion': 'E44.1',
+        'marasmo': 'E41',
+        'kwashiorkor': 'E40',
+        'obesidad': 'E66.9',
+        'diabetes': 'E14.9',
+        'hipoglucemia': 'E16.2',
+        'hiperglucemia': 'R73.9',
+        'raquitismo': 'E55.0',
+        'escorbuto': 'E54',
+        'anemia': 'D64.9',
+        'anemia ferropénica': 'D50.9',
+        'anemia ferropenica': 'D50.9',
+        
+        # Trastornos mentales y del comportamiento (F00-F99)
+        'autismo': 'F84.0',
+        'tdah': 'F90.9',
+        'hiperactividad': 'F90.9',
+        'ansiedad': 'F41.9',
+        'depresión': 'F32.9',
+        'depresion': 'F32.9',
+        'trastorno del sueño': 'G47.9',
+        'trastorno del sueno': 'G47.9',
+        'insomnio': 'G47.0',
+        
+        # Malformaciones congénitas (Q00-Q99)
+        'cardiopatía congénita': 'Q24.9',
+        'cardiopatia congenita': 'Q24.9',
+        'labio leporino': 'Q36.9',
+        'paladar hendido': 'Q35.9',
+        'pie zambo': 'Q66.8',
+        'luxación congénita cadera': 'Q65.9',
+        'luxacion congenita cadera': 'Q65.9',
+        
+        # Traumatismos (S00-T98)
+        'fractura': 'S72.9',
+        'luxación': 'S73.0',
+        'luxacion': 'S73.0',
+        'esguince': 'S83.5',
+        'contusión': 'S30.1',
+        'contusion': 'S30.1',
+        'herida': 'T14.1',
+        'quemadura': 'T30.0',
+        'intoxicación': 'T65.9',
+        'intoxicacion': 'T65.9',
+        'envenenamiento': 'T65.9'
     }
     
+    # Búsqueda exacta primero
     for palabra, codigo in clasificaciones.items():
         if palabra in diagnostico_lower:
             return codigo
+    
+    # Búsqueda por palabras clave si no hay coincidencia exacta
+    palabras = diagnostico_lower.split()
+    for palabra in palabras:
+        if len(palabra) > 3:  # Solo considerar palabras de más de 3 caracteres
+            for clave, codigo in clasificaciones.items():
+                if palabra in clave or clave in palabra:
+                    return codigo
     
     return None
 
@@ -195,46 +358,103 @@ def obtener_capitulo_cie10(codigo: str) -> str:
     
     return capitulos.get(primera_letra, "No clasificado")
 
-def calcular_precios_medicamento(costo_base: float, escala_compra: str = None, 
-                                descuento: float = 0, impuesto: float = 0) -> Dict:
-    """Calcula precios automáticamente con margen del 25%"""
+def calcular_precios_farmacia_detallado(costo_unitario: float, impuesto: float = 0, 
+                                      escala_compra: str = "sin_escala", 
+                                      descuento: float = 0) -> Dict:
+    """Sistema completo de cálculo de precios con margen garantizado del 25%"""
     
-    # Calcular costo real considerando escala
-    costo_real = costo_base
+    # 1. Calcular costo real considerando impuesto
+    costo_con_impuesto = costo_unitario * (1 + impuesto / 100)
+    
+    # 2. Calcular costo real considerando escala de compra
+    costo_real = costo_con_impuesto
+    unidades_recibidas = 1
+    
     if escala_compra and escala_compra != "sin_escala":
         try:
             # Ejemplo: "10+3" significa comprar 10 y recibir 13
-            partes = escala_compra.split('+')
-            if len(partes) == 2:
-                compra = float(partes[0])
-                recibe = compra + float(partes[1])
-                costo_real = (costo_base * compra) / recibe
-        except:
-            costo_real = costo_base
+            if '+' in escala_compra:
+                partes = escala_compra.split('+')
+                if len(partes) == 2:
+                    compra = float(partes[0])
+                    bonus = float(partes[1])
+                    recibe = compra + bonus
+                    # Costo real = (total pagado) / (total recibido)
+                    costo_real = (costo_con_impuesto * compra) / recibe
+                    unidades_recibidas = recibe
+        except Exception:
+            costo_real = costo_con_impuesto
     
-    # Agregar impuesto al costo
-    costo_con_impuesto = costo_real * (1 + impuesto / 100)
+    # 3. Calcular precio base (sin descuento) con margen del 25%
+    # Fórmula: Precio Base = Costo Real / (1 - 0.25)
+    precio_base = costo_real / (1 - 0.25)
     
-    # Calcular precio base (sin descuento) con margen del 25%
-    precio_base = costo_con_impuesto / (1 - 0.25)
-    
-    # Calcular precio público (con descuento) manteniendo margen del 25%
+    # 4. Calcular precio público (con descuento) manteniendo margen del 25%
+    # Fórmula: Precio Público = Costo Real / ((1 - 0.25) * (1 - Descuento))
     if descuento > 0:
-        precio_publico = costo_con_impuesto / ((1 - 0.25) * (1 - descuento / 100))
+        precio_publico = costo_real / ((1 - 0.25) * (1 - descuento / 100))
     else:
         precio_publico = precio_base
     
-    # Verificar margen final
-    precio_final = precio_publico * (1 - descuento / 100)
-    margen_final = ((precio_final - costo_con_impuesto) / precio_final) * 100
+    # 5. Verificar margen final después del descuento
+    precio_final_cliente = precio_publico * (1 - descuento / 100)
+    margen_final = ((precio_final_cliente - costo_real) / precio_final_cliente) * 100
     
     return {
-        'costo_real': round(costo_con_impuesto, 2),
+        'costo_unitario_original': round(costo_unitario, 2),
+        'costo_con_impuesto': round(costo_con_impuesto, 2),
+        'costo_real': round(costo_real, 2),
+        'escala_aplicada': escala_compra,
+        'unidades_recibidas': unidades_recibidas,
         'precio_base': round(precio_base, 2),
         'precio_publico': round(precio_publico, 2),
-        'precio_final': round(precio_final, 2),
-        'margen_utilidad': round(margen_final, 2)
+        'precio_final_cliente': round(precio_final_cliente, 2),
+        'margen_utilidad_final': round(margen_final, 2),
+        'descuento_aplicado': descuento,
+        'impuesto_aplicado': impuesto,
+        'margen_garantizado': margen_final >= 24.5  # Tolerancia del 0.5%
     }
+
+def generar_alertas_farmacia(medicamentos: List[Dict]) -> List[Dict]:
+    """Genera alertas inteligentes de farmacia"""
+    alertas = []
+    
+    for med in medicamentos:
+        # Alerta de stock bajo
+        if med.get('stock', 0) <= med.get('stock_minimo', 5):
+            alertas.append({
+                'tipo': AlertaTipo.STOCK_BAJO,
+                'medicamento_id': med.get('id'),
+                'medicamento_nombre': med.get('nombre'),
+                'mensaje': f"Stock crítico: {med.get('stock', 0)} unidades (mínimo: {med.get('stock_minimo', 5)})",
+                'prioridad': 'alta' if med.get('stock', 0) == 0 else 'media',
+                'fecha_alerta': datetime.now(timezone.utc)
+            })
+        
+        # Alerta de vencimiento cercano (30 días)
+        if med.get('fecha_vencimiento'):
+            try:
+                if isinstance(med['fecha_vencimiento'], str):
+                    fecha_venc = datetime.fromisoformat(med['fecha_vencimiento']).date()
+                else:
+                    fecha_venc = med['fecha_vencimiento']
+                
+                dias_hasta_vencimiento = (fecha_venc - date.today()).days
+                
+                if 0 <= dias_hasta_vencimiento <= 30:
+                    prioridad = 'alta' if dias_hasta_vencimiento <= 7 else 'media'
+                    alertas.append({
+                        'tipo': AlertaTipo.VENCIMIENTO_CERCANO,
+                        'medicamento_id': med.get('id'),
+                        'medicamento_nombre': med.get('nombre'),
+                        'mensaje': f"Vence en {dias_hasta_vencimiento} días ({fecha_venc.strftime('%d/%m/%Y')})",
+                        'prioridad': prioridad,
+                        'fecha_alerta': datetime.now(timezone.utc)
+                    })
+            except Exception:
+                pass
+    
+    return alertas
 
 # Models
 class LoginRequest(BaseModel):
@@ -282,10 +502,11 @@ class Paciente(BaseModel):
     numero_celular: str
     sintomas_signos: str = ""
     diagnostico_clinico: str = ""
-    tratamiento_medico: str = ""  # Nuevo campo
+    tratamiento_medico: str = ""
+    medicamentos_recetados: List[str] = []  # IDs de medicamentos
     codigo_cie10: Optional[str] = None
     descripcion_cie10: Optional[str] = None
-    capitulo_cie10: Optional[str] = None  # Nuevo campo
+    capitulo_cie10: Optional[str] = None
     gravedad_diagnostico: Optional[GravidadDiagnostico] = None
     peso: Optional[float] = None
     altura: Optional[float] = None
@@ -312,6 +533,7 @@ class PacienteCreate(BaseModel):
     sintomas_signos: str = ""
     diagnostico_clinico: str = ""
     tratamiento_medico: str = ""
+    medicamentos_recetados: List[str] = []
     codigo_cie10: Optional[str] = None
     gravedad_diagnostico: Optional[GravidadDiagnostico] = None
     peso: Optional[float] = None
@@ -328,6 +550,7 @@ class PacienteUpdate(BaseModel):
     sintomas_signos: Optional[str] = None
     diagnostico_clinico: Optional[str] = None
     tratamiento_medico: Optional[str] = None
+    medicamentos_recetados: Optional[List[str]] = None
     codigo_cie10: Optional[str] = None
     gravedad_diagnostico: Optional[GravidadDiagnostico] = None
     peso: Optional[float] = None
@@ -338,23 +561,25 @@ class Medicamento(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nombre: str
     descripcion: str
-    codigo_barras: str = ""  # Nuevo campo
+    codigo_barras: str = ""
     stock: int
-    stock_minimo: int = 5  # Nuevo campo
-    costo_base: float  # Nuevo campo
-    escala_compra: str = "sin_escala"  # Nuevo campo (ej: "10+3", "1+1")
-    descuento_aplicable: float = 0  # Nuevo campo (porcentaje)
-    impuesto: float = 15  # Nuevo campo (porcentaje, ej: 15% ISV)
+    stock_minimo: int = 5
+    costo_unitario: float  # Costo base sin impuestos
+    impuesto: float = 15  # Porcentaje de impuesto
+    escala_compra: str = "sin_escala"  # Ej: "10+3", "1+1"
+    descuento_aplicable: float = 0  # Porcentaje de descuento
+    costo_real: float = 0  # Calculado automáticamente
     precio_base: float = 0  # Calculado automáticamente
     precio_publico: float = 0  # Calculado automáticamente
     margen_utilidad: float = 0  # Calculado automáticamente
     categoria: str
-    lote: str = ""  # Nuevo campo
-    fecha_vencimiento: Optional[date] = None  # Nuevo campo
-    proveedor: str = ""  # Nuevo campo
+    lote: str = ""
+    fecha_vencimiento: Optional[date] = None
+    proveedor: str = ""
     indicaciones: str = ""
     contraindicaciones: str = ""
     dosis_pediatrica: str = ""
+    ventas_mes: int = 0  # Para alertas de rotación
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class MedicamentoCreate(BaseModel):
@@ -363,10 +588,10 @@ class MedicamentoCreate(BaseModel):
     codigo_barras: str = ""
     stock: int
     stock_minimo: int = 5
-    costo_base: float
+    costo_unitario: float
+    impuesto: float = 15
     escala_compra: str = "sin_escala"
     descuento_aplicable: float = 0
-    impuesto: float = 15
     categoria: str
     lote: str = ""
     fecha_vencimiento: Optional[date] = None
@@ -393,6 +618,22 @@ class CitaMedicaCreate(BaseModel):
     doctor: str
     notas: str = ""
 
+class CitaRapida(BaseModel):
+    paciente_id: str
+    motivo: str = "Seguimiento"
+    doctor: str = "Dr. Usuario"
+    dias_adelante: int = 7  # Programar para dentro de X días
+
+class AlertaFarmacia(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tipo: AlertaTipo
+    medicamento_id: str
+    medicamento_nombre: str
+    mensaje: str
+    prioridad: str  # alta, media, baja
+    fecha_alerta: datetime
+    leida: bool = False
+
 # Authentication function
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials.credentials != "valid_token_1970":
@@ -403,71 +644,124 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         )
     return credentials.credentials
 
-# Initialize CIE-10 codes with chapters
-async def initialize_cie10_codes():
+# Initialize expanded CIE-10 codes
+async def initialize_cie10_codes_expandido():
     cie10_codes = [
-        # Infecciones respiratorias agudas
+        # Enfermedades neurológicas
+        {"codigo": "G91.9", "descripcion": "Hidrocefalia, no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G03.9", "descripcion": "Meningitis, no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G04.9", "descripcion": "Encefalitis, no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G40.9", "descripcion": "Epilepsia, no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "G80.9", "descripcion": "Parálisis cerebral, no especificada", "categoria": "Enfermedades neurológicas"},
+        {"codigo": "Q02", "descripcion": "Microcefalia", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q75.3", "descripcion": "Macrocefalia", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q05.9", "descripcion": "Espina bífida, no especificada", "categoria": "Malformaciones congénitas"},
+        
+        # Infecciones respiratorias agudas (expandido)
         {"codigo": "J00", "descripcion": "Rinofaringitis aguda (resfriado común)", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J01", "descripcion": "Sinusitis aguda", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J02", "descripcion": "Faringitis aguda", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J03", "descripcion": "Amigdalitis aguda", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J04", "descripcion": "Laringitis y traqueítis agudas", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J06", "descripcion": "Infecciones agudas de las vías respiratorias superiores", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J12", "descripcion": "Neumonía viral", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J01.9", "descripcion": "Sinusitis aguda, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J02.9", "descripcion": "Faringitis aguda, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J03.9", "descripcion": "Amigdalitis aguda, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J04.0", "descripcion": "Laringitis aguda", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J04.1", "descripcion": "Traqueítis aguda", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J05.0", "descripcion": "Laringitis obstructiva aguda (crup)", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J06.9", "descripcion": "Infección aguda de vías respiratorias superiores", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J11.1", "descripcion": "Influenza con otras manifestaciones respiratorias", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J12.9", "descripcion": "Neumonía viral, no especificada", "categoria": "Enfermedades respiratorias"},
         {"codigo": "J13", "descripcion": "Neumonía por Streptococcus pneumoniae", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J18", "descripcion": "Neumonía, organismo no especificado", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J20", "descripcion": "Bronquitis aguda", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J21", "descripcion": "Bronquiolitis aguda", "categoria": "Enfermedades respiratorias"},
-        {"codigo": "J45", "descripcion": "Asma", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J18.9", "descripcion": "Neumonía, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J20.9", "descripcion": "Bronquitis aguda, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J21.9", "descripcion": "Bronquiolitis aguda, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "J45.9", "descripcion": "Asma, no especificada", "categoria": "Enfermedades respiratorias"},
+        {"codigo": "A37.9", "descripcion": "Tos ferina, no especificada", "categoria": "Enfermedades infecciosas"},
         
-        # Enfermedades del oído
-        {"codigo": "H65", "descripcion": "Otitis media no supurativa", "categoria": "Enfermedades del oído"},
-        {"codigo": "H66", "descripcion": "Otitis media supurativa y la no especificada", "categoria": "Enfermedades del oído"},
-        {"codigo": "H10", "descripcion": "Conjuntivitis", "categoria": "Enfermedades del ojo"},
+        # Enfermedades del oído (expandido)
+        {"codigo": "H60.9", "descripcion": "Otitis externa, no especificada", "categoria": "Enfermedades del oído"},
+        {"codigo": "H65.9", "descripcion": "Otitis media no supurativa, no especificada", "categoria": "Enfermedades del oído"},
+        {"codigo": "H66.9", "descripcion": "Otitis media, no especificada", "categoria": "Enfermedades del oído"},
+        {"codigo": "H92.0", "descripcion": "Otalgia", "categoria": "Enfermedades del oído"},
         
-        # Enfermedades gastrointestinales
-        {"codigo": "A09", "descripcion": "Diarrea y gastroenteritis de presunto origen infeccioso", "categoria": "Enfermedades gastrointestinales"},
-        {"codigo": "K59", "descripcion": "Otros trastornos funcionales del intestino", "categoria": "Enfermedades gastrointestinales"},
+        # Enfermedades del ojo
+        {"codigo": "H10.9", "descripcion": "Conjuntivitis, no especificada", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H00.0", "descripcion": "Orzuelo", "categoria": "Enfermedades del ojo"},
+        {"codigo": "H01.9", "descripcion": "Blefaritis, no especificada", "categoria": "Enfermedades del ojo"},
+        
+        # Enfermedades gastrointestinales (expandido)
+        {"codigo": "A09.9", "descripcion": "Diarrea y gastroenteritis de presunto origen infeccioso", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "A09.0", "descripcion": "Gastroenteritis y colitis de origen infeccioso", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "A08.0", "descripcion": "Enteritis por rotavirus", "categoria": "Enfermedades infecciosas"},
         {"codigo": "K30", "descripcion": "Dispepsia funcional", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K29.7", "descripcion": "Gastritis, no especificada", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K21.9", "descripcion": "Enfermedad de reflujo gastroesofágico", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K59.0", "descripcion": "Estreñimiento", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K37", "descripcion": "Apendicitis, no especificada", "categoria": "Enfermedades gastrointestinales"},
+        {"codigo": "K56.1", "descripcion": "Intususcepción", "categoria": "Enfermedades gastrointestinales"},
         
-        # Enfermedades de la piel
-        {"codigo": "L20", "descripcion": "Dermatitis atópica", "categoria": "Enfermedades de la piel"},
-        {"codigo": "L21", "descripcion": "Dermatitis seborreica", "categoria": "Enfermedades de la piel"},
+        # Enfermedades de la piel (expandido)
+        {"codigo": "L20.9", "descripcion": "Dermatitis atópica, no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L21.9", "descripcion": "Dermatitis seborreica, no especificada", "categoria": "Enfermedades de la piel"},
         {"codigo": "L22", "descripcion": "Dermatitis del pañal", "categoria": "Enfermedades de la piel"},
-        {"codigo": "L30", "descripcion": "Otras dermatitis", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L30.9", "descripcion": "Dermatitis, no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L01.0", "descripcion": "Impétigo", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L03.9", "descripcion": "Celulitis, no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L50.9", "descripcion": "Urticaria, no especificada", "categoria": "Enfermedades de la piel"},
+        {"codigo": "L70.9", "descripcion": "Acné, no especificado", "categoria": "Enfermedades de la piel"},
         
-        # Síntomas y signos
-        {"codigo": "R50", "descripcion": "Fiebre, no especificada", "categoria": "Síntomas y signos"},
+        # Síntomas y signos (expandido)
+        {"codigo": "R50.9", "descripcion": "Fiebre, no especificada", "categoria": "Síntomas y signos"},
         {"codigo": "R05", "descripcion": "Tos", "categoria": "Síntomas y signos"},
-        {"codigo": "R06", "descripcion": "Anormalidades de la respiración", "categoria": "Síntomas y signos"},
-        {"codigo": "R10", "descripcion": "Dolor abdominal y pélvico", "categoria": "Síntomas y signos"},
+        {"codigo": "R06.2", "descripcion": "Sibilancias", "categoria": "Síntomas y signos"},
+        {"codigo": "R10.4", "descripcion": "Otros dolores abdominales y los no especificados", "categoria": "Síntomas y signos"},
         {"codigo": "R11", "descripcion": "Náusea y vómito", "categoria": "Síntomas y signos"},
+        {"codigo": "R51", "descripcion": "Cefalea", "categoria": "Síntomas y signos"},
+        {"codigo": "R53", "descripcion": "Malestar y fatiga", "categoria": "Síntomas y signos"},
+        {"codigo": "R56.8", "descripcion": "Otras convulsiones y las no especificadas", "categoria": "Síntomas y signos"},
+        {"codigo": "R17", "descripcion": "Ictericia no especificada", "categoria": "Síntomas y signos"},
+        {"codigo": "R21", "descripcion": "Erupción cutánea y otras erupciones cutáneas no específicas", "categoria": "Síntomas y signos"},
         
-        # Trastornos nutricionales
+        # Trastornos nutricionales (expandido)
         {"codigo": "E40", "descripcion": "Kwashiorkor", "categoria": "Trastornos nutricionales"},
         {"codigo": "E41", "descripcion": "Marasmo nutricional", "categoria": "Trastornos nutricionales"},
-        {"codigo": "E42", "descripcion": "Marasmo-kwashiorkor", "categoria": "Trastornos nutricionales"},
-        {"codigo": "E43", "descripcion": "Desnutrición proteico-calórica severa no especificada", "categoria": "Trastornos nutricionales"},
-        {"codigo": "E44", "descripcion": "Desnutrición proteico-calórica de grado moderado y leve", "categoria": "Trastornos nutricionales"},
-        {"codigo": "E66", "descripcion": "Obesidad", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E44.1", "descripcion": "Desnutrición proteico-calórica leve", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E66.9", "descripcion": "Obesidad, no especificada", "categoria": "Trastornos nutricionales"},
+        {"codigo": "E55.0", "descripcion": "Raquitismo activo", "categoria": "Trastornos nutricionales"},
+        {"codigo": "D50.9", "descripcion": "Anemia por deficiencia de hierro", "categoria": "Enfermedades de la sangre"},
+        {"codigo": "D64.9", "descripcion": "Anemia, no especificada", "categoria": "Enfermedades de la sangre"},
         
-        # Enfermedades infecciosas
-        {"codigo": "A00", "descripcion": "Cólera", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "A01", "descripcion": "Fiebres tifoidea y paratifoidea", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "A02", "descripcion": "Otras infecciones por Salmonella", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "A03", "descripcion": "Shigelosis", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "A04", "descripcion": "Otras infecciones intestinales bacterianas", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "A08", "descripcion": "Infecciones intestinales debidas a virus y otros organismos especificados", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B00", "descripcion": "Infecciones por virus del herpes simple", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B01", "descripcion": "Varicela", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B02", "descripcion": "Herpes zóster", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B05", "descripcion": "Sarampión", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B06", "descripcion": "Rubéola", "categoria": "Enfermedades infecciosas"},
-        {"codigo": "B08", "descripcion": "Otras infecciones virales caracterizadas por lesiones de piel y mucosas", "categoria": "Enfermedades infecciosas"},
+        # Enfermedades infecciosas (expandido)
+        {"codigo": "A00.9", "descripcion": "Cólera, no especificado", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A01.0", "descripcion": "Fiebre tifoidea", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A02.9", "descripcion": "Infección por Salmonella, no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "A03.9", "descripcion": "Shigelosis, no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B00.9", "descripcion": "Infección por virus del herpes simple", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B01.9", "descripcion": "Varicela sin complicación", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B02.9", "descripcion": "Herpes zóster sin complicación", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B05.9", "descripcion": "Sarampión sin complicación", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B06.9", "descripcion": "Rubéola sin complicación", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B15.9", "descripcion": "Hepatitis A sin coma hepático", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B25.9", "descripcion": "Enfermedad por citomegalovirus, no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B26.9", "descripcion": "Parotiditis, no especificada", "categoria": "Enfermedades infecciosas"},
+        {"codigo": "B37.9", "descripcion": "Candidiasis, no especificada", "categoria": "Enfermedades infecciosas"},
+        
+        # Malformaciones congénitas
+        {"codigo": "Q24.9", "descripcion": "Malformación congénita del corazón", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q36.9", "descripcion": "Labio leporino, no especificado", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q35.9", "descripcion": "Fisura del paladar, no especificada", "categoria": "Malformaciones congénitas"},
+        {"codigo": "Q65.9", "descripcion": "Luxación congénita de cadera", "categoria": "Malformaciones congénitas"},
+        
+        # Trastornos mentales
+        {"codigo": "F84.0", "descripcion": "Autismo infantil", "categoria": "Trastornos mentales"},
+        {"codigo": "F90.9", "descripcion": "Trastorno hipercinético, no especificado", "categoria": "Trastornos mentales"},
+        {"codigo": "F32.9", "descripcion": "Episodio depresivo, no especificado", "categoria": "Trastornos mentales"},
+        {"codigo": "F41.9", "descripcion": "Trastorno de ansiedad, no especificado", "categoria": "Trastornos mentales"}
     ]
     
     existing_count = await db.cie10_codes.count_documents({})
-    if existing_count == 0:
+    if existing_count < 50:  # Solo actualizar si no hay muchos códigos
+        # Limpiar códigos existentes
+        await db.cie10_codes.delete_many({})
+        
+        # Insertar códigos expandidos
         for code in cie10_codes:
             code['capitulo'] = obtener_capitulo_cie10(code['codigo'])
             code_obj = CodigoCIE10(**code)
@@ -505,9 +799,9 @@ async def search_cie10(query: str, token: str = Depends(verify_token)):
     return [CodigoCIE10(**code) for code in codes]
 
 @api_router.post("/cie10/clasificar")
-async def clasificar_diagnostico(diagnostico: str, token: str = Depends(verify_token)):
-    """Clasifica automáticamente un diagnóstico según CIE-10"""
-    codigo_sugerido = clasificar_cie10_automatico(diagnostico)
+async def clasificar_diagnostico_inteligente(diagnostico: str, token: str = Depends(verify_token)):
+    """Clasificación inteligente y expandida de diagnósticos según CIE-10"""
+    codigo_sugerido = clasificar_cie10_inteligente(diagnostico)
     
     if codigo_sugerido:
         cie10_code = await db.cie10_codes.find_one({"codigo": codigo_sugerido})
@@ -516,14 +810,35 @@ async def clasificar_diagnostico(diagnostico: str, token: str = Depends(verify_t
                 "codigo": codigo_sugerido,
                 "descripcion": cie10_code["descripcion"],
                 "capitulo": obtener_capitulo_cie10(codigo_sugerido),
-                "sugerencia": True
+                "sugerencia": True,
+                "confianza": "alta"  # Nivel de confianza en la sugerencia
             }
+    
+    # Si no encuentra coincidencia exacta, buscar similares
+    palabras = diagnostico.lower().split()
+    for palabra in palabras:
+        if len(palabra) > 4:
+            codes = await db.cie10_codes.find({
+                "descripcion": {"$regex": palabra, "$options": "i"}
+            }).to_list(5)
+            
+            if codes:
+                return {
+                    "codigo": codes[0]["codigo"],
+                    "descripcion": codes[0]["descripcion"],
+                    "capitulo": obtener_capitulo_cie10(codes[0]["codigo"]),
+                    "sugerencia": True,
+                    "confianza": "media",
+                    "alternativas": [{"codigo": c["codigo"], "descripcion": c["descripcion"]} for c in codes[1:4]]
+                }
     
     return {
         "codigo": None,
         "descripcion": None,
         "capitulo": None,
-        "sugerencia": False
+        "sugerencia": False,
+        "confianza": "baja",
+        "mensaje": "No se encontró clasificación automática. Busque manualmente en la base CIE-10."
     }
 
 @api_router.post("/pacientes", response_model=Paciente)
@@ -533,9 +848,9 @@ async def crear_paciente(paciente_data: PacienteCreate, token: str = Depends(ver
     # Calcular edad automáticamente
     paciente_dict['edad'] = calcular_edad(paciente_data.fecha_nacimiento)
     
-    # Clasificación automática CIE-10 si no se proporcionó código
+    # Clasificación automática CIE-10 inteligente
     if paciente_data.diagnostico_clinico and not paciente_data.codigo_cie10:
-        codigo_automatico = clasificar_cie10_automatico(paciente_data.diagnostico_clinico)
+        codigo_automatico = clasificar_cie10_inteligente(paciente_data.diagnostico_clinico)
         if codigo_automatico:
             paciente_dict['codigo_cie10'] = codigo_automatico
     
@@ -583,9 +898,9 @@ async def actualizar_paciente(paciente_id: str, paciente_update: PacienteUpdate,
     if 'fecha_nacimiento' in update_data:
         update_data['edad'] = calcular_edad(update_data['fecha_nacimiento'])
     
-    # Clasificación automática CIE-10 si se actualiza el diagnóstico
+    # Clasificación automática CIE-10 inteligente si se actualiza el diagnóstico
     if 'diagnostico_clinico' in update_data and not update_data.get('codigo_cie10'):
-        codigo_automatico = clasificar_cie10_automatico(update_data['diagnostico_clinico'])
+        codigo_automatico = clasificar_cie10_inteligente(update_data['diagnostico_clinico'])
         if codigo_automatico:
             update_data['codigo_cie10'] = codigo_automatico
     
@@ -619,62 +934,93 @@ async def eliminar_paciente(paciente_id: str, token: str = Depends(verify_token)
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     return {"mensaje": "Paciente eliminado exitosamente"}
 
-@api_router.post("/pacientes/{paciente_id}/citas")
-async def agregar_cita(paciente_id: str, cita: RegistroCita, token: str = Depends(verify_token)):
+@api_router.post("/pacientes/{paciente_id}/cita-rapida")
+async def crear_cita_rapida(paciente_id: str, cita_rapida: CitaRapida, token: str = Depends(verify_token)):
+    """Crear cita rápida para un paciente"""
     paciente = await db.pacientes.find_one({"id": paciente_id})
     if not paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     
-    cita_dict = cita.dict()
-    cita_dict['fecha_cita'] = cita_dict['fecha_cita'].isoformat()
+    # Calcular fecha y hora de la cita (días adelante + hora por defecto 9:00 AM)
+    from datetime import timedelta
+    fecha_cita = datetime.now(timezone.utc) + timedelta(days=cita_rapida.dias_adelante)
+    fecha_cita = fecha_cita.replace(hour=9, minute=0, second=0, microsecond=0)  # 9:00 AM
     
-    await db.pacientes.update_one(
-        {"id": paciente_id},
-        {"$push": {"historial_citas": cita_dict}}
+    cita_data = CitaMedicaCreate(
+        paciente_id=paciente_id,
+        fecha_hora=fecha_cita,
+        motivo=cita_rapida.motivo,
+        doctor=cita_rapida.doctor
     )
-    return {"mensaje": "Cita agregada exitosamente"}
-
-@api_router.post("/pacientes/{paciente_id}/analisis")
-async def agregar_analisis(paciente_id: str, analisis: AnalisisLaboratorio, token: str = Depends(verify_token)):
-    paciente = await db.pacientes.find_one({"id": paciente_id})
-    if not paciente:
-        raise HTTPException(status_code=404, detail="Paciente no encontrado")
     
-    analisis_dict = analisis.dict()
-    analisis_dict['fecha_analisis'] = analisis_dict['fecha_analisis'].isoformat()
+    cita_dict = cita_data.dict()
+    cita_dict['paciente_nombre'] = paciente['nombre_completo']
     
-    await db.pacientes.update_one(
-        {"id": paciente_id},
-        {"$push": {"analisis_laboratorio": analisis_dict}}
-    )
-    return {"mensaje": "Análisis de laboratorio agregado exitosamente"}
+    cita_obj = CitaMedica(**cita_dict)
+    await db.citas.insert_one(prepare_for_mongo(cita_obj.dict()))
+    
+    return {
+        "mensaje": f"Cita rápida creada para {paciente['nombre_completo']}",
+        "fecha_hora": fecha_cita.isoformat(),
+        "cita_id": cita_obj.id
+    }
 
-# Endpoints de medicamentos con cálculo automático de precios
-@api_router.post("/medicamentos/calcular-precios")
-async def calcular_precios(
-    costo_base: float,
+# Medicamentos con filtro inteligente para el tratamiento
+@api_router.get("/medicamentos/disponibles")
+async def get_medicamentos_disponibles(buscar: str = "", token: str = Depends(verify_token)):
+    """Obtener medicamentos disponibles (con stock) para tratamiento"""
+    query = {"stock": {"$gt": 0}}  # Solo medicamentos con stock
+    
+    if buscar:
+        query["$or"] = [
+            {"nombre": {"$regex": buscar, "$options": "i"}},
+            {"categoria": {"$regex": buscar, "$options": "i"}},
+            {"indicaciones": {"$regex": buscar, "$options": "i"}}
+        ]
+    
+    medicamentos = await db.medicamentos.find(query).to_list(20)
+    
+    return [{
+        "id": med["id"],
+        "nombre": med["nombre"],
+        "categoria": med["categoria"],
+        "stock": med["stock"],
+        "dosis_pediatrica": med.get("dosis_pediatrica", ""),
+        "indicaciones": med.get("indicaciones", "")[:100] + "..." if len(med.get("indicaciones", "")) > 100 else med.get("indicaciones", "")
+    } for med in medicamentos]
+
+# Endpoints de medicamentos con sistema de precios detallado
+@api_router.post("/medicamentos/calcular-precios-detallado")
+async def calcular_precios_detallado(
+    costo_unitario: float,
+    impuesto: float = 15,
     escala_compra: str = "sin_escala",
     descuento: float = 0,
-    impuesto: float = 15,
     token: str = Depends(verify_token)
 ):
-    """Calcula precios automáticamente con margen del 25%"""
-    precios = calcular_precios_medicamento(costo_base, escala_compra, descuento, impuesto)
-    return precios
+    """Calculadora detallada de precios con margen garantizado del 25%"""
+    resultado = calcular_precios_farmacia_detallado(costo_unitario, impuesto, escala_compra, descuento)
+    return resultado
 
 @api_router.post("/medicamentos", response_model=Medicamento)
 async def crear_medicamento(medicamento: MedicamentoCreate, token: str = Depends(verify_token)):
     medicamento_dict = medicamento.dict()
     
-    # Calcular precios automáticamente
-    precios = calcular_precios_medicamento(
-        medicamento.costo_base,
+    # Calcular precios automáticamente con el sistema detallado
+    precios = calcular_precios_farmacia_detallado(
+        medicamento.costo_unitario,
+        medicamento.impuesto,
         medicamento.escala_compra,
-        medicamento.descuento_aplicable,
-        medicamento.impuesto
+        medicamento.descuento_aplicable
     )
     
-    medicamento_dict.update(precios)
+    # Actualizar con los precios calculados
+    medicamento_dict.update({
+        'costo_real': precios['costo_real'],
+        'precio_base': precios['precio_base'],
+        'precio_publico': precios['precio_publico'],
+        'margen_utilidad': precios['margen_utilidad_final']
+    })
     
     medicamento_obj = Medicamento(**medicamento_dict)
     await db.medicamentos.insert_one(prepare_for_mongo(medicamento_obj.dict()))
@@ -684,6 +1030,23 @@ async def crear_medicamento(medicamento: MedicamentoCreate, token: str = Depends
 async def get_medicamentos(token: str = Depends(verify_token)):
     medicamentos = await db.medicamentos.find().to_list(1000)
     return [Medicamento(**parse_from_mongo(medicamento)) for medicamento in medicamentos]
+
+@api_router.get("/medicamentos/alertas")
+async def get_alertas_farmacia(token: str = Depends(verify_token)):
+    """Obtener todas las alertas de farmacia"""
+    medicamentos = await db.medicamentos.find().to_list(1000)
+    medicamentos_parsed = [parse_from_mongo(med) for med in medicamentos]
+    
+    alertas = generar_alertas_farmacia([med.dict() if hasattr(med, 'dict') else med for med in medicamentos_parsed])
+    
+    return {
+        "total_alertas": len(alertas),
+        "alertas_por_tipo": {
+            "stock_bajo": len([a for a in alertas if a['tipo'] == AlertaTipo.STOCK_BAJO]),
+            "vencimiento_cercano": len([a for a in alertas if a['tipo'] == AlertaTipo.VENCIMIENTO_CERCANO])
+        },
+        "alertas": alertas[:20]  # Limitar a 20 alertas
+    }
 
 @api_router.get("/medicamentos/vencer")
 async def medicamentos_por_vencer(dias: int = 30, token: str = Depends(verify_token)):
@@ -802,8 +1165,8 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup_event():
-    await initialize_cie10_codes()
-    logger.info("Aplicación iniciada y códigos CIE-10 inicializados")
+    await initialize_cie10_codes_expandido()
+    logger.info("Aplicación iniciada con códigos CIE-10 expandidos y sistema inteligente")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
