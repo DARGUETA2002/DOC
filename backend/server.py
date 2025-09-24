@@ -1502,14 +1502,11 @@ async def crear_cita_rapida(cita_data: Dict, token: str = Depends(verify_token))
     await db.pacientes.update_one(
         {"id": paciente_id},
         {"$push": {"historial_citas": {
-            "fecha": fecha_cita.isoformat(),
+            "fecha_cita": fecha_cita.date().isoformat(),
             "motivo": motivo,
-            "doctor": doctor,
-            "tipo": "Cita Rápida",
             "tratamiento": "Consulta de seguimiento",
             "cobro": 0.0,
-            "doctor_atencion": doctor,
-            "notas": f"Cita rápida programada automáticamente"
+            "doctor_atencion": doctor
         }}}
     )
     
