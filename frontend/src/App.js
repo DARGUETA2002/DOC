@@ -356,15 +356,15 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer hover:bg-gray-50" onClick={() => setActiveView('sales')}>
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <DollarSign className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">💰 Ventas Hoy</p>
-              <p className="text-xl font-bold text-gray-900">{ventasHoy?.productos_vendidos_hoy || 0}</p>
-              <p className="text-xs text-gray-500">{formatCurrency(ventasHoy?.total_ingresos || 0)}</p>
+              <p className="text-xl font-bold text-gray-900">{ventasHoy?.productos_vendidos_hoy || 0} productos</p>
+              <p className="text-xs text-gray-500">{formatCurrency(ventasHoy?.total_ingresos || 0)} - Click para ver detalles</p>
             </div>
           </div>
         </div>
