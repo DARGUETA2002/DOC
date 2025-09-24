@@ -790,16 +790,45 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, r
     }
   };
 
-  const selectCIE10Code = (code) => {
-    setFormData(prev => ({...prev, codigo_cie10: code.codigo}));
+  // 🆕 FUNCIONES NUEVAS: Manejo de múltiples códigos CIE-10
+  const addCIE10Code = (code) => {
+    // Verificar si ya existe
+    const exists = selectedCIE10Codes.find(c => c.codigo === code.codigo);
+    if (!exists) {
+      const newCode = {
+        codigo: code.codigo,
+        descripcion: code.descripcion
+      };
+      setSelectedCIE10Codes(prev => [...prev, newCode]);
+      // También actualizar el campo principal para compatibilidad
+      if (selectedCIE10Codes.length === 0) {
+        setFormData(prev => ({...prev, codigo_cie10: code.codigo}));
+      }
+    }
+    setCurrentCIE10Search('');
     setShowCIE10List(false);
     setCieAutoSuggestion(null);
   };
 
+  const removeCIE10Code = (codigo) => {
+    setSelectedCIE10Codes(prev => prev.filter(c => c.codigo !== codigo));
+    // Si eliminamos el código principal, actualizar con el siguiente
+    if (formData.codigo_cie10 === codigo) {
+      const remaining = selectedCIE10Codes.filter(c => c.codigo !== codigo);
+      setFormData(prev => ({
+        ...prev, 
+        codigo_cie10: remaining.length > 0 ? remaining[0].codigo : ''
+      }));
+    }
+  };
+
+  const selectCIE10Code = (code) => {
+    addCIE10Code(code);
+  };
+
   const acceptAutoSuggestion = () => {
     if (cieAutoSuggestion) {
-      setFormData(prev => ({...prev, codigo_cie10: cieAutoSuggestion.codigo}));
-      setCieAutoSuggestion(null);
+      addCIE10Code(cieAutoSuggestion);
     }
   };
 
