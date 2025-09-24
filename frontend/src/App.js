@@ -1502,6 +1502,7 @@ const AppointmentModal = ({ onClose, pacientes, headers, setCitas }) => {
 
       const response = await axios.post(`${API}/citas`, dataToSubmit, { headers });
       setCitas(prev => [...prev, response.data]);
+      alert(`✅ Cita creada exitosamente para ${new Date(dataToSubmit.fecha_hora).toLocaleString('es-ES')}`);
       onClose();
     } catch (error) {
       alert('Error al crear cita: ' + (error.response?.data?.detail || error.message));
