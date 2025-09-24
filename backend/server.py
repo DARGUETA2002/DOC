@@ -783,6 +783,12 @@ class BalanceDiario(BaseModel):
     productos_vendidos: int
     medicamentos_mas_vendidos: List[Dict]
 
+class PriceCalculationRequest(BaseModel):
+    costo_unitario: float
+    impuesto: float = 0
+    escala_compra: str = "sin_escala"
+    descuento: float = 0
+
 # Authentication function
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials.credentials != "valid_token_1970":
