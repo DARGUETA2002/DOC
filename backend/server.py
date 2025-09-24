@@ -2062,6 +2062,300 @@ Considera:
         "metodo": "fallback_basico"
     }
 
+@api_router.get("/reportes/ventas-excel/{mes}/{ano}")
+async def generar_reporte_excel_ventas(mes: int, ano: int, token: str = Depends(verify_token)):
+    """📊 Generar reporte de ventas en formato Excel"""
+    
+    if mes < 1 or mes > 12:
+        raise HTTPException(status_code=400, detail="Mes debe estar entre 1 y 12")
+    
+    if ano < 2020 or ano > 2030:
+        raise HTTPException(status_code=400, detail="Año debe estar entre 2020 y 2030")
+    
+    # Obtener datos del mes
+    reporte_mensual = await get_reporte_ventas_mensual(mes, ano, token)
+    
+    # Crear libro de Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Ventas {mes}-{ano}"
+    
+    # Estilos
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    center_alignment = Alignment(horizontal="center")
+    
+    # Título principal
+    ws["A1"] = f"REPORTE DE VENTAS - {mes}/{ano}"
+    ws["A1"].font = Font(bold=True, size=16)
+    ws.merge_cells("A1:F1")
+    ws["A1"].alignment = center_alignment
+    
+    # Resumen ejecutivo
+    ws["A3"] = "RESUMEN EJECUTIVO"
+    ws["A3"].font = header_font
+    ws["A3"].fill = header_fill
+    ws.merge_cells("A3:B3")
+    
+    row = 4
+    ws[f"A{row}"] = "Total Ventas:"
+    ws[f"B{row}"] = f"L. {reporte_mensual['resumen']['total_ventas']:,.2f}"
+    
+    row += 1
+    ws[f"A{row}"] = "Total Productos Vendidos:"
+    ws[f"B{row}"] = reporte_mensual['resumen']['productos_vendidos']
+    
+    row += 1
+    ws[f"A{row}"] = "Número de Transacciones:"
+    ws[f"B{row}"] = reporte_mensual['resumen']['numero_ventas']
+    
+    row += 1
+    ws[f"A{row}"] = "Utilidad Generada:"
+    ws[f"B{row}"] = f"L. {reporte_mensual['resumen']['utilidad_bruta']:,.2f}"
+    
+    # Productos más vendidos
+    row += 3
+    ws[f"A{row}"] = "PRODUCTOS MÁS VENDIDOS"
+    ws[f"A{row}"].font = header_font
+    ws[f"A{row}"].fill = header_fill
+    ws.merge_cells(f"A{row}:E{row}")
+    
+    row += 1
+    headers = ["Producto", "Cantidad Vendida", "Ingresos", "Utilidad", "Transacciones"]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_alignment
+    
+    for producto in reporte_mensual['productos_mas_vendidos'][:10]:
+        row += 1
+        ws[f"A{row}"] = producto['nombre']
+        ws[f"B{row}"] = producto['cantidad_vendida']
+        ws[f"C{row}"] = f"L. {producto['ingresos_generados']:,.2f}"
+        ws[f"D{row}"] = f"L. {producto['utilidad_generada']:,.2f}"
+        ws[f"E{row}"] = producto['numero_ventas']
+    
+    # Productos menos vendidos
+    row += 3
+    ws[f"A{row}"] = "PRODUCTOS MENOS VENDIDOS"
+    ws[f"A{row}"].font = header_font
+    ws[f"A{row}"].fill = header_fill
+    ws.merge_cells(f"A{row}:E{row}")
+    
+    row += 1
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_alignment
+    
+    for producto in reporte_mensual['productos_menos_vendidos'][:10]:
+        row += 1
+        ws[f"A{row}"] = producto['nombre']
+        ws[f"B{row}"] = producto['cantidad_vendida']
+        ws[f"C{row}"] = f"L. {producto['ingresos_generados']:,.2f}"
+        ws[f"D{row}"] = f"L. {producto['utilidad_generada']:,.2f}"
+        ws[f"E{row}"] = producto['numero_ventas']
+    
+    # Top clientes
+    row += 3
+    ws[f"A{row}"] = "MEJORES CLIENTES"
+    ws[f"A{row}"].font = header_font
+    ws[f"A{row}"].fill = header_fill
+    ws.merge_cells(f"A{row}:C{row}")
+    
+    row += 1
+    cliente_headers = ["Cliente", "Productos Comprados", "Total Gastado"]
+    for col, header in enumerate(cliente_headers, 1):
+        cell = ws.cell(row=row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_alignment
+    
+    for cliente in reporte_mensual['mejores_clientes_monto'][:10]:
+        row += 1
+        ws[f"A{row}"] = cliente['nombre']
+        ws[f"B{row}"] = cliente['productos_comprados']
+        ws[f"C{row}"] = f"L. {cliente['total_gastado']:,.2f}"
+    
+    # Ajustar ancho de columnas
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+    
+    # Guardar en memoria
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    from starlette.responses import StreamingResponse
+    
+    return StreamingResponse(
+        io.BytesIO(output.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=ventas_{mes}_{ano}.xlsx"}
+    )
+
+@api_router.get("/reportes/ventas-anual-excel/{ano}")
+async def generar_reporte_anual_excel(ano: int, token: str = Depends(verify_token)):
+    """📊 Generar reporte anual de ventas en formato Excel con métricas detalladas"""
+    
+    if ano < 2020 or ano > 2030:
+        raise HTTPException(status_code=400, detail="Año debe estar entre 2020 y 2030")
+    
+    # Crear libro de Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Ventas Anual {ano}"
+    
+    # Estilos
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    center_alignment = Alignment(horizontal="center")
+    month_fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+    
+    # Título principal
+    ws["A1"] = f"REPORTE ANUAL DE VENTAS - {ano}"
+    ws["A1"].font = Font(bold=True, size=16)
+    ws.merge_cells("A1:M1")
+    ws["A1"].alignment = center_alignment
+    
+    # Headers mensuales
+    ws["A3"] = "MES"
+    ws["A3"].font = header_font
+    ws["A3"].fill = header_fill
+    
+    monthly_headers = [
+        "Ventas (L)", "Productos Vendidos", "Transacciones", 
+        "Utilidad (L)", "Costo Total (L)", "Margen (%)",
+        "Promedio por Venta (L)", "Productos Únicos", "Días Activos",
+        "Mejor Día", "Peor Día", "Tendencia"
+    ]
+    
+    for col, header in enumerate(monthly_headers, 2):
+        cell = ws.cell(row=3, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_alignment
+    
+    # Datos mensuales
+    meses_nombres = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
+    
+    total_anual = {
+        "ventas": 0, "productos": 0, "transacciones": 0, 
+        "utilidad": 0, "costos": 0
+    }
+    
+    row = 4
+    for mes in range(1, 13):
+        try:
+            reporte_mes = await get_reporte_ventas_mensual(mes, ano, token)
+            
+            ws[f"A{row}"] = meses_nombres[mes-1]
+            ws[f"A{row}"].fill = month_fill
+            
+            ventas = reporte_mes['resumen']['total_ventas']
+            productos = reporte_mes['resumen']['productos_vendidos']
+            transacciones = reporte_mes['resumen']['numero_ventas']
+            utilidad = reporte_mes['resumen']['utilidad_bruta']
+            costos = reporte_mes['resumen']['total_costos']
+            
+            # Cálculos adicionales
+            margen = (utilidad / ventas * 100) if ventas > 0 else 0
+            promedio_venta = ventas / transacciones if transacciones > 0 else 0
+            productos_unicos = len(reporte_mes['productos_mas_vendidos'])
+            
+            ws[f"B{row}"] = f"{ventas:,.2f}"
+            ws[f"C{row}"] = productos
+            ws[f"D{row}"] = transacciones
+            ws[f"E{row}"] = f"{utilidad:,.2f}"
+            ws[f"F{row}"] = f"{costos:,.2f}"
+            ws[f"G{row}"] = f"{margen:.1f}%"
+            ws[f"H{row}"] = f"{promedio_venta:,.2f}"
+            ws[f"I{row}"] = productos_unicos
+            ws[f"J{row}"] = 30 if transacciones > 0 else 0  # Días estimados
+            ws[f"K{row}"] = "N/A"  # Mejor día (requiere más análisis)
+            ws[f"L{row}"] = "N/A"  # Peor día (requiere más análisis)
+            ws[f"M{row}"] = "Creciente" if ventas > 1000 else "Estable"
+            
+            # Acumular totales
+            total_anual["ventas"] += ventas
+            total_anual["productos"] += productos
+            total_anual["transacciones"] += transacciones
+            total_anual["utilidad"] += utilidad
+            total_anual["costos"] += costos
+            
+        except Exception as e:
+            # Si no hay datos para el mes, llenar con ceros
+            ws[f"A{row}"] = meses_nombres[mes-1]
+            ws[f"A{row}"].fill = month_fill
+            for col in range(2, 14):
+                ws.cell(row=row, column=col, value=0 if col <= 9 else "N/A")
+        
+        row += 1
+    
+    # Totales anuales
+    row += 1
+    ws[f"A{row}"] = "TOTAL ANUAL"
+    ws[f"A{row}"].font = Font(bold=True)
+    ws[f"A{row}"].fill = header_fill
+    
+    margen_anual = (total_anual["utilidad"] / total_anual["ventas"] * 100) if total_anual["ventas"] > 0 else 0
+    promedio_venta_anual = total_anual["ventas"] / total_anual["transacciones"] if total_anual["transacciones"] > 0 else 0
+    
+    ws[f"B{row}"] = f"{total_anual['ventas']:,.2f}"
+    ws[f"C{row}"] = total_anual["productos"]
+    ws[f"D{row}"] = total_anual["transacciones"]
+    ws[f"E{row}"] = f"{total_anual['utilidad']:,.2f}"
+    ws[f"F{row}"] = f"{total_anual['costos']:,.2f}"
+    ws[f"G{row}"] = f"{margen_anual:.1f}%"
+    ws[f"H{row}"] = f"{promedio_venta_anual:,.2f}"
+    
+    # Hacer toda la fila de totales en negrita
+    for col in range(1, 14):
+        cell = ws.cell(row=row, column=col)
+        cell.font = Font(bold=True)
+        if col > 1:
+            cell.fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+    
+    # Ajustar ancho de columnas
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min((max_length + 2), 20)  # Máximo 20 caracteres
+        ws.column_dimensions[column].width = adjusted_width
+    
+    # Guardar en memoria
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    from starlette.responses import StreamingResponse
+    
+    return StreamingResponse(
+        io.BytesIO(output.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=ventas_anual_{ano}.xlsx"}
+    )
+
 # Include the router in the main app
 app.include_router(api_router)
 
