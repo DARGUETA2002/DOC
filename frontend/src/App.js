@@ -1404,12 +1404,10 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
         </div>
 
         {/* Second Week */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-purple-50 p-3 border-b">
-            <h3 className="text-lg font-semibold text-purple-800">
-              Semana 2: {new Date(selectedWeek.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')} - {
-                new Date(selectedWeek.getTime() + 13 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
-              }
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+          <div className="bg-gray-50 p-2 border-b border-gray-200">
+            <h3 className="text-sm font-medium text-gray-700">
+              Semana 2
             </h3>
           </div>
           <div className="grid grid-cols-7 gap-0">
