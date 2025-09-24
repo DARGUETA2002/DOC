@@ -405,7 +405,7 @@ class NewFeaturesAPITester:
                 else:
                     self.log_test("BMI recalculation on update", False, "BMI not recalculated")
             else:
-                self.log_test("Update patient with lb/cm units", False, f"Response: {updated_response}")
+                self.log_test("Update patient with kg/m units", False, f"Response: {updated_response}")
             
             # Clean up
             self.make_request('DELETE', f'pacientes/{patient_id}')
