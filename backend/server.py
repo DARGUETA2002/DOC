@@ -1583,11 +1583,11 @@ async def get_balance_diario(fecha: Optional[date] = None, token: str = Depends(
     if not fecha:
         fecha = date.today()
     
-    # Obtener ventas del día usando regex para la fecha
+    # Obtener ventas del día usando regex más flexible
     fecha_str = fecha.strftime("%Y-%m-%d")
     
     ventas_dia = await db.ventas.find({
-        "fecha_venta": {"$regex": f"^{fecha_str}"}
+        "fecha_venta": {"$regex": f"^{fecha_str}T"}
     }).to_list(1000)
     
     # Calcular totales
