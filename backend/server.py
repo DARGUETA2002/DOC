@@ -1322,6 +1322,161 @@ async def actualizar_estado_cita(cita_id: str, estado: EstadoCita, token: str = 
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     return {"mensaje": "Estado de cita actualizado exitosamente"}
 
+# NEW: Sales Management Endpoints
+@api_router.post("/ventas", response_model=Venta)
+async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token)):
+    """💰 Crear nueva venta con cálculo automático de costos y utilidades"""
+    
+    if not venta_data.items:
+        raise HTTPException(status_code=400, detail="La venta debe incluir al menos un producto")
+    
+    # Obtener información de medicamentos
+    medicamento_ids = [item["medicamento_id"] for item in venta_data.items]
+    medicamentos = await db.medicamentos.find({"id": {"$in": medicamento_ids}}).to_list(100)
+    medicamentos_map = {med["id"]: med for med in medicamentos}
+    
+    # Calcular items de venta
+    items_venta = []
+    subtotal = 0
+    total_costo = 0
+    
+    for item_data in venta_data.items:
+        med_id = item_data["medicamento_id"]
+        cantidad = item_data["cantidad"]
+        descuento_item = item_data.get("descuento_aplicado", 0)
+        
+        if med_id not in medicamentos_map:
+            raise HTTPException(status_code=404, detail=f"Medicamento {med_id} no encontrado")
+        
+        medicamento = medicamentos_map[med_id]
+        
+        # Verificar stock suficiente
+        if medicamento["stock"] < cantidad:
+            raise HTTPException(status_code=400, detail=f"Stock insuficiente para {medicamento['nombre']}")
+        
+        # Calcular precios
+        precio_unitario = medicamento["precio_publico"]
+        costo_unitario = medicamento["costo_real"]
+        
+        precio_con_descuento = precio_unitario * (1 - descuento_item / 100)
+        subtotal_item = precio_con_descuento * cantidad
+        costo_total_item = costo_unitario * cantidad
+        
+        items_venta.append(VentaItem(
+            medicamento_id=med_id,
+            medicamento_nombre=medicamento["nombre"],
+            cantidad=cantidad,
+            precio_unitario=precio_unitario,
+            costo_unitario=costo_unitario,
+            descuento_aplicado=descuento_item,
+            subtotal=subtotal_item,
+            costo_total=costo_total_item
+        ))
+        
+        subtotal += subtotal_item
+        total_costo += costo_total_item
+        
+        # Actualizar stock
+        await db.medicamentos.update_one(
+            {"id": med_id},
+            {"$inc": {"stock": -cantidad, "ventas_mes": cantidad}}
+        )
+    
+    # Calcular totales de venta
+    descuento_total = venta_data.descuento_total
+    total_venta = subtotal * (1 - descuento_total / 100)
+    utilidad_bruta = total_venta - total_costo
+    
+    # Obtener nombre del paciente si se especifica
+    paciente_nombre = None
+    if venta_data.paciente_id:
+        paciente = await db.pacientes.find_one({"id": venta_data.paciente_id})
+        if paciente:
+            paciente_nombre = paciente["nombre_completo"]
+    
+    # Crear venta
+    venta = Venta(
+        paciente_id=venta_data.paciente_id,
+        paciente_nombre=paciente_nombre,
+        items=items_venta,
+        subtotal=subtotal,
+        descuento_total=descuento_total,
+        total_venta=total_venta,
+        total_costo=total_costo,
+        utilidad_bruta=utilidad_bruta,
+        vendedor=venta_data.vendedor,
+        notas=venta_data.notas
+    )
+    
+    await db.ventas.insert_one(prepare_for_mongo(venta.dict()))
+    return venta
+
+@api_router.get("/ventas/balance-diario")
+async def get_balance_diario(fecha: Optional[date] = None, token: str = Depends(verify_token)):
+    """📊 Obtener balance diario de ventas"""
+    
+    if not fecha:
+        fecha = date.today()
+    
+    # Obtener ventas del día
+    inicio_dia = datetime.combine(fecha, datetime.min.time()).isoformat()
+    fin_dia = datetime.combine(fecha, datetime.max.time()).isoformat()
+    
+    ventas_dia = await db.ventas.find({
+        "fecha_venta": {
+            "$gte": inicio_dia,
+            "$lte": fin_dia
+        }
+    }).to_list(1000)
+    
+    # Calcular totales
+    total_ventas = sum(venta.get("total_venta", 0) for venta in ventas_dia)
+    total_costos = sum(venta.get("total_costo", 0) for venta in ventas_dia)
+    utilidad_bruta = total_ventas - total_costos
+    numero_ventas = len(ventas_dia)
+    
+    # Contar productos vendidos
+    productos_vendidos = 0
+    medicamentos_vendidos = {}
+    
+    for venta in ventas_dia:
+        for item in venta.get("items", []):
+            productos_vendidos += item.get("cantidad", 0)
+            med_nombre = item.get("medicamento_nombre", "Desconocido")
+            if med_nombre in medicamentos_vendidos:
+                medicamentos_vendidos[med_nombre] += item.get("cantidad", 0)
+            else:
+                medicamentos_vendidos[med_nombre] = item.get("cantidad", 0)
+    
+    # Top 5 medicamentos más vendidos
+    medicamentos_mas_vendidos = [
+        {"nombre": nombre, "cantidad": cantidad}
+        for nombre, cantidad in sorted(medicamentos_vendidos.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    return BalanceDiario(
+        fecha=fecha,
+        total_ventas=total_ventas,
+        total_costos=total_costos,
+        utilidad_bruta=utilidad_bruta,
+        numero_ventas=numero_ventas,
+        productos_vendidos=productos_vendidos,
+        medicamentos_mas_vendidos=medicamentos_mas_vendidos
+    )
+
+@api_router.get("/ventas/hoy")
+async def get_ventas_hoy(token: str = Depends(verify_token)):
+    """🕐 Obtener resumen de ventas de hoy"""
+    balance = await get_balance_diario(date.today(), token)
+    
+    return {
+        "productos_vendidos_hoy": balance.productos_vendidos,
+        "numero_ventas": balance.numero_ventas,
+        "total_ingresos": balance.total_ventas,
+        "utilidad": balance.utilidad_bruta,
+        "top_productos": balance.medicamentos_mas_vendidos[:3]
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
