@@ -250,7 +250,7 @@ class FocusedAPITester:
                             f"Final margin: {margin}%, Expected: >=24.5%")
             
             # Test scale calculation
-            if response.get('unidades_recibidas') == 13:  # 10+3
+            if response.get('unidades_recibidas') == 13.0:  # 10+3 (float comparison)
                 self.log_test("Scale calculation (10+3)", True, "Correctly calculated 13 units")
             else:
                 self.log_test("Scale calculation (10+3)", False, 
@@ -258,9 +258,9 @@ class FocusedAPITester:
                             
             # Test different scales
             test_scales = [
-                ("sin_escala", 1),
-                ("5+1", 6),
-                ("20+5", 25)
+                ("sin_escala", 1.0),
+                ("5+1", 6.0),
+                ("20+5", 25.0)
             ]
             
             for escala, expected_units in test_scales:
