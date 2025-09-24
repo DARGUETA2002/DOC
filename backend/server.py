@@ -430,36 +430,40 @@ def obtener_capitulo_cie10(codigo: str) -> str:
 def calcular_precios_farmacia_detallado(costo_unitario: float, impuesto: float = 0, 
                                       escala_compra: str = "sin_escala", 
                                       descuento: float = 0) -> Dict:
-    """Sistema completo de cálculo de precios con margen garantizado del 25%"""
+    """💰 Sistema completo de cálculo de precios con margen garantizado del 25%"""
     
-    # 1. Calcular costo real considerando impuesto
+    # 1. Aplicar impuesto al costo unitario
     costo_con_impuesto = costo_unitario * (1 + impuesto / 100)
     
     # 2. Calcular costo real considerando escala de compra
     costo_real = costo_con_impuesto
+    unidades_pagadas = 1
     unidades_recibidas = 1
+    descripcion_escala = "Sin escala de compra"
     
-    if escala_compra and escala_compra != "sin_escala":
+    if escala_compra and escala_compra != "sin_escala" and '+' in escala_compra:
         try:
-            # Ejemplo: "10+3" significa comprar 10 y recibir 13
-            if '+' in escala_compra:
-                partes = escala_compra.split('+')
-                if len(partes) == 2:
-                    compra = float(partes[0])
-                    bonus = float(partes[1])
-                    recibe = compra + bonus
-                    # Costo real = (total pagado) / (total recibido)
-                    costo_real = (costo_con_impuesto * compra) / recibe
-                    unidades_recibidas = recibe
+            partes = escala_compra.split('+')
+            if len(partes) == 2:
+                compra = float(partes[0])
+                bonus = float(partes[1])
+                recibe = compra + bonus
+                
+                # Costo real = (total pagado) / (total recibido)
+                costo_real = (costo_con_impuesto * compra) / recibe
+                unidades_pagadas = compra
+                unidades_recibidas = recibe
+                descripcion_escala = f"Compro {int(compra)} y recibo {int(recibe)} unidades"
         except Exception:
-            costo_real = costo_con_impuesto
+            # Si hay error en parsing, mantener sin escala
+            pass
     
-    # 3. Calcular precio base (sin descuento) con margen del 25%
-    # Fórmula: Precio Base = Costo Real / (1 - 0.25)
+    # 3. Calcular precio base (mínimo sin descuento) con margen del 25%
+    # Fórmula exacta solicitada: Precio Base = Costo Real / (1 - 0.25)
     precio_base = costo_real / (1 - 0.25)
     
-    # 4. Calcular precio público (con descuento) manteniendo margen del 25%
-    # Fórmula: Precio Público = Costo Real / ((1 - 0.25) * (1 - Descuento))
+    # 4. Calcular precio público manteniendo 25% después del descuento
+    # Fórmula exacta solicitada: Precio Público = Costo Real / ((1 - 0.25)(1 - Descuento))
     if descuento > 0:
         precio_publico = costo_real / ((1 - 0.25) * (1 - descuento / 100))
     else:
@@ -469,19 +473,28 @@ def calcular_precios_farmacia_detallado(costo_unitario: float, impuesto: float =
     precio_final_cliente = precio_publico * (1 - descuento / 100)
     margen_final = ((precio_final_cliente - costo_real) / precio_final_cliente) * 100
     
+    # 6. Cálculos adicionales para mostrar al usuario
+    utilidad_por_unidad = precio_final_cliente - costo_real
+    porcentaje_markup = ((precio_final_cliente - costo_real) / costo_real) * 100
+    
     return {
         'costo_unitario_original': round(costo_unitario, 2),
+        'impuesto_aplicado': impuesto,
         'costo_con_impuesto': round(costo_con_impuesto, 2),
-        'costo_real': round(costo_real, 2),
         'escala_aplicada': escala_compra,
+        'descripcion_escala': descripcion_escala,
+        'unidades_pagadas': unidades_pagadas,
         'unidades_recibidas': unidades_recibidas,
+        'costo_real': round(costo_real, 2),
         'precio_base': round(precio_base, 2),
         'precio_publico': round(precio_publico, 2),
+        'descuento_aplicado': descuento,
         'precio_final_cliente': round(precio_final_cliente, 2),
         'margen_utilidad_final': round(margen_final, 2),
-        'descuento_aplicado': descuento,
-        'impuesto_aplicado': impuesto,
-        'margen_garantizado': margen_final >= 24.5  # Tolerancia del 0.5%
+        'utilidad_por_unidad': round(utilidad_por_unidad, 2),
+        'porcentaje_markup': round(porcentaje_markup, 2),
+        'margen_garantizado': margen_final >= 24.5,  # Tolerancia del 0.5%
+        'mensaje_verificacion': f"✅ Margen del {round(margen_final, 1)}% - {'GARANTIZADO' if margen_final >= 24.5 else 'INSUFICIENTE'}"
     }
 
 def generar_alertas_farmacia(medicamentos: List[Dict]) -> List[Dict]:
