@@ -665,7 +665,7 @@ const PatientCard = ({ paciente, onEdit, onView, headers, setPacientes }) => {
 };
 
 // Patient Modal Component (Create/Edit) - ENHANCED
-const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes }) => {
+const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes, refreshDashboard }) => {
   const [formData, setFormData] = useState({
     nombre_completo: patient?.nombre_completo || '',
     fecha_nacimiento: patient?.fecha_nacimiento || '',
@@ -675,8 +675,8 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
     numero_celular: patient?.numero_celular || '',
     sintomas_signos: patient?.sintomas_signos || '',
     diagnostico_clinico: patient?.diagnostico_clinico || '',
-    tratamiento_medico: patient?.tratamiento_medico || '', // NUEVO CAMPO
-    medicamentos_recetados: patient?.medicamentos_recetados || [], // NUEVO CAMPO
+    tratamiento_medico: patient?.tratamiento_medico || '',
+    medicamentos_recetados: patient?.medicamentos_recetados || [],
     codigo_cie10: patient?.codigo_cie10 || '',
     gravedad_diagnostico: patient?.gravedad_diagnostico || '',
     peso: patient?.peso || '',
@@ -687,6 +687,15 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
   const [filteredCIE10, setFilteredCIE10] = useState([]);
   const [showCIE10List, setShowCIE10List] = useState(false);
   const [cieAutoSuggestion, setCieAutoSuggestion] = useState(null);
+  
+  // 🆕 NUEVO: Estado para múltiples códigos CIE-10
+  const [selectedCIE10Codes, setSelectedCIE10Codes] = useState(
+    patient?.codigos_cie10_multiples ? patient.codigos_cie10_multiples.map(c => ({
+      codigo: c.codigo,
+      descripcion: c.descripcion
+    })) : []
+  );
+  const [currentCIE10Search, setCurrentCIE10Search] = useState('');
   
   // NEW: Pharmacy integration state
   const [availableMedicamentos, setAvailableMedicamentos] = useState([]);
