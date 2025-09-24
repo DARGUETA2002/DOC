@@ -1769,15 +1769,15 @@ const TodayAppointmentsModal = ({ onClose, citasHoy, pacientes, onViewPatient })
                     </div>
                     <button
                       onClick={() => {
-                        // Aquí puedes agregar funcionalidad para ver expediente
                         const patient = pacientes.find(p => p.id === cita.paciente_id);
-                        if (patient) {
-                          alert(`Ver expediente de ${patient.nombre_completo}`);
+                        if (patient && onViewPatient) {
+                          onClose(); // Cerrar modal HOY
+                          onViewPatient(patient); // Abrir modal de expediente completo
                         }
                       }}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center hover:bg-blue-50 px-2 py-1 rounded"
                     >
-                      👁️ Ver Expediente
+                      👁️ Ver Expediente Completo
                     </button>
                   </div>
                   
