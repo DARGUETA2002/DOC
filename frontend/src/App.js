@@ -588,6 +588,7 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
     sintomas_signos: patient?.sintomas_signos || '',
     diagnostico_clinico: patient?.diagnostico_clinico || '',
     tratamiento_medico: patient?.tratamiento_medico || '', // NUEVO CAMPO
+    medicamentos_recetados: patient?.medicamentos_recetados || [], // NUEVO CAMPO
     codigo_cie10: patient?.codigo_cie10 || '',
     gravedad_diagnostico: patient?.gravedad_diagnostico || '',
     peso: patient?.peso || '',
@@ -598,6 +599,12 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
   const [filteredCIE10, setFilteredCIE10] = useState([]);
   const [showCIE10List, setShowCIE10List] = useState(false);
   const [cieAutoSuggestion, setCieAutoSuggestion] = useState(null);
+  
+  // NEW: Pharmacy integration state
+  const [availableMedicamentos, setAvailableMedicamentos] = useState([]);
+  const [medicationSearch, setMedicationSearch] = useState('');
+  const [showMedicationList, setShowMedicationList] = useState(false);
+  const [selectedMedications, setSelectedMedications] = useState(patient?.medicamentos_recetados || []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
