@@ -2457,38 +2457,68 @@ const RestockModal = ({ onClose, medicamentos, setMedicamentos, headers }) => {
   );
 };
 
-// Sales View Component
+// Enhanced Sales Reports View Component
 const SalesView = ({ medicamentos, pacientes, headers }) => {
-  const [ventas, setVentas] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
+  const [reporteData, setReporteData] = useState(null);
+  const [recomendaciones, setRecomendaciones] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('resumen'); // resumen, productos, clientes, recomendaciones
 
   useEffect(() => {
-    loadVentas();
-  }, [selectedPeriod]);
+    loadMonthlyReport();
+  }, [selectedMonth, selectedYear]);
 
-  const loadVentas = async () => {
+  const loadMonthlyReport = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/ventas?periodo=${selectedPeriod}`, { headers });
-      setVentas(response.data);
+      const [reporteResponse, recomendacionesResponse] = await Promise.all([
+        axios.get(`${API}/reportes/ventas-mensual?mes=${selectedMonth}&ano=${selectedYear}`, { headers }),
+        axios.get(`${API}/reportes/recomendaciones-ia?mes=${selectedMonth}&ano=${selectedYear}`, { headers })
+      ]);
+      
+      setReporteData(reporteResponse.data);
+      setRecomendaciones(recomendacionesResponse.data);
     } catch (error) {
-      console.error('Error loading sales:', error);
+      console.error('Error loading monthly report:', error);
+      alert('❌ Error al cargar reporte mensual');
     }
     setLoading(false);
   };
 
-  const filteredVentas = ventas.filter(venta => 
-    venta.paciente_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    venta.medicamentos?.some(med => med.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const exportToExcel = () => {
+    if (!reporteData) return;
+    
+    // Crear datos para exportar
+    const exportData = {
+      resumen: reporteData.resumen,
+      productos_mas_vendidos: reporteData.productos_mas_vendidos,
+      productos_menos_vendidos: reporteData.productos_menos_vendidos,
+      productos_mas_rentables: reporteData.productos_mas_rentables,
+      productos_no_vendidos: reporteData.productos_no_vendidos,
+      mejores_clientes: reporteData.mejores_clientes_monto,
+      clientes_frecuentes: reporteData.mejores_clientes_frecuencia
+    };
 
-  const totalVentas = ventas.reduce((sum, venta) => sum + venta.total, 0);
-  const ventasHoy = ventas.filter(v => 
-    new Date(v.fecha_venta).toDateString() === new Date().toDateString()
-  ).length;
+    // Convertir a JSON para descargar (simulando Excel)
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `reporte_ventas_${selectedMonth}_${selectedYear}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    alert(`📊 Reporte exportado: ${exportFileDefaultName}\n💡 En producción esto sería un archivo Excel (.xlsx)`);
+  };
+
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
   return (
     <div className="p-6">
