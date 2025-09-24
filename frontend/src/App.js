@@ -1321,41 +1321,38 @@ const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
         </div>
       </div>
 
-      {/* Two Weeks Navigation */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => {
-              const newWeek = new Date(selectedWeek);
-              newWeek.setDate(selectedWeek.getDate() - 14);
-              setSelectedWeek(newWeek);
-            }}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
-          >
-            ← 2 Semanas Atrás
-          </button>
-          <h2 className="text-lg font-semibold text-indigo-700">
-            {selectedWeek.toLocaleDateString('es-ES')} - {
-              new Date(selectedWeek.getTime() + 13 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
-            }
-          </h2>
-          <button
-            onClick={() => {
-              const newWeek = new Date(selectedWeek);
-              newWeek.setDate(selectedWeek.getDate() + 14);
-              setSelectedWeek(newWeek);
-            }}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
-          >
-            2 Semanas Adelante →
-          </button>
-        </div>
-        
+      {/* Minimal Navigation */}
+      <div className="flex justify-between items-center mb-4 bg-gray-50 rounded-lg p-2">
+        <button
+          onClick={() => {
+            const newWeek = new Date(selectedWeek);
+            newWeek.setDate(selectedWeek.getDate() - 14);
+            setSelectedWeek(newWeek);
+          }}
+          className="px-3 py-1 text-gray-600 hover:bg-white hover:shadow-sm rounded text-sm transition-all"
+        >
+          ←
+        </button>
+        <span className="text-sm font-medium text-gray-700">
+          {selectedWeek.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} - {
+            new Date(selectedWeek.getTime() + 13 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
+          }
+        </span>
+        <button
+          onClick={() => {
+            const newWeek = new Date(selectedWeek);
+            newWeek.setDate(selectedWeek.getDate() + 14);
+            setSelectedWeek(newWeek);
+          }}
+          className="px-3 py-1 text-gray-600 hover:bg-white hover:shadow-sm rounded text-sm transition-all"
+        >
+          →
+        </button>
         <button
           onClick={() => setSelectedWeek(getCurrentWeek())}
-          className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
+          className="px-3 py-1 bg-indigo-500 text-white rounded text-sm hover:bg-indigo-600 transition-colors"
         >
-          🏠 Hoy
+          Hoy
         </button>
       </div>
 
