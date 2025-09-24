@@ -1763,6 +1763,231 @@ async def aplicar_restock(medicamento_id: str, restock_data: RestockDetection, t
         "nuevos_precios": precios
     }
 
+# REPORTES AVANZADOS DE VENTAS
+@api_router.get("/reportes/ventas-mensual")
+async def get_reporte_ventas_mensual(mes: int, ano: int, token: str = Depends(verify_token)):
+    """📊 Reporte completo de ventas mensuales para exportar a Excel"""
+    
+    from datetime import datetime, timedelta
+    
+    # Calcular rango de fechas del mes
+    primer_dia = datetime(ano, mes, 1)
+    if mes == 12:
+        ultimo_dia = datetime(ano + 1, 1, 1) - timedelta(seconds=1)
+    else:
+        ultimo_dia = datetime(ano, mes + 1, 1) - timedelta(seconds=1)
+    
+    # Obtener todas las ventas del mes
+    ventas_mes = await db.ventas.find({
+        "fecha_venta": {
+            "$gte": primer_dia.isoformat(),
+            "$lte": ultimo_dia.isoformat()
+        }
+    }).to_list(10000)
+    
+    # Análisis por productos
+    productos_analysis = {}
+    clientes_analysis = {}
+    
+    total_ventas = 0
+    total_costos = 0
+    
+    for venta in ventas_mes:
+        total_ventas += venta.get("total_venta", 0)
+        total_costos += venta.get("total_costo", 0)
+        
+        cliente = venta.get("paciente_nombre", "Cliente Anónimo")
+        if cliente not in clientes_analysis:
+            clientes_analysis[cliente] = {
+                "nombre": cliente,
+                "numero_compras": 0,
+                "total_gastado": 0,
+                "productos_comprados": 0
+            }
+        
+        clientes_analysis[cliente]["numero_compras"] += 1
+        clientes_analysis[cliente]["total_gastado"] += venta.get("total_venta", 0)
+        
+        for item in venta.get("items", []):
+            med_id = item.get("medicamento_id")
+            med_nombre = item.get("medicamento_nombre", "Desconocido")
+            cantidad = item.get("cantidad", 0)
+            subtotal = item.get("subtotal", 0)
+            costo_total = item.get("costo_total", 0)
+            utilidad = subtotal - costo_total
+            
+            if med_id not in productos_analysis:
+                productos_analysis[med_id] = {
+                    "nombre": med_nombre,
+                    "cantidad_vendida": 0,
+                    "ingresos_generados": 0,
+                    "costos_totales": 0,
+                    "utilidad_generada": 0,
+                    "numero_ventas": 0
+                }
+            
+            productos_analysis[med_id]["cantidad_vendida"] += cantidad
+            productos_analysis[med_id]["ingresos_generados"] += subtotal
+            productos_analysis[med_id]["costos_totales"] += costo_total
+            productos_analysis[med_id]["utilidad_generada"] += utilidad
+            productos_analysis[med_id]["numero_ventas"] += 1
+            
+            clientes_analysis[cliente]["productos_comprados"] += cantidad
+    
+    # Obtener todos los productos para identificar no vendidos
+    todos_productos = await db.medicamentos.find({}).to_list(1000)
+    productos_no_vendidos = []
+    
+    for producto in todos_productos:
+        if producto["id"] not in productos_analysis:
+            productos_no_vendidos.append({
+                "id": producto["id"],
+                "nombre": producto["nombre"],
+                "categoria": producto["categoria"],
+                "stock_actual": producto["stock"],
+                "precio_publico": producto.get("precio_publico", 0)
+            })
+    
+    # Rankings
+    productos_vendidos = list(productos_analysis.values())
+    productos_mas_vendidos = sorted(productos_vendidos, key=lambda x: x["cantidad_vendida"], reverse=True)[:10]
+    productos_menos_vendidos = sorted(productos_vendidos, key=lambda x: x["cantidad_vendida"])[:10]
+    productos_mas_rentables = sorted(productos_vendidos, key=lambda x: x["utilidad_generada"], reverse=True)[:10]
+    productos_menos_rentables = sorted(productos_vendidos, key=lambda x: x["utilidad_generada"])[:10]
+    
+    clientes_list = list(clientes_analysis.values())
+    mejores_clientes_frecuencia = sorted(clientes_list, key=lambda x: x["numero_compras"], reverse=True)[:10]
+    mejores_clientes_cantidad = sorted(clientes_list, key=lambda x: x["total_gastado"], reverse=True)[:10]
+    
+    utilidad_total = total_ventas - total_costos
+    
+    return {
+        "periodo": f"{mes:02d}/{ano}",
+        "resumen": {
+            "total_ventas": total_ventas,
+            "total_costos": total_costos,
+            "utilidad_bruta": utilidad_total,
+            "margen_promedio": (utilidad_total / total_ventas * 100) if total_ventas > 0 else 0,
+            "numero_transacciones": len(ventas_mes),
+            "productos_diferentes_vendidos": len(productos_analysis),
+            "productos_no_vendidos": len(productos_no_vendidos)
+        },
+        "productos_mas_vendidos": productos_mas_vendidos,
+        "productos_menos_vendidos": productos_menos_vendidos,
+        "productos_mas_rentables": productos_mas_rentables,
+        "productos_menos_rentables": productos_menos_rentables,
+        "productos_no_vendidos": productos_no_vendidos,
+        "mejores_clientes_frecuencia": mejores_clientes_frecuencia,
+        "mejores_clientes_monto": mejores_clientes_cantidad,
+        "datos_completos": {
+            "productos": productos_vendidos,
+            "clientes": clientes_list,
+            "ventas_detalle": ventas_mes
+        }
+    }
+
+@api_router.get("/reportes/recomendaciones-ia")
+async def get_recomendaciones_financieras_ia(mes: int, ano: int, token: str = Depends(verify_token)):
+    """🧠 Recomendaciones financieras mensuales con IA"""
+    
+    try:
+        # Obtener datos del reporte mensual
+        reporte = await get_reporte_ventas_mensual(mes, ano, token)
+        
+        # Usar IA para generar recomendaciones
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if emergent_key:
+            chat = LlmChat(
+                api_key=emergent_key,
+                session_id=f"financial-advice-{mes}-{ano}-{datetime.now().timestamp()}",
+                system_message="""Eres un consultor financiero especializado en farmacias pediátricas. 
+                
+Analiza los datos de ventas mensuales y proporciona recomendaciones específicas en español siguiendo esta estructura:
+
+FORMATO DE RESPUESTA:
+```json
+{
+  "recomendaciones_inventario": [
+    {"accion": "COMPRAR_MAS", "producto": "nombre", "razon": "justificación"},
+    {"accion": "REDUCIR_STOCK", "producto": "nombre", "razon": "justificación"}
+  ],
+  "recomendaciones_precios": [
+    {"accion": "AJUSTAR_PRECIO", "producto": "nombre", "sugerencia": "específica"}
+  ],
+  "alertas_financieras": ["alerta 1", "alerta 2"],
+  "oportunidades_mejora": ["oportunidad 1", "oportunidad 2"],
+  "resumen_ejecutivo": "resumen en 2-3 oraciones"
+}
+```
+
+Considera:
+- Productos con alta demanda vs stock
+- Productos no vendidos que ocupan capital
+- Margen de utilidad por producto
+- Frecuencia de compra de clientes
+- Estacionalidad pediátrica"""
+            ).with_model("openai", "gpt-4o")
+            
+            datos_resumen = {
+                "resumen_financiero": reporte["resumen"],
+                "top_5_vendidos": reporte["productos_mas_vendidos"][:5],
+                "top_5_rentables": reporte["productos_mas_rentables"][:5],
+                "productos_no_vendidos": len(reporte["productos_no_vendidos"]),
+                "mejor_cliente": reporte["mejores_clientes_monto"][0] if reporte["mejores_clientes_monto"] else None
+            }
+            
+            user_message = UserMessage(
+                text=f"Analiza estos datos de farmacia pediátrica del {mes}/{ano} y proporciona recomendaciones financieras: {json.dumps(datos_resumen, default=str)}"
+            )
+            
+            try:
+                response = await chat.send_message(user_message)
+                
+                # Intentar parsear JSON de la respuesta
+                import json
+                if "```json" in response:
+                    json_part = response.split("```json")[1].split("```")[0]
+                    recomendaciones = json.loads(json_part)
+                else:
+                    # Crear estructura básica si falla el parsing
+                    recomendaciones = {
+                        "recomendaciones_inventario": [],
+                        "recomendaciones_precios": [],
+                        "alertas_financieras": [],
+                        "oportunidades_mejora": [],
+                        "resumen_ejecutivo": response[:200] + "..." if len(response) > 200 else response
+                    }
+                
+                return {
+                    "periodo": f"{mes:02d}/{ano}",
+                    "fecha_generacion": datetime.now().isoformat(),
+                    "recomendaciones": recomendaciones,
+                    "datos_base": datos_resumen,
+                    "metodo": "ia_gpt4"
+                }
+                
+            except Exception as ai_error:
+                print(f"Error en IA recommendations: {ai_error}")
+                # Fallback a recomendaciones básicas
+                pass
+    
+    except Exception as e:
+        print(f"Error en recomendaciones: {e}")
+    
+    # Recomendaciones básicas si falla la IA
+    return {
+        "periodo": f"{mes:02d}/{ano}",
+        "fecha_generacion": datetime.now().isoformat(),
+        "recomendaciones": {
+            "recomendaciones_inventario": [
+                {"accion": "REVISAR_MANUALMENTE", "producto": "Todos", "razon": "Sistema de IA no disponible temporalmente"}
+            ],
+            "alertas_financieras": ["Revisar manualmente los datos de ventas"],
+            "resumen_ejecutivo": "Recomendaciones básicas generadas. Revisar datos manualmente."
+        },
+        "metodo": "fallback_basico"
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
