@@ -1692,6 +1692,10 @@ Por favor intente nuevamente o use "Nueva Cita" en su lugar.`);
           onClose={() => setShowTodayModal(false)}
           citasHoy={getCitasHoy()}
           pacientes={pacientes}
+          onViewPatient={(patient) => {
+            setSelectedPatient(patient);
+            setShowPatientModal(true);
+          }}
         />
       )}
 
