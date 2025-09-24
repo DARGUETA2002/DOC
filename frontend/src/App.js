@@ -293,6 +293,7 @@ const Dashboard = ({ token, role, onLogout }) => {
             medicamentos={medicamentos} 
             setMedicamentos={setMedicamentos}
             headers={headers}
+            refreshDashboard={refreshDashboardData}
           />
         )}
 
