@@ -1991,20 +1991,32 @@ const PriceCalculatorModal = ({ onClose }) => {
 
   const calcularPrecios = async () => {
     try {
-      const params = new URLSearchParams({
-        costo_base: formData.costo_base,
-        escala_compra: formData.escala_compra,
-        descuento: formData.descuento,
-        impuesto: formData.impuesto
-      });
-      
-      const response = await axios.post(`${API}/medicamentos/calcular-precios?${params}`, {}, {
+      // Validar campos requeridos
+      if (!formData.costo_unitario || formData.costo_unitario <= 0) {
+        alert('⚠️ Por favor ingrese un costo unitario válido mayor a 0');
+        return;
+      }
+
+      // Usar el endpoint correcto con datos en el cuerpo
+      const response = await axios.post(`${API}/medicamentos/calcular-precios-detallado`, {
+        costo_unitario: parseFloat(formData.costo_unitario),
+        impuesto: parseFloat(formData.impuesto) || 0,
+        escala_compra: formData.escala_compra || "sin_escala",
+        descuento: parseFloat(formData.descuento) || 0
+      }, {
         headers: { Authorization: `Bearer valid_token_1970` }
       });
       
       setResultado(response.data);
+      
+      // Mostrar mensaje de éxito
+      if (response.data.mensaje) {
+        console.log('✅ Cálculo exitoso:', response.data.mensaje);
+      }
+      
     } catch (error) {
-      alert('Error al calcular precios: ' + error.message);
+      console.error('Error al calcular precios:', error);
+      alert('❌ Error al calcular precios: ' + (error.response?.data?.detail || error.message));
     }
   };
 
