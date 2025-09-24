@@ -798,6 +798,7 @@ class PediatricClinicAPITester:
         self.test_automatic_cie10_classification()
         self.test_patient_crud_operations()
         self.test_treatment_field_integration()
+        self.test_patient_medication_integration()
         self.test_medication_management()
         self.test_price_calculation_system()
         self.test_pharmacy_alerts_system()
