@@ -2108,44 +2108,96 @@ const PriceCalculatorModal = ({ onClose }) => {
             
             {/* Results Section */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Resultados</h3>
+              <h3 className="font-semibold text-gray-900">📊 Resultados del Cálculo</h3>
               
               {resultado ? (
-                <div className="bg-green-50 p-4 rounded-lg space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Costo Real:</span>
-                    <span className="font-semibold">{formatCurrency(resultado.costo_real)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Precio Base (sin descuento):</span>
-                    <span className="font-semibold">{formatCurrency(resultado.precio_base)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Precio Público (con descuento):</span>
-                    <span className="font-semibold text-green-600">{formatCurrency(resultado.precio_publico)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Precio Final (después descuento):</span>
-                    <span className="font-semibold">{formatCurrency(resultado.precio_final)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-lg">
-                    <span className="text-gray-900 font-semibold">Margen de Utilidad:</span>
-                    <span className="font-bold text-green-600">{resultado.margen_utilidad}%</span>
-                  </div>
-                  
-                  {resultado.margen_utilidad >= 25 && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-sm">
-                      ✓ Margen cumple con el mínimo del 25%
+                <div className="space-y-3">
+                  {/* Status Message */}
+                  {resultado.mensaje && (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-blue-800 text-sm font-medium">{resultado.mensaje}</p>
                     </div>
                   )}
+                  
+                  {/* Main Results */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-3">💸 Precios Finales</h4>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-gray-700">💰 Costo Real:</span>
+                        <span className="font-bold text-lg">{formatCurrency(resultado.costo_real)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-gray-700">🏷️ Precio Base (sin descuento):</span>
+                        <span className="font-bold text-lg text-blue-600">{formatCurrency(resultado.precio_base)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-gray-700">🎯 Precio Público (con descuento):</span>
+                        <span className="font-bold text-lg text-green-600">{formatCurrency(resultado.precio_publico)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-white rounded">
+                        <span className="text-gray-700">💵 Precio Final Cliente:</span>
+                        <span className="font-bold text-xl text-purple-600">{formatCurrency(resultado.precio_final_cliente)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Detailed Calculations */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-3">🔍 Detalles del Cálculo</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-600">Costo Original:</span>
+                        <span className="ml-2">{formatCurrency(resultado.costo_unitario_original)}</span>
+                      </div>
+                      
+                      {resultado.impuesto_aplicado > 0 && (
+                        <div>
+                          <span className="text-gray-600">Impuesto ({resultado.impuesto_aplicado}%):</span>
+                          <span className="ml-2">{formatCurrency(resultado.costo_con_impuesto - resultado.costo_unitario_original)}</span>
+                        </div>
+                      )}
+                      
+                      {resultado.escala_aplicada !== "sin_escala" && (
+                        <>
+                          <div className="col-span-2">
+                            <span className="text-gray-600">Escala:</span>
+                            <span className="ml-2 text-blue-600">{resultado.descripcion_escala}</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      <div>
+                        <span className="text-gray-600">Utilidad por unidad:</span>
+                        <span className="ml-2 text-green-600 font-medium">{formatCurrency(resultado.utilidad_por_unidad)}</span>
+                      </div>
+                      
+                      <div>
+                        <span className="text-gray-600">Markup (%):</span>
+                        <span className="ml-2">{resultado.porcentaje_markup?.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Margin Status */}
+                  <div className={`p-3 rounded-lg ${resultado.margen_garantizado ? 'bg-green-100' : 'bg-red-100'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className={`font-medium ${resultado.margen_garantizado ? 'text-green-800' : 'text-red-800'}`}>
+                        Margen Final: {resultado.margen_utilidad_final?.toFixed(1)}%
+                      </span>
+                      <span className={`text-sm px-2 py-1 rounded ${resultado.margen_garantizado ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                        {resultado.margen_garantizado ? '✅ GARANTIZADO' : '❌ INSUFICIENTE'}
+                      </span>
+                    </div>
+                    {resultado.mensaje_verificacion && (
+                      <p className="text-xs mt-1 opacity-80">{resultado.mensaje_verificacion}</p>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                  Ingrese los datos y presione "Calcular Precios" para ver los resultados
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                  <div className="text-gray-400 text-4xl mb-2">📊</div>
+                  <p className="text-gray-600">Complete los datos y haga clic en "Calcular Precios"</p>
                 </div>
               )}
             </div>
