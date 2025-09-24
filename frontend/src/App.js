@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
-import { Search, Plus, Edit, Trash2, Calendar, FileText, Pill, Users, Home, LogOut, Eye, EyeOff } from 'lucide-react';
+import { 
+  Search, Plus, Edit, Trash2, Calendar, FileText, Pill, Users, Home, LogOut, Eye, EyeOff, 
+  Clock, Calculator, Scan, AlertTriangle, Package, DollarSign, ChevronDown, ChevronUp,
+  Activity, TrendingUp, BarChart3, CalendarDays
+} from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -9,6 +13,18 @@ const API = `${BACKEND_URL}/api`;
 // Utility functions
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('es-ES');
+};
+
+const formatDateTime = (dateTimeString) => {
+  return new Date(dateTimeString).toLocaleString('es-ES');
+};
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('es-HN', {
+    style: 'currency',
+    currency: 'HNL',
+    minimumFractionDigits: 2
+  }).format(amount);
 };
 
 const calcularEdad = (fechaNacimiento) => {
@@ -111,6 +127,7 @@ const Dashboard = ({ token, role, onLogout }) => {
   const [pacientes, setPacientes] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
   const [codigosCIE10, setCodigosCIE10] = useState([]);
+  const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Headers for authenticated requests
@@ -126,15 +143,17 @@ const Dashboard = ({ token, role, onLogout }) => {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [pacientesRes, medicamentosRes, cie10Res] = await Promise.all([
+      const [pacientesRes, medicamentosRes, cie10Res, citasRes] = await Promise.all([
         axios.get(`${API}/pacientes`, { headers }),
         axios.get(`${API}/medicamentos`, { headers }),
-        axios.get(`${API}/cie10`, { headers })
+        axios.get(`${API}/cie10`, { headers }),
+        axios.get(`${API}/citas/semana`, { headers })
       ]);
       
       setPacientes(pacientesRes.data);
       setMedicamentos(medicamentosRes.data);
       setCodigosCIE10(cie10Res.data);
+      setCitas(citasRes.data);
     } catch (error) {
       console.error('Error loading initial data:', error);
     }
@@ -178,6 +197,13 @@ const Dashboard = ({ token, role, onLogout }) => {
             onClick={setActiveView}
           />
           <MenuItem
+            icon={CalendarDays}
+            label="Calendario de Citas"
+            view="appointments"
+            active={activeView === 'appointments'}
+            onClick={setActiveView}
+          />
+          <MenuItem
             icon={Pill}
             label="Farmacia"
             view="pharmacy"
@@ -206,12 +232,20 @@ const Dashboard = ({ token, role, onLogout }) => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {activeView === 'dashboard' && <DashboardView pacientes={pacientes} medicamentos={medicamentos} />}
+        {activeView === 'dashboard' && <DashboardView pacientes={pacientes} medicamentos={medicamentos} citas={citas} />}
         {activeView === 'patients' && (
           <PatientsView 
             pacientes={pacientes} 
             setPacientes={setPacientes}
             codigosCIE10={codigosCIE10}
+            headers={headers}
+          />
+        )}
+        {activeView === 'appointments' && (
+          <AppointmentsView 
+            citas={citas} 
+            setCitas={setCitas}
+            pacientes={pacientes}
             headers={headers}
           />
         )}
@@ -229,16 +263,24 @@ const Dashboard = ({ token, role, onLogout }) => {
 };
 
 // Dashboard View Component
-const DashboardView = ({ pacientes, medicamentos }) => {
+const DashboardView = ({ pacientes, medicamentos, citas }) => {
   const totalPacientes = pacientes.length;
   const pacientesEsteAno = pacientes.filter(p => 
     new Date(p.created_at).getFullYear() === new Date().getFullYear()
   ).length;
   
-  const medicamentosBajoStock = medicamentos.filter(m => m.stock < 10).length;
+  const medicamentosBajoStock = medicamentos.filter(m => m.stock <= m.stock_minimo).length;
+  const citasHoy = citas.filter(c => 
+    new Date(c.fecha_hora).toDateString() === new Date().toDateString()
+  ).length;
   
   const pacientesRecientes = pacientes
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
+
+  const citasProximas = citas
+    .filter(c => new Date(c.fecha_hora) >= new Date())
+    .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora))
     .slice(0, 5);
 
   return (
@@ -246,8 +288,8 @@ const DashboardView = ({ pacientes, medicamentos }) => {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Users className="h-8 w-8 text-blue-600" />
@@ -259,10 +301,22 @@ const DashboardView = ({ pacientes, medicamentos }) => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Calendar className="h-8 w-8 text-green-600" />
+              <CalendarDays className="h-8 w-8 text-green-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Citas Hoy</p>
+              <p className="text-2xl font-bold text-gray-900">{citasHoy}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <TrendingUp className="h-8 w-8 text-yellow-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pacientes Este Año</p>
@@ -271,10 +325,10 @@ const DashboardView = ({ pacientes, medicamentos }) => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
-              <Pill className="h-8 w-8 text-red-600" />
+              <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Medicamentos Bajo Stock</p>
@@ -284,54 +338,87 @@ const DashboardView = ({ pacientes, medicamentos }) => {
         </div>
       </div>
 
-      {/* Recent Patients */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Pacientes Recientes</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Paciente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Edad
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha Registro
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado Nutricional
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pacientesRecientes.map((paciente) => (
-                <tr key={paciente.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{paciente.nombre_completo}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{paciente.edad} años</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(paciente.created_at)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      paciente.estado_nutricional === 'normal' ? 'bg-green-100 text-green-800' :
-                      paciente.estado_nutricional === 'desnutrido' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {paciente.estado_nutricional || 'No evaluado'}
-                    </span>
-                  </td>
+      {/* Two column layout for tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Patients */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Pacientes Recientes</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Paciente
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {pacientesRecientes.map((paciente) => (
+                  <tr key={paciente.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{paciente.nombre_completo}</div>
+                      <div className="text-sm text-gray-500">{paciente.edad} años</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        paciente.estado_nutricional === 'normal' ? 'bg-green-100 text-green-800' :
+                        paciente.estado_nutricional === 'desnutrido' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {paciente.estado_nutricional || 'No evaluado'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Upcoming Appointments */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Próximas Citas</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Paciente
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha/Hora
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {citasProximas.map((cita) => (
+                  <tr key={cita.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{cita.paciente_nombre}</div>
+                      <div className="text-sm text-gray-500">{cita.motivo}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{formatDateTime(cita.fecha_hora)}</div>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        cita.estado === 'confirmada' ? 'bg-green-100 text-green-800' :
+                        cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {cita.estado}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -469,6 +556,9 @@ const PatientCard = ({ paciente, onEdit, onView, headers, setPacientes }) => {
         {paciente.diagnostico_clinico && (
           <p><span className="font-medium">Diagnóstico:</span> {paciente.diagnostico_clinico}</p>
         )}
+        {paciente.capitulo_cie10 && (
+          <p className="text-xs"><span className="font-medium">CIE-10:</span> {paciente.codigo_cie10}</p>
+        )}
         {paciente.estado_nutricional && (
           <div className="flex items-center">
             <span className="font-medium">Estado Nutricional:</span>
@@ -486,7 +576,7 @@ const PatientCard = ({ paciente, onEdit, onView, headers, setPacientes }) => {
   );
 };
 
-// Patient Modal Component (Create/Edit)
+// Patient Modal Component (Create/Edit) - ENHANCED
 const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes }) => {
   const [formData, setFormData] = useState({
     nombre_completo: patient?.nombre_completo || '',
@@ -497,6 +587,7 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
     numero_celular: patient?.numero_celular || '',
     sintomas_signos: patient?.sintomas_signos || '',
     diagnostico_clinico: patient?.diagnostico_clinico || '',
+    tratamiento_medico: patient?.tratamiento_medico || '', // NUEVO CAMPO
     codigo_cie10: patient?.codigo_cie10 || '',
     gravedad_diagnostico: patient?.gravedad_diagnostico || '',
     peso: patient?.peso || '',
@@ -506,10 +597,16 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
 
   const [filteredCIE10, setFilteredCIE10] = useState([]);
   const [showCIE10List, setShowCIE10List] = useState(false);
+  const [cieAutoSuggestion, setCieAutoSuggestion] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({...prev, [name]: value}));
+
+    // Auto-clasificación CIE-10 cuando se escribe el diagnóstico
+    if (name === 'diagnostico_clinico' && value.length > 3) {
+      classifyDiagnosis(value);
+    }
 
     // Filter CIE-10 codes when typing
     if (name === 'codigo_cie10' && value.length > 0) {
@@ -524,9 +621,29 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
     }
   };
 
+  // NUEVA FUNCIÓN: Clasificación automática CIE-10
+  const classifyDiagnosis = async (diagnostico) => {
+    try {
+      const response = await axios.post(`${API}/cie10/clasificar?diagnostico=${encodeURIComponent(diagnostico)}`, {}, { headers });
+      if (response.data.sugerencia) {
+        setCieAutoSuggestion(response.data);
+      }
+    } catch (error) {
+      console.error('Error en clasificación automática:', error);
+    }
+  };
+
   const selectCIE10Code = (code) => {
     setFormData(prev => ({...prev, codigo_cie10: code.codigo}));
     setShowCIE10List(false);
+    setCieAutoSuggestion(null);
+  };
+
+  const acceptAutoSuggestion = () => {
+    if (cieAutoSuggestion) {
+      setFormData(prev => ({...prev, codigo_cie10: cieAutoSuggestion.codigo}));
+      setCieAutoSuggestion(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -557,83 +674,262 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">
             {patient ? 'Editar Paciente' : 'Nuevo Paciente'}
           </h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre Completo *
-                </label>
-                <input
-                  type="text"
-                  name="nombre_completo"
-                  required
-                  value={formData.nombre_completo}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Información Personal */}
+            <div className="border-l-4 border-blue-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Personal</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre_completo"
+                    required
+                    value={formData.nombre_completo}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha de Nacimiento *
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha_nacimiento"
+                    required
+                    value={formData.fecha_nacimiento}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Número de Celular *
+                  </label>
+                  <input
+                    type="tel"
+                    name="numero_celular"
+                    required
+                    value={formData.numero_celular}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre del Padre *
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre_padre"
+                    required
+                    value={formData.nombre_padre}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre de la Madre *
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre_madre"
+                    required
+                    value={formData.nombre_madre}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
               
-              <div>
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha de Nacimiento *
+                  Dirección *
                 </label>
-                <input
-                  type="date"
-                  name="fecha_nacimiento"
+                <textarea
+                  name="direccion"
                   required
-                  value={formData.fecha_nacimiento}
+                  value={formData.direccion}
                   onChange={handleInputChange}
+                  rows="2"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+            </div>
+
+            {/* Información Médica */}
+            <div className="border-l-4 border-green-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Médica</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Peso (kg)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="peso"
+                    value={formData.peso}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Altura (m)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="altura"
+                    value={formData.altura}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre del Padre *
-                </label>
-                <input
-                  type="text"
-                  name="nombre_padre"
-                  required
-                  value={formData.nombre_padre}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Síntomas y Signos Clínicos
+                  </label>
+                  <textarea
+                    name="sintomas_signos"
+                    value={formData.sintomas_signos}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Describa los síntomas observados..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Diagnóstico Clínico
+                  </label>
+                  <textarea
+                    name="diagnostico_clinico"
+                    value={formData.diagnostico_clinico}
+                    onChange={handleInputChange}
+                    rows="2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Escriba el diagnóstico para clasificación automática CIE-10..."
+                  />
+                  
+                  {/* Auto-sugerencia CIE-10 */}
+                  {cieAutoSuggestion && (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-800">
+                            Clasificación CIE-10 sugerida: {cieAutoSuggestion.codigo}
+                          </p>
+                          <p className="text-sm text-green-700">{cieAutoSuggestion.descripcion}</p>
+                          <p className="text-xs text-green-600">{cieAutoSuggestion.capitulo}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={acceptAutoSuggestion}
+                          className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                        >
+                          Aceptar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* NUEVO CAMPO: Tratamiento Médico */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tratamiento Médico
+                  </label>
+                  <textarea
+                    name="tratamiento_medico"
+                    value={formData.tratamiento_medico}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Describa el tratamiento prescrito..."
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* Clasificación CIE-10 */}
+            <div className="border-l-4 border-purple-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Clasificación CIE-10</h3>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre de la Madre *
-                </label>
-                <input
-                  type="text"
-                  name="nombre_madre"
-                  required
-                  value={formData.nombre_madre}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código CIE-10
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo_cie10"
+                    value={formData.codigo_cie10}
+                    onChange={handleInputChange}
+                    placeholder="Escriba para buscar código CIE-10..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  
+                  {showCIE10List && filteredCIE10.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {filteredCIE10.map((code) => (
+                        <button
+                          key={code.id}
+                          type="button"
+                          onClick={() => selectCIE10Code(code)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-100"
+                        >
+                          <div className="font-medium text-sm">{code.codigo}</div>
+                          <div className="text-xs text-gray-600">{code.descripcion}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gravedad del Diagnóstico
+                  </label>
+                  <select
+                    name="gravedad_diagnostico"
+                    value={formData.gravedad_diagnostico}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Seleccionar gravedad</option>
+                    <option value="leve">Leve</option>
+                    <option value="moderada">Moderada</option>
+                    <option value="grave">Grave</option>
+                  </select>
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Celular *
-                </label>
-                <input
-                  type="tel"
-                  name="numero_celular"
-                  required
-                  value={formData.numero_celular}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+            </div>
+
+            {/* Información Adicional */}
+            <div className="border-l-4 border-yellow-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Adicional</h3>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -644,126 +940,10 @@ const PatientModal = ({ patient, codigosCIE10, onClose, headers, setPacientes })
                   name="contacto_recordatorios"
                   value={formData.contacto_recordatorios}
                   onChange={handleInputChange}
+                  placeholder="Teléfono o email para recordatorios de citas"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dirección *
-              </label>
-              <textarea
-                name="direccion"
-                required
-                value={formData.direccion}
-                onChange={handleInputChange}
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Peso (kg)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  name="peso"
-                  value={formData.peso}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Altura (m)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="altura"
-                  value={formData.altura}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Síntomas y Signos Clínicos
-              </label>
-              <textarea
-                name="sintomas_signos"
-                value={formData.sintomas_signos}
-                onChange={handleInputChange}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Diagnóstico Clínico
-              </label>
-              <textarea
-                name="diagnostico_clinico"
-                value={formData.diagnostico_clinico}
-                onChange={handleInputChange}
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Código CIE-10
-              </label>
-              <input
-                type="text"
-                name="codigo_cie10"
-                value={formData.codigo_cie10}
-                onChange={handleInputChange}
-                placeholder="Escriba para buscar código CIE-10..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              
-              {showCIE10List && filteredCIE10.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {filteredCIE10.map((code) => (
-                    <button
-                      key={code.id}
-                      type="button"
-                      onClick={() => selectCIE10Code(code)}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-100"
-                    >
-                      <div className="font-medium text-sm">{code.codigo}</div>
-                      <div className="text-xs text-gray-600">{code.descripcion}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gravedad del Diagnóstico
-              </label>
-              <select
-                name="gravedad_diagnostico"
-                value={formData.gravedad_diagnostico}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Seleccionar gravedad</option>
-                <option value="leve">Leve</option>
-                <option value="moderada">Moderada</option>
-                <option value="grave">Grave</option>
-              </select>
             </div>
             
             <div className="flex justify-end space-x-3 mt-6">
@@ -847,7 +1027,7 @@ const PatientDetailModal = ({ patient, onClose, headers }) => {
           </div>
 
           {/* Clinical Info */}
-          {(patient.sintomas_signos || patient.diagnostico_clinico || patient.codigo_cie10) && (
+          {(patient.sintomas_signos || patient.diagnostico_clinico || patient.tratamiento_medico || patient.codigo_cie10) && (
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Información Clínica</h3>
               <div className="bg-gray-50 p-4 rounded-lg space-y-3">
@@ -863,12 +1043,21 @@ const PatientDetailModal = ({ patient, onClose, headers }) => {
                     <p className="text-sm text-gray-700 mt-1">{patient.diagnostico_clinico}</p>
                   </div>
                 )}
+                {patient.tratamiento_medico && (
+                  <div>
+                    <span className="font-medium text-sm">Tratamiento Médico:</span>
+                    <p className="text-sm text-gray-700 mt-1">{patient.tratamiento_medico}</p>
+                  </div>
+                )}
                 {patient.codigo_cie10 && (
                   <div>
                     <span className="font-medium text-sm">Código CIE-10:</span>
                     <p className="text-sm text-gray-700 mt-1">
                       {patient.codigo_cie10} - {patient.descripcion_cie10}
                     </p>
+                    {patient.capitulo_cie10 && (
+                      <p className="text-xs text-gray-600 mt-1">{patient.capitulo_cie10}</p>
+                    )}
                   </div>
                 )}
                 {patient.gravedad_diagnostico && (
@@ -912,88 +1101,152 @@ const PatientDetailModal = ({ patient, onClose, headers }) => {
   );
 };
 
-// Pharmacy View Component
-const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
+// NEW: Appointments View Component
+const AppointmentsView = ({ citas, setCitas, pacientes, headers }) => {
   const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
+  const [viewMode, setViewMode] = useState('week'); // week, day
 
-  const filteredMedicamentos = medicamentos.filter(m =>
-    m.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  function getCurrentWeek() {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    return startOfWeek;
+  }
+
+  const weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  
+  const getWeekDates = () => {
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(selectedWeek);
+      date.setDate(selectedWeek.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  const getCitasForDate = (date) => {
+    return citas.filter(cita => {
+      const citaDate = new Date(cita.fecha_hora);
+      return citaDate.toDateString() === date.toDateString();
+    }).sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+  };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Farmacia</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Medicamento
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar medicamento..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
+        <h1 className="text-2xl font-bold text-gray-900">Calendario de Citas</h1>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cita
+          </button>
         </div>
       </div>
 
-      {/* Medications Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredMedicamentos.map((medicamento) => (
-          <div key={medicamento.id} className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{medicamento.nombre}</h3>
-            <div className="space-y-1 text-sm text-gray-600">
-              <p><span className="font-medium">Categoría:</span> {medicamento.categoria}</p>
-              <p><span className="font-medium">Stock:</span> {medicamento.stock} unidades</p>
-              <p><span className="font-medium">Precio:</span> L. {medicamento.precio}</p>
-              {medicamento.dosis_pediatrica && (
-                <p><span className="font-medium">Dosis Pediátrica:</span> {medicamento.dosis_pediatrica}</p>
-              )}
-            </div>
-            {medicamento.stock < 10 && (
-              <div className="mt-3 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full inline-block">
-                Stock Bajo
-              </div>
-            )}
-          </div>
-        ))}
+      {/* Week Navigation */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => {
+              const newWeek = new Date(selectedWeek);
+              newWeek.setDate(selectedWeek.getDate() - 7);
+              setSelectedWeek(newWeek);
+            }}
+            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded"
+          >
+            ← Semana Anterior
+          </button>
+          <h2 className="text-lg font-semibold">
+            {selectedWeek.toLocaleDateString('es-ES')} - {
+              new Date(selectedWeek.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES')
+            }
+          </h2>
+          <button
+            onClick={() => {
+              const newWeek = new Date(selectedWeek);
+              newWeek.setDate(selectedWeek.getDate() + 7);
+              setSelectedWeek(newWeek);
+            }}
+            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded"
+          >
+            Siguiente Semana →
+          </button>
+        </div>
+        
+        <button
+          onClick={() => setSelectedWeek(getCurrentWeek())}
+          className="px-3 py-2 bg-indigo-100 text-indigo-700 rounded"
+        >
+          Hoy
+        </button>
       </div>
 
-      {/* Medication Modal */}
+      {/* Weekly Calendar Grid */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="grid grid-cols-7 gap-0">
+          {/* Day Headers */}
+          {weekDays.map((day, index) => (
+            <div key={day} className="bg-gray-50 p-4 text-center font-semibold border-r border-gray-200">
+              <div className="text-sm text-gray-600">{day}</div>
+              <div className="text-lg">{getWeekDates()[index].getDate()}</div>
+            </div>
+          ))}
+          
+          {/* Day Cells */}
+          {getWeekDates().map((date, index) => (
+            <div key={index} className="min-h-32 p-2 border-r border-t border-gray-200">
+              <div className="space-y-1">
+                {getCitasForDate(date).map((cita) => (
+                  <div 
+                    key={cita.id}
+                    className={`p-2 rounded text-xs ${
+                      cita.estado === 'confirmada' ? 'bg-green-100 text-green-800' :
+                      cita.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    <div className="font-semibold">
+                      {new Date(cita.fecha_hora).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                    <div className="truncate">{cita.paciente_nombre}</div>
+                    <div className="truncate text-gray-600">{cita.motivo}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* New Appointment Modal */}
       {showModal && (
-        <MedicationModal
+        <AppointmentModal
           onClose={() => setShowModal(false)}
+          pacientes={pacientes}
           headers={headers}
-          setMedicamentos={setMedicamentos}
+          setCitas={setCitas}
         />
       )}
     </div>
   );
 };
 
-// Medication Modal Component
-const MedicationModal = ({ onClose, headers, setMedicamentos }) => {
+// NEW: Appointment Modal Component
+const AppointmentModal = ({ onClose, pacientes, headers, setCitas }) => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    stock: '',
-    precio: '',
-    categoria: '',
-    indicaciones: '',
-    contraindicaciones: '',
-    dosis_pediatrica: ''
+    paciente_id: '',
+    fecha_hora: '',
+    motivo: '',
+    doctor: 'Dr. Usuario',
+    notas: ''
   });
 
   const handleInputChange = (e) => {
@@ -1007,8 +1260,643 @@ const MedicationModal = ({ onClose, headers, setMedicamentos }) => {
     try {
       const dataToSubmit = {
         ...formData,
+        fecha_hora: new Date(formData.fecha_hora).toISOString()
+      };
+
+      const response = await axios.post(`${API}/citas`, dataToSubmit, { headers });
+      setCitas(prev => [...prev, response.data]);
+      onClose();
+    } catch (error) {
+      alert('Error al crear cita: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Nueva Cita Médica</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Paciente *
+              </label>
+              <select
+                name="paciente_id"
+                required
+                value={formData.paciente_id}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Seleccionar paciente</option>
+                {pacientes.map(paciente => (
+                  <option key={paciente.id} value={paciente.id}>
+                    {paciente.nombre_completo} - {paciente.edad} años
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha y Hora *
+              </label>
+              <input
+                type="datetime-local"
+                name="fecha_hora"
+                required
+                value={formData.fecha_hora}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Motivo de la Cita *
+              </label>
+              <input
+                type="text"
+                name="motivo"
+                required
+                value={formData.motivo}
+                onChange={handleInputChange}
+                placeholder="Ej: Consulta general, seguimiento, vacunación"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Doctor
+              </label>
+              <input
+                type="text"
+                name="doctor"
+                value={formData.doctor}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notas
+              </label>
+              <textarea
+                name="notas"
+                value={formData.notas}
+                onChange={handleInputChange}
+                rows="2"
+                placeholder="Notas adicionales sobre la cita"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              >
+                Crear Cita
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ENHANCED: Pharmacy View Component with Complex Pricing
+const PharmacyView = ({ medicamentos, setMedicamentos, headers }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const categorias = [
+    'all',
+    'Antibióticos',
+    'Analgésicos', 
+    'Antiinflamatorios',
+    'Vitaminas',
+    'Jarabe para la tos',
+    'Antialérgicos',
+    'Probióticos',
+    'Cremas y ungüentos',
+    'Cosméticos', // Nueva categoría
+    'Otros'
+  ];
+
+  const filteredMedicamentos = medicamentos.filter(m => {
+    const matchesSearch = m.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         m.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         m.codigo_barras.includes(searchTerm);
+    const matchesCategory = selectedCategory === 'all' || m.categoria === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const medicamentosBajoStock = medicamentos.filter(m => m.stock <= m.stock_minimo);
+  const medicamentosVencer = medicamentos.filter(m => {
+    if (!m.fecha_vencimiento) return false;
+    const diasRestantes = Math.ceil((new Date(m.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24));
+    return diasRestantes <= 30 && diasRestantes > 0;
+  });
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Gestión de Farmacia</h1>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowCalculator(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            <Calculator className="h-4 w-4 mr-2" />
+            Calculadora de Precios
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Medicamento
+          </button>
+        </div>
+      </div>
+
+      {/* Alert Cards */}
+      {(medicamentosBajoStock.length > 0 || medicamentosVencer.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {medicamentosBajoStock.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                <h3 className="text-sm font-medium text-red-800">Stock Bajo</h3>
+              </div>
+              <p className="text-sm text-red-700 mt-1">
+                {medicamentosBajoStock.length} medicamento(s) con stock por debajo del mínimo
+              </p>
+            </div>
+          )}
+          
+          {medicamentosVencer.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <Clock className="h-5 w-5 text-yellow-600 mr-2" />
+                <h3 className="text-sm font-medium text-yellow-800">Próximos a Vencer</h3>
+              </div>
+              <p className="text-sm text-yellow-700 mt-1">
+                {medicamentosVencer.length} medicamento(s) vencen en los próximos 30 días
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Search and Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="md:col-span-2 relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre, categoría o código de barras..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {categorias.map(cat => (
+            <option key={cat} value={cat}>
+              {cat === 'all' ? 'Todas las categorías' : cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Medications Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredMedicamentos.map((medicamento) => (
+          <MedicationCard
+            key={medicamento.id}
+            medicamento={medicamento}
+            headers={headers}
+            setMedicamentos={setMedicamentos}
+          />
+        ))}
+      </div>
+
+      {/* Modals */}
+      {showModal && (
+        <MedicationModal
+          onClose={() => setShowModal(false)}
+          headers={headers}
+          setMedicamentos={setMedicamentos}
+        />
+      )}
+
+      {showCalculator && (
+        <PriceCalculatorModal
+          onClose={() => setShowCalculator(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+// ENHANCED: Medication Card Component
+const MedicationCard = ({ medicamento, headers, setMedicamentos }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  
+  const isLowStock = medicamento.stock <= medicamento.stock_minimo;
+  const isNearExpiry = medicamento.fecha_vencimiento && 
+    Math.ceil((new Date(medicamento.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)) <= 30;
+
+  return (
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{medicamento.nombre}</h3>
+            <p className="text-sm text-gray-600">{medicamento.categoria}</p>
+          </div>
+          
+          <div className="flex space-x-1">
+            {isLowStock && (
+              <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                Stock Bajo
+              </span>
+            )}
+            {isNearExpiry && (
+              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                Por Vencer
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Stock:</span>
+            <span className={`font-medium ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
+              {medicamento.stock} unidades
+            </span>
+          </div>
+          
+          <div className="flex justify-between">
+            <span className="text-gray-600">Precio Público:</span>
+            <span className="font-medium text-green-600">{formatCurrency(medicamento.precio_publico)}</span>
+          </div>
+          
+          <div className="flex justify-between">
+            <span className="text-gray-600">Margen:</span>
+            <span className="font-medium text-blue-600">{medicamento.margen_utilidad}%</span>
+          </div>
+          
+          {medicamento.codigo_barras && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Código Barras:</span>
+              <span className="font-mono text-xs">{medicamento.codigo_barras}</span>
+            </div>
+          )}
+          
+          {medicamento.fecha_vencimiento && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Vencimiento:</span>
+              <span className={`text-xs ${isNearExpiry ? 'text-yellow-600' : 'text-gray-600'}`}>
+                {formatDate(medicamento.fecha_vencimiento)}
+              </span>
+            </div>
+          )}
+          
+          {medicamento.dosis_pediatrica && (
+            <div>
+              <span className="text-gray-600">Dosis Pediátrica:</span>
+              <p className="text-xs text-gray-700 mt-1">{medicamento.dosis_pediatrica}</p>
+            </div>
+          )}
+        </div>
+        
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="mt-4 w-full flex items-center justify-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+        >
+          {showDetails ? 'Ocultar Detalles' : 'Ver Detalles'}
+          {showDetails ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+        </button>
+        
+        {showDetails && (
+          <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-gray-600">Costo Base:</span>
+                <p className="text-xs">{formatCurrency(medicamento.costo_base)}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Precio Base:</span>
+                <p className="text-xs">{formatCurrency(medicamento.precio_base)}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Escala:</span>
+                <p className="text-xs">{medicamento.escala_compra}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Descuento:</span>
+                <p className="text-xs">{medicamento.descuento_aplicable}%</p>
+              </div>
+            </div>
+            
+            {medicamento.lote && (
+              <div>
+                <span className="text-gray-600">Lote:</span>
+                <span className="ml-2 text-xs">{medicamento.lote}</span>
+              </div>
+            )}
+            
+            {medicamento.proveedor && (
+              <div>
+                <span className="text-gray-600">Proveedor:</span>
+                <span className="ml-2 text-xs">{medicamento.proveedor}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// NEW: Price Calculator Modal Component
+const PriceCalculatorModal = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    costo_base: '',
+    escala_compra: 'sin_escala',
+    descuento: '0',
+    impuesto: '15'
+  });
+  
+  const [resultado, setResultado] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({...prev, [name]: value}));
+  };
+
+  const calcularPrecios = async () => {
+    try {
+      const params = new URLSearchParams({
+        costo_base: formData.costo_base,
+        escala_compra: formData.escala_compra,
+        descuento: formData.descuento,
+        impuesto: formData.impuesto
+      });
+      
+      const response = await axios.post(`${API}/medicamentos/calcular-precios?${params}`, {}, {
+        headers: { Authorization: `Bearer valid_token_1970` }
+      });
+      
+      setResultado(response.data);
+    } catch (error) {
+      alert('Error al calcular precios: ' + error.message);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-2xl w-full">
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Calculadora de Precios con Margen 25%</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Input Section */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">Datos de Entrada</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Costo Base (L) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="costo_base"
+                  required
+                  value={formData.costo_base}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Ej: 100.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Escala de Compra
+                </label>
+                <select
+                  name="escala_compra"
+                  value={formData.escala_compra}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="sin_escala">Sin escala</option>
+                  <option value="10+3">10+3 (Compra 10, recibe 13)</option>
+                  <option value="6+2">6+2 (Compra 6, recibe 8)</option>
+                  <option value="5+1">5+1 (Compra 5, recibe 6)</option>
+                  <option value="3+1">3+1 (Compra 3, recibe 4)</option>
+                  <option value="1+1">1+1 (Compra 1, recibe 2)</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Descuento Aplicable (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="descuento"
+                  value={formData.descuento}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Ej: 5"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Impuesto (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="impuesto"
+                  value={formData.impuesto}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Ej: 15"
+                />
+              </div>
+              
+              <button
+                onClick={calcularPrecios}
+                disabled={!formData.costo_base}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                <Calculator className="h-4 w-4 inline mr-2" />
+                Calcular Precios
+              </button>
+            </div>
+            
+            {/* Results Section */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">Resultados</h3>
+              
+              {resultado ? (
+                <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Costo Real:</span>
+                    <span className="font-semibold">{formatCurrency(resultado.costo_real)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Precio Base (sin descuento):</span>
+                    <span className="font-semibold">{formatCurrency(resultado.precio_base)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Precio Público (con descuento):</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(resultado.precio_publico)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Precio Final (después descuento):</span>
+                    <span className="font-semibold">{formatCurrency(resultado.precio_final)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-lg">
+                    <span className="text-gray-900 font-semibold">Margen de Utilidad:</span>
+                    <span className="font-bold text-green-600">{resultado.margen_utilidad}%</span>
+                  </div>
+                  
+                  {resultado.margen_utilidad >= 25 && (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded text-sm">
+                      ✓ Margen cumple con el mínimo del 25%
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                  Ingrese los datos y presione "Calcular Precios" para ver los resultados
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ENHANCED: Medication Modal Component
+const MedicationModal = ({ onClose, headers, setMedicamentos }) => {
+  const [formData, setFormData] = useState({
+    nombre: '',
+    descripcion: '',
+    codigo_barras: '',
+    stock: '',
+    stock_minimo: '5',
+    costo_base: '',
+    escala_compra: 'sin_escala',
+    descuento_aplicable: '0',
+    impuesto: '15',
+    categoria: '',
+    lote: '',
+    fecha_vencimiento: '',
+    proveedor: '',
+    indicaciones: '',
+    contraindicaciones: '',
+    dosis_pediatrica: ''
+  });
+
+  const [previewPrecios, setPreviewPrecios] = useState(null);
+
+  const categorias = [
+    'Antibióticos',
+    'Analgésicos', 
+    'Antiinflamatorios',
+    'Vitaminas',
+    'Jarabe para la tos',
+    'Antialérgicos',
+    'Probióticos',
+    'Cremas y ungüentos',
+    'Cosméticos', // Nueva categoría
+    'Otros'
+  ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({...prev, [name]: value}));
+    
+    // Auto-calculate prices when cost parameters change
+    if (['costo_base', 'escala_compra', 'descuento_aplicable', 'impuesto'].includes(name)) {
+      calculatePricesPreview({...formData, [name]: value});
+    }
+  };
+
+  const calculatePricesPreview = async (data) => {
+    if (!data.costo_base) return;
+    
+    try {
+      const params = new URLSearchParams({
+        costo_base: data.costo_base,
+        escala_compra: data.escala_compra,
+        descuento: data.descuento_aplicable,
+        impuesto: data.impuesto
+      });
+      
+      const response = await axios.post(`${API}/medicamentos/calcular-precios?${params}`, {}, { headers });
+      setPreviewPrecios(response.data);
+    } catch (error) {
+      console.error('Error calculating preview prices:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const dataToSubmit = {
+        ...formData,
         stock: parseInt(formData.stock),
-        precio: parseFloat(formData.precio)
+        stock_minimo: parseInt(formData.stock_minimo),
+        costo_base: parseFloat(formData.costo_base),
+        descuento_aplicable: parseFloat(formData.descuento_aplicable),
+        impuesto: parseFloat(formData.impuesto),
+        fecha_vencimiento: formData.fecha_vencimiento || null
       };
 
       const response = await axios.post(`${API}/medicamentos`, dataToSubmit, { headers });
@@ -1021,134 +1909,301 @@ const MedicationModal = ({ onClose, headers, setMedicamentos }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">Nuevo Medicamento</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Información Básica */}
+            <div className="border-l-4 border-blue-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Básica</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre del Medicamento *
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    required
+                    value={formData.nombre}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Categoría *
+                  </label>
+                  <select
+                    name="categoria"
+                    required
+                    value={formData.categoria}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">Seleccionar categoría</option>
+                    {categorias.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Código de Barras
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo_barras"
+                    value={formData.codigo_barras}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Inventario */}
+            <div className="border-l-4 border-green-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Control de Inventario</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock Inicial *
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    required
+                    min="0"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock Mínimo
+                  </label>
+                  <input
+                    type="number"
+                    name="stock_minimo"
+                    min="0"
+                    value={formData.stock_minimo}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Lote
+                  </label>
+                  <input
+                    type="text"
+                    name="lote"
+                    value={formData.lote}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha de Vencimiento
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha_vencimiento"
+                    value={formData.fecha_vencimiento}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Precios y Costos */}
+            <div className="border-l-4 border-yellow-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Cálculo de Precios (Margen 25%)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Costo Base (L) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="costo_base"
+                      required
+                      min="0"
+                      value={formData.costo_base}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Escala de Compra
+                    </label>
+                    <select
+                      name="escala_compra"
+                      value={formData.escala_compra}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="sin_escala">Sin escala</option>
+                      <option value="10+3">10+3</option>
+                      <option value="6+2">6+2</option>
+                      <option value="5+1">5+1</option>
+                      <option value="3+1">3+1</option>
+                      <option value="1+1">1+1</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descuento Aplicable (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      name="descuento_aplicable"
+                      min="0"
+                      max="50"
+                      value={formData.descuento_aplicable}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Impuesto (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      name="impuesto"
+                      min="0"
+                      value={formData.impuesto}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-3">Vista Previa de Precios</h4>
+                  {previewPrecios ? (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Costo Real:</span>
+                        <span>{formatCurrency(previewPrecios.costo_real)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Precio Base:</span>
+                        <span>{formatCurrency(previewPrecios.precio_base)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Precio Público:</span>
+                        <span className="font-medium text-green-600">{formatCurrency(previewPrecios.precio_publico)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Margen:</span>
+                        <span className="font-medium text-blue-600">{previewPrecios.margen_utilidad}%</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Ingrese el costo base para ver la vista previa</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Información Médica */}
+            <div className="border-l-4 border-purple-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Médica</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción *
+                  </label>
+                  <textarea
+                    name="descripcion"
+                    required
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    rows="2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dosis Pediátrica
+                  </label>
+                  <textarea
+                    name="dosis_pediatrica"
+                    value={formData.dosis_pediatrica}
+                    onChange={handleInputChange}
+                    rows="2"
+                    placeholder="Ej: 5ml cada 8 horas por 7 días"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Indicaciones
+                    </label>
+                    <textarea
+                      name="indicaciones"
+                      value={formData.indicaciones}
+                      onChange={handleInputChange}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contraindicaciones
+                    </label>
+                    <textarea
+                      name="contraindicaciones"
+                      value={formData.contraindicaciones}
+                      onChange={handleInputChange}
+                      rows="2"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Proveedor */}
+            <div className="border-l-4 border-indigo-500 pl-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Proveedor</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre del Medicamento *
+                  Proveedor
                 </label>
                 <input
                   type="text"
-                  name="nombre"
-                  required
-                  value={formData.nombre}
+                  name="proveedor"
+                  value={formData.proveedor}
                   onChange={handleInputChange}
+                  placeholder="Nombre del proveedor o distribuidor"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoría *
-                </label>
-                <select
-                  name="categoria"
-                  required
-                  value={formData.categoria}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <option value="Antibióticos">Antibióticos</option>
-                  <option value="Analgésicos">Analgésicos</option>
-                  <option value="Antiinflamatorios">Antiinflamatorios</option>
-                  <option value="Vitaminas">Vitaminas</option>
-                  <option value="Jarabe para la tos">Jarabe para la tos</option>
-                  <option value="Antialérgicos">Antialérgicos</option>
-                  <option value="Probióticos">Probióticos</option>
-                  <option value="Cremas y ungüentos">Cremas y ungüentos</option>
-                  <option value="Otros">Otros</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock Inicial *
-                </label>
-                <input
-                  type="number"
-                  name="stock"
-                  required
-                  min="0"
-                  value={formData.stock}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Precio (Lempiras) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="precio"
-                  required
-                  min="0"
-                  value={formData.precio}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descripción *
-              </label>
-              <textarea
-                name="descripcion"
-                required
-                value={formData.descripcion}
-                onChange={handleInputChange}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dosis Pediátrica
-              </label>
-              <textarea
-                name="dosis_pediatrica"
-                value={formData.dosis_pediatrica}
-                onChange={handleInputChange}
-                rows="2"
-                placeholder="Ej: 5ml cada 8 horas por 7 días"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Indicaciones
-              </label>
-              <textarea
-                name="indicaciones"
-                value={formData.indicaciones}
-                onChange={handleInputChange}
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraindicaciones
-              </label>
-              <textarea
-                name="contraindicaciones"
-                value={formData.contraindicaciones}
-                onChange={handleInputChange}
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
             </div>
             
             <div className="flex justify-end space-x-3 mt-6">
@@ -1173,7 +2228,7 @@ const MedicationModal = ({ onClose, headers, setMedicamentos }) => {
   );
 };
 
-// CIE-10 View Component
+// CIE-10 View Component (Enhanced with Chapters)
 const CIE10View = ({ codigosCIE10 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -1183,11 +2238,19 @@ const CIE10View = ({ codigosCIE10 }) => {
     code.categoria.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const categorias = [...new Set(codigosCIE10.map(code => code.categoria))];
+  // Group codes by chapter
+  const codesGroupedByChapter = filteredCodes.reduce((acc, code) => {
+    const chapter = code.capitulo || obtener_capitulo_cie10(code.codigo);
+    if (!acc[chapter]) {
+      acc[chapter] = [];
+    }
+    acc[chapter].push(code);
+    return acc;
+  }, {});
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Códigos CIE-10</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Códigos CIE-10 con Clasificación por Capítulos</h1>
       
       {/* Search */}
       <div className="mb-6">
@@ -1195,7 +2258,7 @@ const CIE10View = ({ codigosCIE10 }) => {
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar código o descripción..."
+            placeholder="Buscar código, descripción o categoría..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -1203,40 +2266,72 @@ const CIE10View = ({ codigosCIE10 }) => {
         </div>
       </div>
 
-      {/* Categories */}
+      {/* Chapters */}
       <div className="space-y-6">
-        {categorias.map(categoria => {
-          const codesInCategory = filteredCodes.filter(code => code.categoria === categoria);
-          
-          if (codesInCategory.length === 0) return null;
-          
-          return (
-            <div key={categoria} className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 bg-gray-50 border-b">
-                <h2 className="text-lg font-semibold text-gray-900">{categoria}</h2>
-                <p className="text-sm text-gray-600">{codesInCategory.length} códigos</p>
-              </div>
-              <div className="p-6">
-                <div className="grid gap-3">
-                  {codesInCategory.map(code => (
-                    <div key={code.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <div className="flex-shrink-0 w-16">
-                        <span className="font-mono font-semibold text-indigo-600">{code.codigo}</span>
-                      </div>
-                      <div className="flex-1 ml-4">
-                        <p className="text-sm text-gray-900">{code.descripcion}</p>
-                      </div>
+        {Object.entries(codesGroupedByChapter).map(([chapter, codes]) => (
+          <div key={chapter} className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">{chapter}</h2>
+              <p className="text-sm text-gray-600">{codes.length} código(s)</p>
+            </div>
+            <div className="p-6">
+              <div className="grid gap-3">
+                {codes.map(code => (
+                  <div key={code.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div className="flex-shrink-0 w-20">
+                      <span className="font-mono font-semibold text-indigo-600">{code.codigo}</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex-1 ml-4">
+                      <p className="text-sm text-gray-900 font-medium">{code.descripcion}</p>
+                      <p className="text-xs text-gray-500">{code.categoria}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
 };
+
+// Helper function for chapter classification
+function obtener_capitulo_cie10(codigo) {
+  if (!codigo) return "No clasificado";
+  
+  const primera_letra = codigo[0].upper();
+  
+  const capitulos = {
+    'A': "Capítulo I – Ciertas enfermedades infecciosas y parasitarias (A00-B99)",
+    'B': "Capítulo I – Ciertas enfermedades infecciosas y parasitarias (A00-B99)",
+    'C': "Capítulo II – Neoplasias (C00-D48)",
+    'D': "Capítulo III – Enfermedades de la sangre y órganos hematopoyéticos (D50-D89)",
+    'E': "Capítulo IV – Enfermedades endocrinas, nutricionales y metabólicas (E00-E90)",
+    'F': "Capítulo V – Trastornos mentales y del comportamiento (F00-F99)",
+    'G': "Capítulo VI – Enfermedades del sistema nervioso (G00-G99)",
+    'H': "Capítulo VII – Enfermedades del ojo y del oído (H00-H95)",
+    'I': "Capítulo IX – Enfermedades del sistema circulatorio (I00-I99)",
+    'J': "Capítulo X – Enfermedades del sistema respiratorio (J00-J99)",
+    'K': "Capítulo XI – Enfermedades del sistema digestivo (K00-K93)",
+    'L': "Capítulo XII – Enfermedades de la piel y tejido subcutáneo (L00-L99)",
+    'M': "Capítulo XIII – Enfermedades del sistema osteomuscular (M00-M99)",
+    'N': "Capítulo XIV – Enfermedades del sistema genitourinario (N00-N99)",
+    'O': "Capítulo XV – Embarazo, parto y puerperio (O00-O99)",
+    'P': "Capítulo XVI – Ciertas afecciones originadas en el período perinatal (P00-P96)",
+    'Q': "Capítulo XVII – Malformaciones congénitas (Q00-Q99)",
+    'R': "Capítulo XVIII – Síntomas, signos y hallazgos anormales (R00-R99)",
+    'S': "Capítulo XIX – Traumatismos, envenenamientos (S00-T98)",
+    'T': "Capítulo XIX – Traumatismos, envenenamientos (S00-T98)",
+    'V': "Capítulo XX – Causas externas de morbilidad y mortalidad (V01-Y98)",
+    'W': "Capítulo XX – Causas externas de morbilidad y mortalidad (V01-Y98)",
+    'X': "Capítulo XX – Causas externas de morbilidad y mortalidad (V01-Y98)",
+    'Y': "Capítulo XX – Causas externas de morbilidad y mortalidad (V01-Y98)",
+    'Z': "Capítulo XXI – Factores que influyen en el estado de salud (Z00-Z99)"
+  };
+  
+  return capitulos[primera_letra] || "No clasificado";
+}
 
 // Main App Component
 function App() {
