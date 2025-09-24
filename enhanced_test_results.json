@@ -1,314 +1,347 @@
 {
   "test_type": "enhanced_features",
-  "timestamp": "2025-09-24T08:23:58.388267",
-  "total_tests": 43,
-  "passed_tests": 38,
-  "critical_failures": 1,
-  "success_rate": 88.37209302325581,
-  "critical_failure_details": [
-    "Pricing calculator endpoint accessible: Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}"
-  ],
+  "timestamp": "2025-09-24T08:24:48.594642",
+  "total_tests": 48,
+  "passed_tests": 48,
+  "critical_failures": 0,
+  "success_rate": 100.0,
+  "critical_failure_details": [],
   "test_details": [
     {
       "test": "Login with code '1970'",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:50.388904"
+      "timestamp": "2025-09-24T08:24:42.469382"
     },
     {
       "test": "Token received",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:50.388917"
+      "timestamp": "2025-09-24T08:24:42.469394"
     },
     {
       "test": "Role is doctor",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:50.388920"
+      "timestamp": "2025-09-24T08:24:42.469398"
     },
     {
       "test": "AI Classification endpoint accessible",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:51.153620"
+      "timestamp": "2025-09-24T08:24:43.224986"
     },
     {
       "test": "AI-powered classification working",
       "success": true,
       "details": "Method: ai, Confidence: alta",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:51.153632"
+      "timestamp": "2025-09-24T08:24:43.224999"
     },
     {
       "test": "Correct AI classification for test case",
       "success": true,
       "details": "Got A09.9 for 'Diarrea y gastroenteritis de presunto origen infeccioso'",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:51.153637"
+      "timestamp": "2025-09-24T08:24:43.225003"
     },
     {
       "test": "Confidence level provided",
       "success": true,
       "details": "Confidence: alta",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:51.153641"
+      "timestamp": "2025-09-24T08:24:43.225007"
     },
     {
       "test": "Chapter classification included",
       "success": true,
       "details": "Chapter: Cap\u00edtulo I \u2013 Ciertas enfermedades infecciosas y pa...",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:51.153657"
+      "timestamp": "2025-09-24T08:24:43.225013"
     },
     {
       "test": "Spanish term classification: 'Fiebre alta en ni\u00f1o'",
       "success": true,
       "details": "Code: R50.9",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:51.889994"
+      "timestamp": "2025-09-24T08:24:43.829772"
     },
     {
       "test": "Spanish term classification: 'Otitis media aguda'",
       "success": true,
       "details": "Code: H66.9",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:52.656938"
+      "timestamp": "2025-09-24T08:24:44.625041"
     },
     {
       "test": "Spanish term classification: 'Bronquitis aguda'",
       "success": true,
       "details": "Code: J20.9",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:53.596363"
+      "timestamp": "2025-09-24T08:24:45.593470"
     },
     {
       "test": "Spanish term classification: 'Dolor abdominal'",
       "success": true,
       "details": "Code: R10.9",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:54.247780"
+      "timestamp": "2025-09-24T08:24:46.344599"
     },
     {
       "test": "Pricing calculator endpoint accessible",
-      "success": false,
-      "details": "Response: {'detail': [{'type': 'missing', 'loc': ['query', 'costo_unitario'], 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.11/v/missing'}]}",
+      "success": true,
+      "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:54.394933"
+      "timestamp": "2025-09-24T08:24:46.383381"
+    },
+    {
+      "test": "25% margin guarantee flag",
+      "success": true,
+      "details": "Margin guaranteed: True",
+      "critical": false,
+      "timestamp": "2025-09-24T08:24:46.383395"
+    },
+    {
+      "test": "25% margin verification",
+      "success": true,
+      "details": "Final margin: 25.0%",
+      "critical": false,
+      "timestamp": "2025-09-24T08:24:46.383402"
+    },
+    {
+      "test": "Scale calculation (10+3)",
+      "success": true,
+      "details": "Correctly calculated 13 units",
+      "critical": false,
+      "timestamp": "2025-09-24T08:24:46.383406"
+    },
+    {
+      "test": "All pricing fields present",
+      "success": true,
+      "details": "",
+      "critical": false,
+      "timestamp": "2025-09-24T08:24:46.383412"
+    },
+    {
+      "test": "Pricing formulas documentation",
+      "success": true,
+      "details": "Formulas provided",
+      "critical": false,
+      "timestamp": "2025-09-24T08:24:46.383416"
     },
     {
       "test": "Scale calculation (5+1)",
-      "success": false,
-      "details": "Expected 6, got error",
+      "success": true,
+      "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:54.434376"
+      "timestamp": "2025-09-24T08:24:46.419885"
     },
     {
       "test": "Scale calculation (20+5)",
-      "success": false,
-      "details": "Expected 25, got error",
+      "success": true,
+      "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:54.470472"
+      "timestamp": "2025-09-24T08:24:46.454746"
     },
     {
       "test": "Scale calculation (sin_escala)",
-      "success": false,
-      "details": "Expected 1, got error",
+      "success": true,
+      "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:54.897736"
+      "timestamp": "2025-09-24T08:24:46.492882"
     },
     {
       "test": "Create test medications for sales",
       "success": true,
       "details": "Created 2 medications",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:54.975126"
+      "timestamp": "2025-09-24T08:24:46.710304"
     },
     {
       "test": "Create new sale",
       "success": true,
-      "details": "Sale ID: b89e0400-d7d5-4f74-b2ed-8f08a27a936a",
+      "details": "Sale ID: ed4b1d43-c067-4c98-a10b-9170cd7b6656",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:56.888491"
+      "timestamp": "2025-09-24T08:24:46.748646"
     },
     {
       "test": "Sale calculations",
       "success": true,
       "details": "Total: 89.69999999999999, Profit: 20.69999999999999",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:56.888508"
+      "timestamp": "2025-09-24T08:24:46.748675"
     },
     {
       "test": "Sale items structure",
       "success": true,
       "details": "Contains 2 items",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:56.888513"
+      "timestamp": "2025-09-24T08:24:46.748681"
     },
     {
       "test": "Today's sales summary endpoint",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:57.094187"
+      "timestamp": "2025-09-24T08:24:46.823862"
     },
     {
       "test": "Today's sales data structure",
-      "success": false,
-      "details": "Invalid data structure",
+      "success": true,
+      "details": "Sales today: 0",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.094200"
+      "timestamp": "2025-09-24T08:24:46.823876"
     },
     {
       "test": "Daily balance endpoint",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:57.128131"
+      "timestamp": "2025-09-24T08:24:46.897918"
     },
     {
       "test": "Daily balance structure",
       "success": true,
       "details": "Balance: 0.0 sales, 0.0 profit",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.128151"
+      "timestamp": "2025-09-24T08:24:46.897939"
     },
     {
       "test": "Pharmacy alerts endpoint",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:57.241249"
+      "timestamp": "2025-09-24T08:24:46.989960"
     },
     {
       "test": "4-week expiration warnings",
       "success": true,
-      "details": "Found 2 expiration alerts",
+      "details": "Found 3 expiration alerts",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.241264"
+      "timestamp": "2025-09-24T08:24:46.989976"
     },
     {
       "test": "Test medication in expiration alerts",
       "success": true,
       "details": "Alert: \u23f0 Vence en 20 d\u00edas (14/10/2025)",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.241272"
+      "timestamp": "2025-09-24T08:24:46.989984"
     },
     {
       "test": "Alert categorization",
       "success": true,
-      "details": "Stock alerts: 2, Expiry alerts: 2",
+      "details": "Stock alerts: 3, Expiry alerts: 3",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.241276"
+      "timestamp": "2025-09-24T08:24:46.989988"
     },
     {
       "test": "Priority levels (alta, media, baja)",
       "success": true,
       "details": "Found priorities: ['media']",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.241289"
+      "timestamp": "2025-09-24T08:24:46.990001"
     },
     {
       "test": "Two-week calendar endpoint",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:57.279046"
+      "timestamp": "2025-09-24T08:24:47.027748"
     },
     {
       "test": "Two-week calendar data format",
       "success": true,
       "details": "Found 9 appointments in 2-week period",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.279060"
+      "timestamp": "2025-09-24T08:24:47.027761"
     },
     {
       "test": "Two-week calendar with date range",
       "success": true,
       "details": "Found 0 appointments from 2024-02-01",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.314704"
+      "timestamp": "2025-09-24T08:24:47.176119"
     },
     {
       "test": "Medication update endpoint",
       "success": true,
       "details": "",
       "critical": true,
-      "timestamp": "2025-09-24T08:23:57.386551"
+      "timestamp": "2025-09-24T08:24:47.248154"
     },
     {
       "test": "Medication name update",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.386563"
+      "timestamp": "2025-09-24T08:24:47.248166"
     },
     {
       "test": "Medication stock update",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.386566"
+      "timestamp": "2025-09-24T08:24:47.248169"
     },
     {
       "test": "Price recalculation on update",
       "success": true,
       "details": "Price changed from 38.33 to 55.07",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.386574"
+      "timestamp": "2025-09-24T08:24:47.248178"
     },
     {
       "test": "Authentication for GET cie10",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.425986"
+      "timestamp": "2025-09-24T08:24:47.283195"
     },
     {
       "test": "Authentication for GET pacientes",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.588674"
+      "timestamp": "2025-09-24T08:24:47.318843"
     },
     {
       "test": "Authentication for GET medicamentos",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.636625"
+      "timestamp": "2025-09-24T08:24:47.472132"
     },
     {
       "test": "Authentication for GET citas",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.690871"
+      "timestamp": "2025-09-24T08:24:47.507393"
     },
     {
       "test": "Authentication for GET medicamentos/alertas",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.726602"
+      "timestamp": "2025-09-24T08:24:47.543634"
     },
     {
       "test": "Authentication for GET ventas/balance-diario",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:57.763565"
+      "timestamp": "2025-09-24T08:24:47.729791"
     },
     {
       "test": "Authentication for POST cie10/clasificar",
       "success": true,
       "details": "",
       "critical": false,
-      "timestamp": "2025-09-24T08:23:58.388228"
+      "timestamp": "2025-09-24T08:24:48.594620"
     }
   ]
 }
