@@ -388,8 +388,8 @@ class NewFeaturesAPITester:
             
             # Test updating with different units
             update_data = {
-                "peso": 60.0,  # Updated weight in pounds
-                "altura": 115.0  # Updated height in centimeters
+                "peso": 26.0,  # Updated weight in kg
+                "altura": 1.15  # Updated height in meters
             }
             
             success, updated_response = self.make_request('PUT', f'pacientes/{patient_id}', update_data)
