@@ -1549,6 +1549,33 @@ async def crear_venta(venta_data: VentaCreate, token: str = Depends(verify_token
     await db.ventas.insert_one(prepare_for_mongo(venta.dict()))
     return venta
 
+@api_router.get("/ventas/debug")
+async def debug_ventas(token: str = Depends(verify_token)):
+    """🔍 Debug ventas para encontrar el problema de sincronización"""
+    
+    # Obtener todas las ventas
+    todas_ventas = await db.ventas.find({}).to_list(1000)
+    
+    # Obtener ventas con regex
+    fecha_str = date.today().strftime("%Y-%m-%d")
+    ventas_regex = await db.ventas.find({
+        "fecha_venta": {"$regex": f"^{fecha_str}"}
+    }).to_list(1000)
+    
+    return {
+        "total_ventas_db": len(todas_ventas),
+        "ventas_hoy_regex": len(ventas_regex),
+        "fecha_busqueda": fecha_str,
+        "ventas_recientes": [
+            {
+                "id": v["id"], 
+                "fecha_venta": v["fecha_venta"],
+                "total_venta": v["total_venta"]
+            } for v in todas_ventas[-5:]  # Últimas 5
+        ],
+        "fechas_todas_ventas": [v["fecha_venta"] for v in todas_ventas]
+    }
+
 @api_router.get("/ventas/balance-diario")
 async def get_balance_diario(fecha: Optional[date] = None, token: str = Depends(verify_token)):
     """📊 Obtener balance diario de ventas"""
