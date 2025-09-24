@@ -397,9 +397,9 @@ const DashboardView = ({ pacientes, medicamentos, citas, ventasHoy, alertasFarma
 
       {/* Enhanced Activity Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setActiveView('patients')}>
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">👥 Pacientes Recientes</h2>
+            <h2 className="text-lg font-semibold text-gray-900">👥 Pacientes Recientes (Click para ver todos)</h2>
           </div>
           <div className="p-6">
             <div className="space-y-4">
