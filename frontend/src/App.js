@@ -133,6 +133,7 @@ const Dashboard = ({ token, role, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [ventasHoy, setVentasHoy] = useState({});
   const [alertasFarmacia, setAlertasFarmacia] = useState([]);
+  const [selectedPatientForView, setSelectedPatientForView] = useState(null);
 
   // Headers for authenticated requests
   const headers = {
